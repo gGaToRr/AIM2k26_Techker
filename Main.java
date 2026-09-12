@@ -2,6 +2,7 @@ import gen.MetaPromptEngine;
 import menu.Menu;
 import nlp.Lemmatizer;
 import nlp.PromptProfile;
+import nlp.SafetyAdvisor;
 
 public class Main {
     public static void main(String[] args) {
@@ -18,13 +19,19 @@ public class Main {
             return;
         }
 
-        // 1. Analyse sémantique complète (NLP)
+        // 1. Analyse préventive des termes sensibles (avertissement non bloquant)
+        SafetyAdvisor.SafetyReport safety = SafetyAdvisor.analyser(userPrompt);
+        if (safety.containsSensitiveTerms()) {
+            System.out.println("\n" + safety.warningMessage());
+        }
+
+        // 2. Analyse sémantique complète (NLP)
         PromptProfile profil = Lemmatizer.analyser(userPrompt);
 
-        // 2. Génération du prompt optimisé (Meta-Prompting avec JMustache)
+        // 3. Génération du prompt optimisé (Meta-Prompting avec JMustache)
         String promptOptimise = MetaPromptEngine.genererPromptOptimise(profil);
 
-        // 3. Affichage du résultat
+        // 4. Affichage du résultat
         System.out.println("\n--- [1. ANALYSE DU PROMPT] ---");
         System.out.println("Nature détectée : " + profil.classification().primaryType());
         System.out.println("Confiance       : " + profil.classification().primaryProbability() + "% (" + profil.classification().confidenceLevel() + ")");
