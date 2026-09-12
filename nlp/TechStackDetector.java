@@ -1,0 +1,71 @@
+package nlp;
+
+import java.util.*;
+import java.util.regex.Pattern;
+
+// Détecte les langages de dev, frameworks et les langues de traduction
+public class TechStackDetector {
+
+    // Liste des langages et frameworks connus
+    private static final Map<String, List<String>> LANGAGES_DEV = Map.ofEntries(
+            Map.entry("Java", List.of("java", "jvm", "spring", "spring boot", "maven", "gradle", "hibernate", "quarkus")),
+            Map.entry("Python", List.of("python", "django", "flask", "fastapi", "pandas", "numpy", "pytorch", "tensorflow")),
+            Map.entry("JavaScript / TypeScript", List.of("javascript", "typescript", "js", "ts", "node", "nodejs", "react", "vue", "angular", "nextjs", "express")),
+            Map.entry("Rust", List.of("rust", "cargo", "tokio", "actix")),
+            Map.entry("Go", List.of("golang", "goroutine", "gin")),
+            Map.entry("C / C++", List.of("c++", "cpp", "cmake", "gcc", "clang")),
+            Map.entry("SQL", List.of("sql", "postgresql", "postgres", "mysql", "mongodb", "redis", "sqlite")),
+            Map.entry("DevOps / Cloud", List.of("docker", "kubernetes", "k8s", "aws", "gcp", "azure", "terraform")),
+            Map.entry("HTML / CSS", List.of("html", "css", "tailwind", "sass", "bootstrap"))
+    );
+
+    // Langues pour la traduction
+    private static final Map<String, String> LANGUES_TRADUCTION = Map.ofEntries(
+            Map.entry("anglais", "Anglais (EN)"),
+            Map.entry("english", "Anglais (EN)"),
+            Map.entry("francais", "Français (FR)"),
+            Map.entry("french", "Français (FR)"),
+            Map.entry("espagnol", "Espagnol (ES)"),
+            Map.entry("spanish", "Espagnol (ES)"),
+            Map.entry("allemand", "Allemand (DE)"),
+            Map.entry("german", "Allemand (DE)"),
+            Map.entry("italien", "Italien (IT)"),
+            Map.entry("italian", "Italien (IT)"),
+            Map.entry("japonais", "Japonais (JA)"),
+            Map.entry("chinois", "Chinois (ZH)")
+    );
+
+    // Repère les technos mentionnées dans le texte
+    public static List<String> detecterTechnologies(String text) {
+        if (text == null || text.isBlank()) return List.of();
+
+        String lower = " " + text.toLowerCase() + " ";
+        Set<String> technologiesTrouvees = new LinkedHashSet<>();
+
+        for (Map.Entry<String, List<String>> entry : LANGAGES_DEV.entrySet()) {
+            String techNom = entry.getKey();
+            for (String keyword : entry.getValue()) {
+                Pattern p = Pattern.compile("\\b" + Pattern.quote(keyword) + "\\b", Pattern.CASE_INSENSITIVE);
+                if (p.matcher(lower).find()) {
+                    technologiesTrouvees.add(techNom);
+                    break;
+                }
+            }
+        }
+
+        return new ArrayList<>(technologiesTrouvees);
+    }
+
+    // Repère si une langue cible est demandée (ex: "en anglais")
+    public static Optional<String> detecterLangueCibleTraduction(String text) {
+        if (text == null || text.isBlank()) return Optional.empty();
+
+        String lower = text.toLowerCase();
+        for (Map.Entry<String, String> entry : LANGUES_TRADUCTION.entrySet()) {
+            if (lower.contains("en " + entry.getKey()) || lower.contains("vers " + entry.getKey()) || lower.contains("in " + entry.getKey()) || lower.contains("to " + entry.getKey())) {
+                return Optional.of(entry.getValue());
+            }
+        }
+        return Optional.empty();
+    }
+}
