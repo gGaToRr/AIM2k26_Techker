@@ -1,3 +1,8 @@
+# Compiled Java binaries
+*.class
+**/*.class
+
+# Build directories
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
