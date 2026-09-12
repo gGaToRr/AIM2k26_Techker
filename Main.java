@@ -1,3 +1,4 @@
+import menu.Menu;
 import nlp.Lemmatizer;
 import nlp.PromptProfile;
 
