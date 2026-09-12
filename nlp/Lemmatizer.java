@@ -13,7 +13,7 @@ public class Lemmatizer {
     private static final Pattern DIACRITIQUES_PATTERN = Pattern.compile("\\p{M}");
 
     private static final Pattern CODE_KEYWORDS_PATTERN = Pattern.compile(
-            "\\b(public|private|protected|class|interface|record|enum|def|fn|function|const|let|var|import|package|return|async|await|try|catch|throws|void|int|String|boolean|float|double|val|namespace|struct|template|include|css|html|div|span|flex|grid|margin|padding|color|background|border|radius|hover|shadow)\\b"
+            "\\b(public|private|protected|class|interface|record|enum|def|fn|function|const|let|var|import|package|return|async|await|try|catch|throws|void|int|String|boolean|float|double|val|namespace|struct|template|include|css|html|flex|grid|margin|padding|border|radius|hover|shadow)\\b"
     );
     private static final Pattern CODE_SYNTAX_PATTERN = Pattern.compile("[{};\\[\\]()=>#$]");
 
@@ -24,7 +24,8 @@ public class Lemmatizer {
             "traduis", "traduire", "corrige", "corriger", "ameliore", "ameliorer", "optimise", "optimiser",
             "refactore", "refactorer", "debug", "debogue", "deboguer", "explique", "expliquer",
             "concois", "concevoir", "architecture", "structure", "structurez", "refaire", "reforme",
-            "create", "generate", "write", "make", "give", "list", "find", "translate", "fix", "improve", "explain"
+            "apprendre", "enseigne", "enseigner",
+            "create", "generate", "write", "make", "give", "list", "find", "translate", "fix", "improve", "explain", "learn"
     );
 
     // Mots interrogatifs quand l'utilisateur pose une question
@@ -50,6 +51,10 @@ public class Lemmatizer {
             Map.entry("jeu video", "code"),
             Map.entry("qu est ce que", "question"),
             Map.entry("c est quoi", "question"),
+            Map.entry("comment ca marche", "expliqu"),
+            Map.entry("comment on fait", "expliqu"),
+            Map.entry("je veux apprendre", "expliqu"),
+            Map.entry("explication simple", "expliqu"),
             Map.entry("pas a pas", "expliqu"),
             Map.entry("step by step", "expliqu"),
             Map.entry("ligne par ligne", "expliqu")
@@ -79,44 +84,20 @@ public class Lemmatizer {
             Map.entry("coder", "code"),
             Map.entry("architecture", "code"),
             Map.entry("arborescence", "code"),
-            Map.entry("dossier", "code"),
-            Map.entry("fichier", "code"),
-            Map.entry("fichiers", "code"),
-            Map.entry("structure", "code"),
-            Map.entry("jeu", "code"),
-            Map.entry("game", "code"),
             Map.entry("unity", "code"),
             Map.entry("unreal", "code"),
             Map.entry("cpp", "code"),
-            Map.entry("projet", "code"),
             Map.entry("endpoint", "code"),
             Map.entry("api", "code"),
 
-            // Frontend & UI / UX Design
-            Map.entry("design", "code"),
-            Map.entry("site", "code"),
-            Map.entry("page", "code"),
-            Map.entry("bouton", "code"),
-            Map.entry("boutons", "code"),
-            Map.entry("carte", "code"),
-            Map.entry("cartes", "code"),
+            // Frontend & Web Spécifique (termes sans ambiguïté)
             Map.entry("css", "code"),
             Map.entry("html", "code"),
             Map.entry("tailwind", "code"),
             Map.entry("responsive", "code"),
-            Map.entry("mobile", "code"),
             Map.entry("frontend", "code"),
             Map.entry("ui", "code"),
             Map.entry("ux", "code"),
-            Map.entry("layout", "code"),
-            Map.entry("ombre", "code"),
-            Map.entry("arrondir", "code"),
-            Map.entry("couleur", "code"),
-            Map.entry("icone", "code"),
-            Map.entry("icones", "code"),
-            Map.entry("menu", "code"),
-            Map.entry("logo", "code"),
-            Map.entry("aligne", "code"),
 
             // Debug & Fix
             Map.entry("debug", "debug"),
@@ -159,7 +140,17 @@ public class Lemmatizer {
             Map.entry("poeme", "creer"),
             Map.entry("scenario", "creer"),
 
-            // Questions & Explications
+            // Pédagogie, Apprentissage & Explications
+            Map.entry("apprendre", "expliqu"),
+            Map.entry("apprentissage", "expliqu"),
+            Map.entry("comprendre", "expliqu"),
+            Map.entry("piloter", "expliqu"),
+            Map.entry("pilote", "expliqu"),
+            Map.entry("cockpit", "expliqu"),
+            Map.entry("avion", "expliqu"),
+            Map.entry("tutoriel", "expliqu"),
+            Map.entry("guide", "expliqu"),
+            Map.entry("debutant", "expliqu"),
             Map.entry("explique", "expliqu"),
             Map.entry("expliquer", "expliqu"),
             Map.entry("explication", "expliqu"),
@@ -175,8 +166,8 @@ public class Lemmatizer {
             "debug", 2.8,
             "code", 2.5,
             "creer", 2.2,
-            "expliqu", 2.0,
-            "question", 1.8
+            "expliqu", 2.5,
+            "question", 2.0
     );
 
     // Méthode principale qui exécute toute la chaîne d'analyse
