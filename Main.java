@@ -1,3 +1,4 @@
+import gen.MetaPromptEngine;
 import menu.Menu;
 import nlp.Lemmatizer;
 import nlp.PromptProfile;
@@ -17,17 +18,24 @@ public class Main {
             return;
         }
 
-        // On lance l'analyse sémantique complète
+        // 1. Analyse sémantique complète (NLP)
         PromptProfile profil = Lemmatizer.analyser(userPrompt);
 
-        // Affichage des données brutes
-        System.out.println("\n--- Résultat de l'analyse ---");
+        // 2. Génération du prompt optimisé (Meta-Prompting avec JMustache)
+        String promptOptimise = MetaPromptEngine.genererPromptOptimise(profil);
+
+        // 3. Affichage du résultat
+        System.out.println("\n--- [1. ANALYSE DU PROMPT] ---");
         System.out.println("Nature détectée : " + profil.classification().primaryType());
         System.out.println("Confiance       : " + profil.classification().primaryProbability() + "% (" + profil.classification().confidenceLevel() + ")");
         System.out.println("Langue          : " + profil.language());
         System.out.println("Technologies    : " + profil.detectedTechnologies());
         System.out.println("Tokens estimés  : " + profil.tokenMetrics().estimatedTokens());
         System.out.println("Score qualité   : " + profil.qualityDiagnostic().scoreGlobal() + "/100");
+
+        System.out.println("\n--- [2. PROMPT OPTIMISÉ POUR LE LLM] ---\n");
+        System.out.println(promptOptimise);
+        System.out.println("\n----------------------------------------");
 
         // Fermeture du scanner
         menu.fermer();
