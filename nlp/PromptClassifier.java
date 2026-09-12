@@ -51,15 +51,16 @@ public class PromptClassifier {
         double createScore = weights.getOrDefault("creer", 0.0) * 3.0;
         scores.put(TypeOfPrompt.CREATION, scores.get(TypeOfPrompt.CREATION) + createScore);
 
-        // 5. Scoring FACTUALQUESTIONS (Fallback naturel pour les mots isolés ou concepts généraux)
+        // 5. Scoring FACTUALQUESTIONS
         double questionScore = weights.getOrDefault("expliqu", 0.0) * 2.5 + weights.getOrDefault("question", 0.0) * 2.5;
         if (profile.isQuestion()) {
             questionScore += 3.0;
         }
-        // Si aucun mot-clé spécifique n'a été trouvé, FACTUALQUESTIONS devient la catégorie par défaut
-        boolean aucunMotCle = weights.isEmpty() && techStack.isEmpty() && !profile.hasCode();
-        if (aucunMotCle) {
-            questionScore += 1.0;
+
+        // Si aucune intention spécifique n'est détectée (ex: mot isolé "frangipane"), fallback sur FACTUALQUESTIONS
+        boolean aucuneIntentionSpecifique = (codeScore == 0.0 && translateScore == 0.0 && correctScore == 0.0 && createScore == 0.0 && questionScore == 0.0);
+        if (aucuneIntentionSpecifique) {
+            questionScore += 2.0;
         }
         scores.put(TypeOfPrompt.FACTUALQUESTIONS, scores.get(TypeOfPrompt.FACTUALQUESTIONS) + questionScore);
 
@@ -86,7 +87,7 @@ public class PromptClassifier {
             case TRANSLATE -> "Demande de traduction" + (langueCible.map(l -> " vers " + l).orElse(""));
             case CORRECTANSWERS -> "Mots-clés de correction / relecture dominants";
             case CREATION -> "Génération créative ou rédaction narrative";
-            case FACTUALQUESTIONS -> aucunMotCle
+            case FACTUALQUESTIONS -> aucuneIntentionSpecifique
                     ? "Terme ou sujet isolé sans contexte spécifique : traitement par synthèse encyclopédique et explicative"
                     : "Question factuelle ou demande d'explication";
         };
