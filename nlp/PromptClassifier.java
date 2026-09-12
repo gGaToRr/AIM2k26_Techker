@@ -26,7 +26,7 @@ public class PromptClassifier {
 
         Map<String, Double> weights = profile.weightedScores();
 
-        // 1. Scoring CODE
+        // 1. Scoring CODE (nécessite de vrais indices dev, code ou techStack)
         double codeScore = weights.getOrDefault("code", 0.0) * 2.0 + weights.getOrDefault("debug", 0.0) * 2.0;
         if (profile.hasCode()) {
             codeScore += profile.codeDensity() * 15.0;
@@ -51,10 +51,15 @@ public class PromptClassifier {
         double createScore = weights.getOrDefault("creer", 0.0) * 3.0;
         scores.put(TypeOfPrompt.CREATION, scores.get(TypeOfPrompt.CREATION) + createScore);
 
-        // 5. Scoring FACTUALQUESTIONS
+        // 5. Scoring FACTUALQUESTIONS (Fallback naturel pour les mots isolés ou concepts généraux)
         double questionScore = weights.getOrDefault("expliqu", 0.0) * 2.5 + weights.getOrDefault("question", 0.0) * 2.5;
         if (profile.isQuestion()) {
             questionScore += 3.0;
+        }
+        // Si aucun mot-clé spécifique n'a été trouvé, FACTUALQUESTIONS devient la catégorie par défaut
+        boolean aucunMotCle = weights.isEmpty() && techStack.isEmpty() && !profile.hasCode();
+        if (aucunMotCle) {
+            questionScore += 1.0;
         }
         scores.put(TypeOfPrompt.FACTUALQUESTIONS, scores.get(TypeOfPrompt.FACTUALQUESTIONS) + questionScore);
 
@@ -81,7 +86,9 @@ public class PromptClassifier {
             case TRANSLATE -> "Demande de traduction" + (langueCible.map(l -> " vers " + l).orElse(""));
             case CORRECTANSWERS -> "Mots-clés de correction / relecture dominants";
             case CREATION -> "Génération créative ou rédaction narrative";
-            case FACTUALQUESTIONS -> "Question factuelle ou demande d'explication";
+            case FACTUALQUESTIONS -> aucunMotCle
+                    ? "Terme ou sujet isolé sans contexte spécifique : traitement par synthèse encyclopédique et explicative"
+                    : "Question factuelle ou demande d'explication";
         };
 
         return new ClassificationResult(topType, maxProb, level, distribution, justification);
