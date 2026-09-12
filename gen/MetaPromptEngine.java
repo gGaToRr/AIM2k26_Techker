@@ -2,6 +2,7 @@ package gen;
 
 import com.samskivert.mustache.Mustache;
 import nlp.PromptProfile;
+import nlp.TechStackDetector;
 import nlp.TypeOfPrompt;
 
 import java.util.*;
@@ -20,8 +21,9 @@ public class MetaPromptEngine {
         // 2. Construction du contexte pour le moteur Mustache
         Map<String, Object> context = construireContexteMustache(profile, type);
 
-        // 3. Rendu ultra-rapide avec JMustache
+        // 3. Rendu ultra-rapide avec JMustache SANS échappement HTML
         return Mustache.compiler()
+                .escapeHTML(false)
                 .emptyStringIsFalse(true)
                 .zeroIsFalse(true)
                 .compile(rawTemplate)
@@ -35,9 +37,11 @@ public class MetaPromptEngine {
 
         return switch (type) {
             case CODE -> {
-                if (lower.contains("debug") || lower.contains("bug") || lower.contains("erreur") || lower.contains("exception") || lower.contains("crash")) {
+                if (lower.contains("architecture") || lower.contains("arborescence") || lower.contains("structure de dossier") || lower.contains("structure des dossier") || lower.contains("organisation des fichier")) {
+                    yield "architecture";
+                } else if (lower.contains("debug") || lower.contains("bug") || lower.contains("erreur") || lower.contains("exception") || lower.contains("crash")) {
                     yield "debug";
-                } else if (lower.contains("review") || lower.contains("audit") || lower.contains("securite") || lower.contains("securite")) {
+                } else if (lower.contains("review") || lower.contains("audit") || lower.contains("securite")) {
                     yield "review";
                 } else if (lower.contains("refactor") || lower.contains("amelior") || lower.contains("optimis") || lower.contains("clean")) {
                     yield "refactor";
@@ -55,16 +59,29 @@ public class MetaPromptEngine {
     private static Map<String, Object> construireContexteMustache(PromptProfile profile, TypeOfPrompt type) {
         Map<String, Object> ctx = new HashMap<>();
 
+        String cleanMission = extraireMissionPure(profile.rawText());
+
         ctx.put("rawPrompt", profile.rawText().trim());
+        ctx.put("cleanedMission", cleanMission);
         ctx.put("sanitizedPrompt", profile.sanitizedText());
         ctx.put("type", type.name());
         ctx.put("language", profile.language().equals("FR") ? "Français" : "English");
-        ctx.put("confidence", profile.classification().confidenceLevel().name() + " (" + profile.classification().primaryProbability() + "%)");
+        ctx.put("confidence", profile.classification().confidenceLevel().name() + " (" + String.format("%.1f%%", profile.classification().primaryProbability()) + ")");
 
-        // Règle 2 : Injection de stack / persona
+        // Règle 2 : Injection de stack & persona
         boolean hasTech = !profile.detectedTechnologies().isEmpty();
         ctx.put("hasTechStack", hasTech);
         ctx.put("techStackSummary", String.join(", ", profile.detectedTechnologies()));
+
+        // Contexte académique / spécifique
+        Optional<String> specialCtx = TechStackDetector.detecterContexteSpecial(profile.rawText());
+        specialCtx.ifPresentOrElse(
+                c -> {
+                    ctx.put("hasAcademicContext", true);
+                    ctx.put("academicContext", c);
+                },
+                () -> ctx.put("hasAcademicContext", false)
+        );
 
         // Langue cible pour la traduction
         profile.targetTranslationLanguage().ifPresentOrElse(
@@ -83,21 +100,31 @@ public class MetaPromptEngine {
         return ctx;
     }
 
+    // Nettoie le bruit conversationnel ("salut je suis...", "et c tout") pour extraire l'essence
+    private static String extraireMissionPure(String raw) {
+        if (raw == null || raw.isBlank()) return "";
+
+        String clean = raw.trim();
+
+        // Supprime les salutations et intros inutiles
+        clean = clean.replaceAll("(?i)^(salut|bonjour|hello|hey|bonsoir)[,\\s]+", "");
+        clean = clean.replaceAll("(?i)(et c est tout|et c tout|c est tout|merci|merci d avance)[.!\\s]*$", "");
+
+        return clean.trim();
+    }
+
     // Transforme les diagnostics de qualité en contraintes explicites pour le LLM
     private static List<String> genererContraintesAutomatiques(PromptProfile profile) {
         List<String> contraintes = new ArrayList<>();
 
-        // Si le prompt utilisateur manquait de contraintes de format
         if (profile.qualityDiagnostic().scoreContraintes() < 20) {
             contraintes.add("Structure de réponse claire et aérée avec titres Markdown et listes à puces.");
         }
 
-        // Si le prompt était trop court / flou
         if (profile.rawText().split("\\s+").length < 10) {
             contraintes.add("Couvrir les cas limites essentiels même s'ils n'étaient pas explicités.");
         }
 
-        // Règle anti-hallucination systématique
         contraintes.add("Ne pas inventer de faits non vérifiés ; expliciter clairement les hypothèses si nécessaire.");
 
         return contraintes;
