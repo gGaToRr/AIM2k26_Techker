@@ -6,10 +6,10 @@ import java.util.regex.Pattern;
 // Détecte les langages de dev, frameworks, moteurs de jeu et langues de traduction
 public class TechStackDetector {
 
-    // Liste des langages et frameworks connus
+    // Liste des langages et frameworks avec détection contextuelle
     private static final Map<String, List<String>> LANGAGES_DEV = Map.ofEntries(
-            Map.entry("HTML / CSS / UI Design", List.of("design", "site", "page", "bouton", "boutons", "carte", "cartes", "css", "html", "tailwind", "sass", "bootstrap", "responsive", "mobile", "frontend", "ui", "ux", "layout", "flexbox", "grid", "ombre", "arrondir", "couleur", "icone", "icones", "menu", "logo")),
-            Map.entry("Unity / Game Dev", List.of("unity", "unreal", "unreal engine", "godot", "sfml", "raylib", "game engine", "jeu")),
+            Map.entry("HTML / CSS / UI Design", List.of("css", "html", "tailwind", "sass", "bootstrap", "frontend", "ui", "ux", "responsive", "site web", "page web", "web design", "design du site", "redesign")),
+            Map.entry("Unity / Game Dev", List.of("unity", "unreal", "unreal engine", "godot", "sfml", "raylib", "game engine", "moteur de jeu")),
             Map.entry("C++", List.of("c++", "cpp", "cmake", "gcc", "clang", "g++")),
             Map.entry("C#", List.of("c#", "csharp", ".net", "dotnet")),
             Map.entry("C", List.of("langage c", "norme c", "pointeur")),
