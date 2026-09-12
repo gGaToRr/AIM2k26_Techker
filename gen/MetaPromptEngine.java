@@ -38,7 +38,9 @@ public class MetaPromptEngine {
 
         return switch (type) {
             case CODE -> {
-                if (lower.contains("architecture") || lower.contains("arborescence") || lower.contains("structure de dossier") || lower.contains("structure des dossier") || lower.contains("organisation des fichier")) {
+                if (lower.contains("design") || lower.contains("css") || lower.contains("bouton") || lower.contains("carte") || lower.contains("ombre") || lower.contains("ui") || lower.contains("ux") || lower.contains("frontend") || lower.contains("responsive") || lower.contains("arrondir") || lower.contains("layout")) {
+                    yield "frontend_ui"; // Refonte d'interface & web design
+                } else if (lower.contains("architecture") || lower.contains("arborescence") || lower.contains("structure de dossier") || lower.contains("structure des dossier") || lower.contains("organisation des fichier")) {
                     yield "architecture";
                 } else if (lower.contains("debug") || lower.contains("bug") || lower.contains("erreur") || lower.contains("exception") || lower.contains("crash")) {
                     yield "debug";
@@ -114,7 +116,7 @@ public class MetaPromptEngine {
 
         String clean = raw.trim();
 
-        clean = clean.replaceAll("(?i)^(salut|bonjour|hello|hey|bonsoir)[,\\s]+", "");
+        clean = clean.replaceAll("(?i)^(salut|bonjour|hello|hey|bonsoir|alors)[,\\s]+", "");
         clean = clean.replaceAll("(?i)(et c est tout|et c tout|c est tout|merci|merci d avance)[.!\\s]*$", "");
 
         return clean.trim();
