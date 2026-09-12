@@ -13,7 +13,7 @@ public class Lemmatizer {
     private static final Pattern DIACRITIQUES_PATTERN = Pattern.compile("\\p{M}");
 
     private static final Pattern CODE_KEYWORDS_PATTERN = Pattern.compile(
-            "\\b(public|private|protected|class|interface|record|enum|def|fn|function|const|let|var|import|package|return|async|await|try|catch|throws|void|int|String|boolean|float|double|val|namespace|struct|template|include)\\b"
+            "\\b(public|private|protected|class|interface|record|enum|def|fn|function|const|let|var|import|package|return|async|await|try|catch|throws|void|int|String|boolean|float|double|val|namespace|struct|template|include|css|html|div|span|flex|grid|margin|padding|color|background|border|radius|hover|shadow)\\b"
     );
     private static final Pattern CODE_SYNTAX_PATTERN = Pattern.compile("[{};\\[\\]()=>#$]");
 
@@ -23,7 +23,7 @@ public class Lemmatizer {
             "fais", "faire", "donne", "donner", "liste", "lister", "trouve", "trouver",
             "traduis", "traduire", "corrige", "corriger", "ameliore", "ameliorer", "optimise", "optimiser",
             "refactore", "refactorer", "debug", "debogue", "deboguer", "explique", "expliquer",
-            "concois", "concevoir", "architecture", "structure", "structurez",
+            "concois", "concevoir", "architecture", "structure", "structurez", "refaire", "reforme",
             "create", "generate", "write", "make", "give", "list", "find", "translate", "fix", "improve", "explain"
     );
 
@@ -40,10 +40,13 @@ public class Lemmatizer {
             Map.entry("en espagnol", "traduir"),
             Map.entry("revue de code", "code"),
             Map.entry("code review", "code"),
+            Map.entry("design du site", "code"),
+            Map.entry("refaire le design", "code"),
             Map.entry("arborescence des fichiers", "code"),
             Map.entry("arborescence du projet", "code"),
             Map.entry("architecture logicielle", "code"),
             Map.entry("structure de dossier", "code"),
+            Map.entry("sur mobile", "code"),
             Map.entry("jeu video", "code"),
             Map.entry("qu est ce que", "question"),
             Map.entry("c est quoi", "question"),
@@ -59,7 +62,7 @@ public class Lemmatizer {
             "ce", "cet", "cette", "ces", "mon", "ton", "son", "notre", "votre", "leur",
             "je", "tu", "il", "elle", "on", "nous", "vous", "ils", "elles", "me", "te", "se",
             "est", "sont", "ete", "etre", "avoir", "ai", "as", "avons", "avez", "ont",
-            "salut", "bonjour", "besoin", "besoins", "tout",
+            "salut", "bonjour", "besoin", "besoins", "tout", "alors", "voila", "parce", "deja",
             "the", "an", "and", "or", "in", "at", "for", "to", "with", "is", "are"
     );
 
@@ -88,6 +91,32 @@ public class Lemmatizer {
             Map.entry("projet", "code"),
             Map.entry("endpoint", "code"),
             Map.entry("api", "code"),
+
+            // Frontend & UI / UX Design
+            Map.entry("design", "code"),
+            Map.entry("site", "code"),
+            Map.entry("page", "code"),
+            Map.entry("bouton", "code"),
+            Map.entry("boutons", "code"),
+            Map.entry("carte", "code"),
+            Map.entry("cartes", "code"),
+            Map.entry("css", "code"),
+            Map.entry("html", "code"),
+            Map.entry("tailwind", "code"),
+            Map.entry("responsive", "code"),
+            Map.entry("mobile", "code"),
+            Map.entry("frontend", "code"),
+            Map.entry("ui", "code"),
+            Map.entry("ux", "code"),
+            Map.entry("layout", "code"),
+            Map.entry("ombre", "code"),
+            Map.entry("arrondir", "code"),
+            Map.entry("couleur", "code"),
+            Map.entry("icone", "code"),
+            Map.entry("icones", "code"),
+            Map.entry("menu", "code"),
+            Map.entry("logo", "code"),
+            Map.entry("aligne", "code"),
 
             // Debug & Fix
             Map.entry("debug", "debug"),
