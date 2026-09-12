@@ -8,6 +8,7 @@ public class TechStackDetector {
 
     // Liste des langages et frameworks connus
     private static final Map<String, List<String>> LANGAGES_DEV = Map.ofEntries(
+            Map.entry("HTML / CSS / UI Design", List.of("design", "site", "page", "bouton", "boutons", "carte", "cartes", "css", "html", "tailwind", "sass", "bootstrap", "responsive", "mobile", "frontend", "ui", "ux", "layout", "flexbox", "grid", "ombre", "arrondir", "couleur", "icone", "icones", "menu", "logo")),
             Map.entry("Unity / Game Dev", List.of("unity", "unreal", "unreal engine", "godot", "sfml", "raylib", "game engine", "jeu")),
             Map.entry("C++", List.of("c++", "cpp", "cmake", "gcc", "clang", "g++")),
             Map.entry("C#", List.of("c#", "csharp", ".net", "dotnet")),
@@ -18,8 +19,7 @@ public class TechStackDetector {
             Map.entry("Rust", List.of("rust", "cargo", "tokio", "actix")),
             Map.entry("Go", List.of("golang", "goroutine", "gin")),
             Map.entry("SQL", List.of("sql", "postgresql", "postgres", "mysql", "mongodb", "redis", "sqlite")),
-            Map.entry("DevOps / Cloud", List.of("docker", "kubernetes", "k8s", "aws", "gcp", "azure", "terraform")),
-            Map.entry("HTML / CSS", List.of("html", "css", "tailwind", "sass", "bootstrap"))
+            Map.entry("DevOps / Cloud", List.of("docker", "kubernetes", "k8s", "aws", "gcp", "azure", "terraform"))
     );
 
     // Langues pour la traduction
@@ -55,7 +55,6 @@ public class TechStackDetector {
         for (Map.Entry<String, List<String>> entry : LANGAGES_DEV.entrySet()) {
             String techNom = entry.getKey();
             for (String keyword : entry.getValue()) {
-                // Regex adaptée aux symboles comme C++ et C# (ne dépend pas de \b après un symbole)
                 String regex = "(?i)(?<![a-zA-Z0-9])" + Pattern.quote(keyword) + "(?![a-zA-Z0-9])";
                 Pattern p = Pattern.compile(regex);
                 if (p.matcher(lower).find()) {
