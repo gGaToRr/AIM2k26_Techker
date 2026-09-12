@@ -38,8 +38,10 @@ public class MetaPromptEngine {
 
         return switch (type) {
             case CODE -> {
-                if (lower.contains("design") || lower.contains("css") || lower.contains("bouton") || lower.contains("carte") || lower.contains("ombre") || lower.contains("ui") || lower.contains("ux") || lower.contains("frontend") || lower.contains("responsive") || lower.contains("arrondir") || lower.contains("layout")) {
-                    yield "frontend_ui"; // Refonte d'interface & web design
+                // Vérifie si c'est réellement du design web / CSS
+                boolean isWebUI = lower.contains("site") || lower.contains("css") || lower.contains("html") || lower.contains("tailwind") || lower.contains("frontend") || lower.contains("web") || lower.contains("responsive");
+                if (isWebUI && (lower.contains("design") || lower.contains("bouton") || lower.contains("carte") || lower.contains("ombre") || lower.contains("layout"))) {
+                    yield "frontend_ui";
                 } else if (lower.contains("architecture") || lower.contains("arborescence") || lower.contains("structure de dossier") || lower.contains("structure des dossier") || lower.contains("organisation des fichier")) {
                     yield "architecture";
                 } else if (lower.contains("debug") || lower.contains("bug") || lower.contains("erreur") || lower.contains("exception") || lower.contains("crash")) {
@@ -58,7 +60,7 @@ public class MetaPromptEngine {
                 if (!profile.detectedTechnologies().isEmpty() || profile.hasCode()) {
                     yield "deep_technical";
                 } else if (nbMots <= 3 && !profile.rawText().contains("?")) {
-                    yield "concept_guide"; // Mot ou concept isolé (ex: "frangipane", "trou noir")
+                    yield "concept_guide";
                 }
                 yield "feynman";
             }
@@ -110,14 +112,14 @@ public class MetaPromptEngine {
         return ctx;
     }
 
-    // Nettoie le bruit conversationnel ("salut je suis...", "et c tout") pour extraire l'essence
+    // Nettoie le bruit conversationnel pour extraire l'essence
     private static String extraireMissionPure(String raw) {
         if (raw == null || raw.isBlank()) return "";
 
         String clean = raw.trim();
 
         clean = clean.replaceAll("(?i)^(salut|bonjour|hello|hey|bonsoir|alors)[,\\s]+", "");
-        clean = clean.replaceAll("(?i)(et c est tout|et c tout|c est tout|merci|merci d avance)[.!\\s]*$", "");
+        clean = clean.replaceAll("(?i)(et c est tout|et c tout|c est tout|merci beaucoup|merci d avance|merci|xd|stp|s il te plait|s'il te plaît|s'il te plait)[.!\\s]*$", "");
 
         return clean.trim();
     }
