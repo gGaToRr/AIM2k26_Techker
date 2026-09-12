@@ -46,14 +46,14 @@ public class Lemmatizer {
             "ligne par ligne", "expliqu"
     );
 
-    // Mots vides sans valeur sémantique
+    // Mots vides sans valeur sémantique (sans doublons)
     private static final Set<String> STOP_WORDS = Set.of(
             "le", "la", "les", "un", "une", "des", "du", "de", "d", "l", "et", "ou",
             "a", "au", "aux", "en", "dans", "pour", "par", "sur", "avec", "sans",
             "ce", "cet", "cette", "ces", "mon", "ton", "son", "notre", "votre", "leur",
             "je", "tu", "il", "elle", "on", "nous", "vous", "ils", "elles", "me", "te", "se",
             "est", "sont", "ete", "etre", "avoir", "ai", "as", "avons", "avez", "ont",
-            "the", "a", "an", "and", "or", "in", "on", "at", "for", "to", "with", "is", "are"
+            "the", "an", "and", "or", "in", "at", "for", "to", "with", "is", "are"
     );
 
     // Dictionnaire des racines métier
@@ -273,7 +273,9 @@ public class Lemmatizer {
             String propre = mot.trim();
             if (propre.length() > 1 && !STOP_WORDS.contains(propre)) {
                 String lemme = lemmatiserMot(propre);
-                if (!lemme.isBlank()) lemmes.add(lemme);
+                if (!lemme.isBlank()) {
+                    lemmes.add(lemme);
+                }
             }
         }
 
