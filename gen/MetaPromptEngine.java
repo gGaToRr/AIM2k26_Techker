@@ -34,6 +34,7 @@ public class MetaPromptEngine {
     // Détermine le sous-template le plus adapté à l'intention fine
     private static String determinerSousType(PromptProfile profile, TypeOfPrompt type) {
         String lower = profile.rawText().toLowerCase();
+        int nbMots = profile.rawText().trim().split("\\s+").length;
 
         return switch (type) {
             case CODE -> {
@@ -51,7 +52,14 @@ public class MetaPromptEngine {
             case TRANSLATE -> "technical";
             case CORRECTANSWERS -> lower.contains("reformul") ? "rewrite" : "proofreading";
             case CREATION -> lower.contains("brainstorm") || lower.contains("idee") ? "brainstorming" : "storytelling";
-            case FACTUALQUESTIONS -> (!profile.detectedTechnologies().isEmpty() || profile.hasCode()) ? "deep_technical" : "feynman";
+            case FACTUALQUESTIONS -> {
+                if (!profile.detectedTechnologies().isEmpty() || profile.hasCode()) {
+                    yield "deep_technical";
+                } else if (nbMots <= 3 && !profile.rawText().contains("?")) {
+                    yield "concept_guide"; // Mot ou concept isolé (ex: "frangipane", "trou noir")
+                }
+                yield "feynman";
+            }
         };
     }
 
@@ -106,7 +114,6 @@ public class MetaPromptEngine {
 
         String clean = raw.trim();
 
-        // Supprime les salutations et intros inutiles
         clean = clean.replaceAll("(?i)^(salut|bonjour|hello|hey|bonsoir)[,\\s]+", "");
         clean = clean.replaceAll("(?i)(et c est tout|et c tout|c est tout|merci|merci d avance)[.!\\s]*$", "");
 
@@ -122,7 +129,7 @@ public class MetaPromptEngine {
         }
 
         if (profile.rawText().split("\\s+").length < 10) {
-            contraintes.add("Couvrir les cas limites essentiels même s'ils n'étaient pas explicités.");
+            contraintes.add("Couvrir les aspects fondamentaux, historiques et pratiques de manière exhaustive.");
         }
 
         contraintes.add("Ne pas inventer de faits non vérifiés ; expliciter clairement les hypothèses si nécessaire.");
