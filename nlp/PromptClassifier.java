@@ -27,34 +27,34 @@ public class PromptClassifier {
         Map<String, Double> weights = profile.weightedScores();
 
         // 1. Scoring CODE
-        double codeScore = weights.getOrDefault("code", 0.0) * 1.5 + weights.getOrDefault("debug", 0.0) * 1.8;
+        double codeScore = weights.getOrDefault("code", 0.0) * 2.0 + weights.getOrDefault("debug", 0.0) * 2.0;
         if (profile.hasCode()) {
             codeScore += profile.codeDensity() * 15.0;
         }
         if (!techStack.isEmpty()) {
-            codeScore += techStack.size() * 3.5;
+            codeScore += techStack.size() * 8.0;
         }
         scores.put(TypeOfPrompt.CODE, scores.get(TypeOfPrompt.CODE) + codeScore);
 
         // 2. Scoring TRANSLATE
-        double translateScore = weights.getOrDefault("traduir", 0.0) * 3.0;
+        double translateScore = weights.getOrDefault("traduir", 0.0) * 4.0;
         if (langueCible.isPresent()) {
-            translateScore += 8.0;
+            translateScore += 12.0;
         }
         scores.put(TypeOfPrompt.TRANSLATE, scores.get(TypeOfPrompt.TRANSLATE) + translateScore);
 
         // 3. Scoring CORRECTANSWERS
-        double correctScore = weights.getOrDefault("corrig", 0.0) * 3.0;
+        double correctScore = weights.getOrDefault("corrig", 0.0) * 4.0;
         scores.put(TypeOfPrompt.CORRECTANSWERS, scores.get(TypeOfPrompt.CORRECTANSWERS) + correctScore);
 
         // 4. Scoring CREATION
-        double createScore = weights.getOrDefault("creer", 0.0) * 2.5;
+        double createScore = weights.getOrDefault("creer", 0.0) * 3.0;
         scores.put(TypeOfPrompt.CREATION, scores.get(TypeOfPrompt.CREATION) + createScore);
 
         // 5. Scoring FACTUALQUESTIONS
-        double questionScore = weights.getOrDefault("expliqu", 0.0) * 2.0 + weights.getOrDefault("question", 0.0) * 2.0;
+        double questionScore = weights.getOrDefault("expliqu", 0.0) * 2.5 + weights.getOrDefault("question", 0.0) * 2.5;
         if (profile.isQuestion()) {
-            questionScore += 2.5;
+            questionScore += 3.0;
         }
         scores.put(TypeOfPrompt.FACTUALQUESTIONS, scores.get(TypeOfPrompt.FACTUALQUESTIONS) + questionScore);
 
@@ -77,7 +77,7 @@ public class PromptClassifier {
         ConfidenceLevel level = maxProb >= 55.0 ? ConfidenceLevel.HIGH : (maxProb >= 35.0 ? ConfidenceLevel.MEDIUM : ConfidenceLevel.LOW);
 
         String justification = switch (topType) {
-            case CODE -> "Code ou technologies détectés (" + techStack + ")";
+            case CODE -> "Code, architecture ou technologies détectés (" + (techStack.isEmpty() ? "vocabulaire dev" : String.join(", ", techStack)) + ")";
             case TRANSLATE -> "Demande de traduction" + (langueCible.map(l -> " vers " + l).orElse(""));
             case CORRECTANSWERS -> "Mots-clés de correction / relecture dominants";
             case CREATION -> "Génération créative ou rédaction narrative";
