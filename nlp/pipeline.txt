@@ -4,8 +4,18 @@
 
                                 ┌──────────────────────────┐
                                 │   PROMPT UTILISATEUR     │
-                                │   (Texte brut depuis     │
-                                │    Menu.demanderPrompt)  │
+                                │   (Texte brut depuis CLI │
+                                │    ou Menu interactif)   │
+                                └─────────────┬────────────┘
+                                              │
+                                              ▼
+                                ┌──────────────────────────┐
+                                │ 0. ANALYSE DE SÉCURITÉ   │
+                                │    (SafetyAdvisor.java)  │
+                                │                          │
+                                │ • Mots-clés sensibles    │
+                                │ • Patterns de jailbreak  │
+                                │ • Avertissement préventif│
                                 └─────────────┬────────────┘
                                               │
                                               ▼
@@ -16,8 +26,8 @@
                                 │ • Restauration élisions  │
                                 │   (lavion -> l'avion...) │
                                 │ • Normalisation espaces  │
-                                │ • Nettoyage ponctuation  │
-                                │ • Passage en minuscules  │
+                                │ • Préservation C++, C#, @│
+                                │ • Suppression accents    │
                                 └─────────────┬────────────┘
                                               │
                                               ▼
@@ -28,7 +38,6 @@
                                 │ • Expressions multi-mots │
                                 │   (pas a pas, root cause)│
                                 │ • Découpage CamelCase    │
-                                │ • Suppression accents    │
                                 │ • Filtrage Stopwords     │
                                 │ • Dictionnaire de lemmes │
                                 │ • Racinisation suffixes  │
@@ -60,22 +69,14 @@
                                 │                          │
                                 │ G. Tokens BPE & Coûts    │
                                 │    (TokenCounter)        │
-                                └─────────────┬────────────┘
-                                              │
-                                              ▼
-                                ┌──────────────────────────┐
-                                │ 4. SCORING & QUALITÉ     │
-                                │ (PromptQualityScorer.java│
                                 │                          │
-                                │ • Clarté de la consigne  │
-                                │ • Richesse du contexte   │
-                                │ • Contraintes définies   │
-                                │ • Diagnostic score / 100 │
+                                │ H. Score de Qualité /100 │
+                                │    (PromptQualityScorer) │
                                 └─────────────┬────────────┘
                                               │
                                               ▼
                                 ┌──────────────────────────┐
-                                │ 5. CLASSIFICATION 7 ARCH.│
+                                │ 4. CLASSIFICATION 7 ARCH.│
                                 │  (PromptClassifier.java) │
                                 │                          │
                                 │ • Scoring sémantique     │
@@ -97,6 +98,6 @@
                                 │   (PromptProfile.java)   │
                                 │                          │
                                 │ ➔ Record immuable prêt   │
-                                │   pour le moteur Meta-   │
-                                │   Prompting (genPrompt/) │
+                                │   pour le Meta-Prompting │
+                                │   et le ModelRouter LLM  │
                                 └──────────────────────────┘

@@ -8,17 +8,26 @@
                                          │
                                          ▼
     ┌────────────────────────────────────────────────────────────────────────┐
-    │ 1. MODULE CLI & SAISIE INTERACTIVE (menu/Menu.java)                    │
+    │ 1. MODULE CLI & SAISIE INTERACTIVE (menu/Menu.java & cli/CliParser)   │
     ├────────────────────────────────────────────────────────────────────────┤
-    │ • Bannière d'accueil et invites de commande                            │
+    │ • Bannière sobre ASCII et invites de commande                          │
     │ • Saisie multiligne & support du copier-coller de code source          │
     │ • Validation par mot-clé (:done, :end) ou double retour à la ligne     │
+    │ • Parsing complet de 16 drapeaux de commande (-h, -v, -i, -c, -e, -m)  │
     │ • Gestion universelle des flux (clavier interactif ou stdin / pipe)    │
     └────────────────────────────────────┬───────────────────────────────────┘
                                          │
                                          ▼
     ┌────────────────────────────────────────────────────────────────────────┐
-    │ 2. PIPELINE D'ANALYSE SÉMANTIQUE NLP (nlp/Lemmatizer.java)             │
+    │ 2. ANALYSE PRÉVENTIVE DE SÉCURITÉ (nlp/SafetyAdvisor.java)             │
+    ├────────────────────────────────────────────────────────────────────────┤
+    │ • Détection des termes sensibles, attaques, secrets et jailbreaks      │
+    │ • Notification d'avertissement préventif non-bloquant                  │
+    └────────────────────────────────────┬───────────────────────────────────┘
+                                         │
+                                         ▼
+    ┌────────────────────────────────────────────────────────────────────────┐
+    │ 3. PIPELINE D'ANALYSE SÉMANTIQUE NLP (nlp/Lemmatizer.java)             │
     ├────────────────────────────────────────────────────────────────────────┤
     │ • Sanitization : Restauration d'élisions (lavion -> l'avion), accents  │
     │ • Tokenisation : Expressions multi-mots (pas a pas), CamelCase, lemmes │
@@ -26,17 +35,17 @@
     │ • Extraction Domaine & Persona Expert (DomainExtractor.java)           │
     │ • Décomposition flux de pensée & Sous-Objectifs (QuestionDecomposer)   │
     │ • Diagnostic Qualité & Estimations Tokens BPE (PromptQualityScorer)    │
-    │ • Classification 7 Archétypes Universels (PromptClassifier.java)       │
+    │ • Classification 7 Archétypes Universels Softmax (PromptClassifier)   │
     │                                                                        │
     │ ➔ Production du record immuable : PromptProfile                        │
     └────────────────────────────────────┬───────────────────────────────────┘
                                          │
                                          ▼
     ┌────────────────────────────────────────────────────────────────────────┐
-    │ 3. MOTEUR DE GÉNÉRATION META-PROMPTING (gen/MetaPromptEngine.java)     │
+    │ 4. MOTEUR DE GÉNÉRATION META-PROMPTING (gen/MetaPromptEngine.java)     │
     ├────────────────────────────────────────────────────────────────────────┤
     │ • Routage fin vers le sous-template Markdown (TemplateLoader.java)     │
-    │ • Sélection parmi les 7 Archétypes (genPrompt/) :                      │
+    │ • Sélection parmi les 7 Archétypes (genPrompt/ - 18 templates)         │
     │   - learning/        (guide_debutant, feynman_learning)                │
     │   - architecture/    (frontend_ui, architecture_systeme, code_gen)     │
     │   - troubleshooting/ (audit_review, refactor_clean, root_cause_debug)  │
@@ -45,16 +54,22 @@
     │   - comparison/      (aide_decision, matrice_comparative)              │
     │   - concept/         (concept_encyclopedique, vulgarisation_feynman)   │
     │ • Injection dynamique du contexte Mustache (5 règles d'optimisation)   │
-    │ • Compilation et rendu haute performance sans échappement HTML         │
+    │ • Adaptation ciblée pour le LLM (-a claude/gpt/deepseek/gemini/llama)  │
+    │ • Formats de sortie multiples (TXT, Markdown, JSON, Presse-papiers)    │
     │                                                                        │
     │ ➔ Production du Super Prompt Markdown optimisé                         │
     └────────────────────────────────────┬───────────────────────────────────┘
                                          │
-                                         ▼
+                                         ▼ (Optionnel : si -e / --exec activé)
     ┌────────────────────────────────────────────────────────────────────────┐
-    │ 4. AFFICHAGE & RESTITUTION (Main.java)                                 │
+    │ 5. INFÉRENCE LOCALE & LLM EXPERT (llm/LlmEngine.java)                  │
     ├────────────────────────────────────────────────────────────────────────┤
-    │ • Bloc 1 : Métriques d'analyse (nature, confiance, domaine, tokens...) │
-    │ • Bloc 2 : Prompt enrichi prêt à copier-coller dans n'importe quel LLM │
-    │ • Boucle interactive continue jusqu'à saisie de 'q' / 'quit'           │
+    │ • Routage intelligent vers le SLM expert (ModelRouter.java) :          │
+    │   - Qwen 2.5 Coder (1.5B)      -> Code, Architecture, Debugging        │
+    │   - Gemma 2 (2B)               -> Français, Pédagogie, Rédaction       │
+    │   - DeepSeek R1 Distill (1.5B) -> Raisonnement logique, Comparatifs    │
+    │   - SmolLM2 (1.7B)             -> Synthèse ultra-rapide                │
+    │ • Onboarding débutants sobre & téléchargement GGUF (ModelInstaller)    │
+    │ • Exécution d'inférence native locale (LocalLlmBackend)                │
+    │ • Streaming console en temps réel et métriques de débit (tokens/sec)   │
     └────────────────────────────────────────────────────────────────────────┘

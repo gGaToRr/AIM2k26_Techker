@@ -1,0 +1,64 @@
+================================================================================
+              PIPELINE DU MOTEUR D'INFÉRENCE LOCALE & SLM (llm)
+================================================================================
+
+                                ┌──────────────────────────┐
+                                │   SUPER PROMPT + PROFIL  │
+                                │   (MetaPromptEngine.java │
+                                │    & PromptProfile.java) │
+                                └─────────────┬────────────┘
+                                              │
+                                              ▼
+                                ┌──────────────────────────┐
+                                │ 1. ROUTEUR INTELLIGENT   │
+                                │    (ModelRouter.java)    │
+                                │                          │
+                                │ Analyse du profil NLP :  │
+                                │ • Code / Stack technique │
+                                │   -> Qwen 2.5 Coder 1.5B │
+                                │ • Raisonnement / Pas-à-pas│
+                                │   -> DeepSeek R1 1.5B    │
+                                │ • Pédagogie / Rédaction  │
+                                │   -> Gemma 2 2B          │
+                                │ • Question courte / direct│
+                                │   -> SmolLM2 1.7B        │
+                                │ • Override manuel (--model)
+                                └─────────────┬────────────┘
+                                              │
+                                              ▼
+                                ┌──────────────────────────┐
+                                │ 2. GESTION DU MODÈLE     │
+                                │    (ModelInstaller.java) │
+                                │                          │
+                                │ • Vérification présence  │
+                                │   dans le dossier models/│
+                                │ • Si absent : onboarding │
+                                │   débutants sobre ASCII  │
+                                │ • Demande d'autorisation │
+                                │ • Téléchargement HTTP    │
+                                │   avec barre progression │
+                                └─────────────┬────────────┘
+                                              │
+                                              ▼
+                                ┌──────────────────────────┐
+                                │ 3. INFÉRENCE LOCALE      │
+                                │   (LocalLlmBackend.java) │
+                                │                          │
+                                │ • Détection runner natif │
+                                │   (llama-cli / GGUF)     │
+                                │ • Mode autonome sécurisé │
+                                │ • Injection du prompt    │
+                                │ • Paramètres (temp, max) │
+                                └─────────────┬────────────┘
+                                              │
+                                              ▼
+                                ┌──────────────────────────┐
+                                │ 4. STREAMING & MÉTRIQUES │
+                                │    (LlmEngine.java)      │
+                                │                          │
+                                │ • Affichage token par    │
+                                │   token en temps réel    │
+                                │ • Calcul de la latence   │
+                                │ • Débit (tokens/seconde) │
+                                │ ➔ Restitution finale     │
+                                └──────────────────────────┘
