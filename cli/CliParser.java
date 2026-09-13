@@ -57,88 +57,88 @@ public class CliParser {
             // Instruction / Prompt direct (-i ou --instruction)
             else if (arg.equals("-i") || arg.equals("--instruction")) {
                 if (i + 1 < args.length) {
-                    builder.instruction(args[++i]);
+                    builder.instruction(args[++i].trim());
                 }
             } else if (arg.startsWith("--instruction=")) {
-                builder.instruction(arg.substring("--instruction=".length()));
+                builder.instruction(arg.substring("--instruction=".length()).trim());
             } else if (arg.startsWith("-i=")) {
-                builder.instruction(arg.substring("-i=".length()));
+                builder.instruction(arg.substring("-i=".length()).trim());
             }
             // Injection de code ou fichier source (-c ou --code)
             else if (arg.equals("-c") || arg.equals("--code")) {
                 if (i + 1 < args.length) {
-                    builder.code(resoudreContenuCode(args[++i]));
+                    builder.code(resoudreContenuCode(args[++i].trim()));
                 }
             } else if (arg.startsWith("--code=")) {
-                builder.code(resoudreContenuCode(arg.substring("--code=".length())));
+                builder.code(resoudreContenuCode(arg.substring("--code=".length()).trim()));
             } else if (arg.startsWith("-c=")) {
-                builder.code(resoudreContenuCode(arg.substring("-c=".length())));
+                builder.code(resoudreContenuCode(arg.substring("-c=".length()).trim()));
             }
             // Fichier source (-f ou --file)
             else if (arg.equals("-f") || arg.equals("--file")) {
                 if (i + 1 < args.length) {
-                    String chemin = args[++i];
+                    String chemin = args[++i].trim();
                     builder.filePath(chemin);
                     builder.instruction(resoudreContenuFichier(chemin));
                 }
             } else if (arg.startsWith("--file=")) {
-                String chemin = arg.substring("--file=".length());
+                String chemin = arg.substring("--file=".length()).trim();
                 builder.filePath(chemin);
                 builder.instruction(resoudreContenuFichier(chemin));
             } else if (arg.startsWith("-f=")) {
-                String chemin = arg.substring("-f=".length());
+                String chemin = arg.substring("-f=".length()).trim();
                 builder.filePath(chemin);
                 builder.instruction(resoudreContenuFichier(chemin));
             }
             // Agent cible (-a ou --agent)
             else if (arg.equals("-a") || arg.equals("--agent")) {
                 if (i + 1 < args.length) {
-                    builder.agent(args[++i]);
+                    builder.agent(args[++i].trim());
                 }
             } else if (arg.startsWith("--agent=")) {
-                builder.agent(arg.substring("--agent=".length()));
+                builder.agent(arg.substring("--agent=".length()).trim());
             } else if (arg.startsWith("-a=")) {
-                builder.agent(arg.substring("-a=".length()));
+                builder.agent(arg.substring("-a=".length()).trim());
             }
             // Format de sortie / fichier (-o ou --output)
             else if (arg.equals("-o") || arg.equals("--output")) {
                 if (i + 1 < args.length) {
-                    builder.output(args[++i]);
+                    builder.output(args[++i].trim());
                 }
             } else if (arg.startsWith("--output=")) {
-                builder.output(arg.substring("--output=".length()));
+                builder.output(arg.substring("--output=".length()).trim());
             } else if (arg.startsWith("-o=")) {
-                builder.output(arg.substring("-o=".length()));
+                builder.output(arg.substring("-o=".length()).trim());
             }
             // Forçage de template (-t ou --template)
             else if (arg.equals("-t") || arg.equals("--template")) {
                 if (i + 1 < args.length) {
-                    builder.template(args[++i]);
+                    builder.template(args[++i].trim());
                 }
             } else if (arg.startsWith("--template=")) {
-                builder.template(arg.substring("--template=".length()));
+                builder.template(arg.substring("--template=".length()).trim());
             } else if (arg.startsWith("-t=")) {
-                builder.template(arg.substring("-t=".length()));
+                builder.template(arg.substring("-t=".length()).trim());
             }
             // Forçage de domaine (-d ou --domain)
             else if (arg.equals("-d") || arg.equals("--domain")) {
                 if (i + 1 < args.length) {
-                    builder.domain(args[++i]);
+                    builder.domain(args[++i].trim());
                 }
             } else if (arg.startsWith("--domain=")) {
-                builder.domain(arg.substring("--domain=".length()));
+                builder.domain(arg.substring("--domain=".length()).trim());
             } else if (arg.startsWith("-d=")) {
-                builder.domain(arg.substring("-d=".length()));
+                builder.domain(arg.substring("-d=".length()).trim());
             }
             // Langue cible (-l ou --language)
             else if (arg.equals("-l") || arg.equals("--language")) {
                 if (i + 1 < args.length) {
-                    builder.language(args[++i]);
+                    builder.language(args[++i].trim());
                 }
             } else if (arg.startsWith("--language=")) {
-                builder.language(arg.substring("--language=".length()));
+                builder.language(arg.substring("--language=".length()).trim());
             } else if (arg.startsWith("-l=")) {
-                builder.language(arg.substring("-l=".length()));
+                builder.language(arg.substring("-l=".length()).trim());
             }
             // Arguments positionnels (non préfixés par un tiret)
             else if (!arg.startsWith("-")) {

@@ -171,10 +171,21 @@ public class DomainExtractor {
             return new DomainInfo("Général", sujet != null ? sujet : "", "Tu es un Assistant IA Expert et Pédagogue de haut niveau.", false);
         }
 
-        String dLower = nomDomaine.toLowerCase().trim();
+        String normalized = Sanitzer.supprimerAccents(nomDomaine.toLowerCase().trim());
+        // 1. Correspondance par nom de domaine exact ou préfixe
         for (DomainDefinition def : DOMAIN_REGISTRY) {
-            if (def.name().toLowerCase().contains(dLower) || dLower.contains(def.name().toLowerCase())) {
+            String defNorm = Sanitzer.supprimerAccents(def.name().toLowerCase());
+            if (defNorm.equals(normalized) || defNorm.startsWith(normalized) || normalized.startsWith(defNorm)) {
                 return new DomainInfo(def.name(), (sujet != null && !sujet.isBlank()) ? sujet : def.name(), def.personaTemplate(), true);
+            }
+        }
+
+        // 2. Correspondance par mot-clé isolé exact
+        for (DomainDefinition def : DOMAIN_REGISTRY) {
+            for (String kw : def.keywords()) {
+                if (Sanitzer.supprimerAccents(kw).equals(normalized)) {
+                    return new DomainInfo(def.name(), (sujet != null && !sujet.isBlank()) ? sujet : def.name(), def.personaTemplate(), true);
+                }
             }
         }
 

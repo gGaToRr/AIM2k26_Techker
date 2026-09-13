@@ -32,6 +32,10 @@ public class AllTestSuite {
         // 3. Tests Menu & Arguments CLI
         runner.registerTestClass(MenuTest.class);
         runner.registerTestClass(test.cli.CliParserTest.class);
+        runner.registerTestClass(test.cli.CliSyntaxParsingTest.class);
+        runner.registerTestClass(test.cli.CliOutputAndExportTest.class);
+        runner.registerTestClass(test.cli.CliSemanticOverridesTest.class);
+        runner.registerTestClass(test.cli.CliRobustnessAndEdgeCasesTest.class);
 
         // 4. Tests d'Intégration End-to-End
         runner.registerTestClass(EndToEndIntegrationTest.class);
