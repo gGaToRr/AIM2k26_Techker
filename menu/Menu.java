@@ -9,7 +9,15 @@ public class Menu {
     private final Scanner scanner;
 
     public Menu() {
-        this.scanner = new Scanner(System.in);
+        this(new Scanner(System.in));
+    }
+
+    public Menu(Scanner scanner) {
+        this.scanner = scanner;
+    }
+
+    public Menu(java.io.InputStream inputStream) {
+        this(new Scanner(inputStream));
     }
 
     // Message d'accueil du script
