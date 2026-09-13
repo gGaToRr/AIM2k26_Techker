@@ -121,6 +121,7 @@ public class MetaPromptEngine {
         clean = clean.replaceAll("(?i)^(salut|bonjour|hello|hey|bonsoir|alors)[,\\s]+", "");
         clean = clean.replaceAll("(?i)(et c est tout|et c tout|c est tout|merci beaucoup|merci d avance|merci|xd|stp|s il te plait|s'il te plaît|s'il te plait)[.!\\s]*$", "");
 
+        clean = nlp.Sanitzer.nettoyerEtFormaterTexte(clean);
         return clean.trim();
     }
 
