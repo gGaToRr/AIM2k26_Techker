@@ -5,6 +5,7 @@ import test.gen.MetaPromptEngineTest;
 import test.gen.TemplateLoaderTest;
 import test.gen.TemplateSyntaxValidationTest;
 import test.integration.EndToEndIntegrationTest;
+import test.llm.*;
 import test.menu.MenuTest;
 import test.nlp.*;
 
@@ -38,7 +39,14 @@ public class AllTestSuite {
         runner.registerTestClass(test.cli.CliSemanticOverridesTest.class);
         runner.registerTestClass(test.cli.CliRobustnessAndEdgeCasesTest.class);
 
-        // 4. Tests d'Intégration End-to-End
+        // 4. Tests Inférence Locale & Routage LLM
+        runner.registerTestClass(ModelTypeTest.class);
+        runner.registerTestClass(ModelRouterTest.class);
+        runner.registerTestClass(LlmConfigTest.class);
+        runner.registerTestClass(ModelInstallerTest.class);
+        runner.registerTestClass(LlmEngineTest.class);
+
+        // 5. Tests d'Intégration End-to-End
         runner.registerTestClass(EndToEndIntegrationTest.class);
 
         boolean success = runner.runAll();

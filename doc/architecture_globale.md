@@ -5,7 +5,7 @@ Ce document présente la vue d'ensemble du flux de traitement bout en bout (**En
 ---
 
 ## 🎯 Objectif du Projet
-Le but de cet outil est de transformer n'importe quel prompt utilisateur brut, vague ou imparfait (souvent tapé à la va-vite) en un **Meta-Prompt d'élite**, structuré en Markdown, enrichi de directives d'experts, de personas adaptés et de contraintes méthodologiques prêtes pour les LLMs (GPT-4o, Claude 3.5, DeepSeek, Gemini, LLaMA-3).
+Le but de cet outil est de transformer n'importe quel prompt utilisateur brut, vague ou imparfait (souvent tapé à la va-vite) en un **Meta-Prompt d'élite**, structuré en Markdown, enrichi de directives d'experts, de personas adaptés et de contraintes méthodologiques prêtes pour les LLMs (GPT-4o, Claude 3.5, DeepSeek, Gemini, LLaMA-3), puis optionnellement d'**exécuter ce prompt directement sur un LLM léger local** (100% privé et hors-ligne).
 
 ---
 
@@ -18,8 +18,8 @@ Le but de cet outil est de transformer n'importe quel prompt utilisateur brut, v
                                      │
                                      ▼
                       [ 1. Saisie & Parsing CLI ]
-               - Arguments courts/longs (-h, -v, -i, -c, -V...)
-               - Détection mode interactif / batch
+               - Arguments courts/longs (-h, -v, -i, -c, -e, -m, -V...)
+               - Détection mode interactif / direct
                - Lecture de fichiers éventuels (-f, -c)
                                      │
                                      ▼
@@ -59,13 +59,23 @@ Le but de cet outil est de transformer n'importe quel prompt utilisateur brut, v
                - Formatage / Export JSON (-o json / -o fichier.json)
                - Export fichier Markdown (-o fichier.md)
                - Copie presse-papiers (-C)
+                                     │
+                                     ▼ (si -e ou --exec activé)
+               [ 7. Module Inférence Locale & LLM Expert ]
+               ┌───────────────────────────────────────────┐
+               │ a. ModelRouter : routage sémantique       │
+               │ b. ModelInstaller : onboarding noob & DL  │
+               │ c. LocalLlmBackend : inférence native     │
+               │ d. Streaming console & métriques (TPS)    │
+               └───────────────────────────────────────────┘
 ```
 
 ---
 
-## 🧩 Les 4 Grands Modules du Projet
+## 🧩 Les 5 Grands Modules du Projet
 
 1. **Module `menu` & `cli`** : Gère les interactions utilisateur, la saisie multiligne robuste et le parsing exhaustif de tous les drapeaux de commande.
 2. **Module `nlp`** : Analyse sémantiquement le texte sans intelligence artificielle externe (100% algorithmique locale déterministe).
 3. **Module `gen` & `genPrompt`** : Contient le moteur de templating et les 18 matrices de prompts classées selon les 7 Archétypes Universels.
-4. **Module `test`** : Suite de tests automatisés TDD (101 tests) garantissant une fiabilité totale et une régression zéro.
+4. **Module `llm`** : Routeur intelligent et moteur d'inférence locale pour exécuter le prompt sur des modèles experts légers (Qwen, Gemma, DeepSeek, SmolLM).
+5. **Module `test`** : Suite de tests automatisés TDD (129 tests) garantissant une fiabilité totale et une régression zéro.

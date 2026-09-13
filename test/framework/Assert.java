@@ -37,6 +37,12 @@ public class Assert {
         }
     }
 
+    public static void assertNull(Object object, String message) {
+        if (object != null) {
+            throw new AssertionError("ÉCHEC ASSERTION: " + message + " (l'objet n'est pas null: " + object + ")");
+        }
+    }
+
     public static void assertContains(String text, String substring, String message) {
         if (text == null || !text.contains(substring)) {
             throw new AssertionError("ÉCHEC ASSERTION: " + message + "\n  Texte complet: <" + text + ">\n  Devait contenir: <" + substring + ">");

@@ -13,7 +13,7 @@ import java.util.Map;
 // Analyseur syntaxique d'arguments CLI et formateur d'aide/verbose
 public class CliParser {
 
-    public static final String VERSION = "1.0.0";
+    public static final String VERSION = "1.1.0";
     public static final String AUTHOR = "Pierre Untersinger (@kaets0ner / gGaToRr)";
     public static final String TOOL_NAME = "Prompting tool 4 a better work from AI (AIM2k26)";
 
@@ -53,6 +53,20 @@ public class CliParser {
             // Presse-papiers
             else if (arg.equals("-C") || arg.equals("--clipboard")) {
                 builder.clipboard(true);
+            }
+            // Exécution locale par LLM embarqué (-e ou --exec)
+            else if (arg.equals("-e") || arg.equals("--exec")) {
+                builder.exec(true);
+            }
+            // Spécification de modèle local (-m ou --model)
+            else if (arg.equals("-m") || arg.equals("--model")) {
+                if (i + 1 < args.length) {
+                    builder.model(args[++i].trim());
+                }
+            } else if (arg.startsWith("--model=")) {
+                builder.model(arg.substring("--model=".length()).trim());
+            } else if (arg.startsWith("-m=")) {
+                builder.model(arg.substring("-m=".length()).trim());
             }
             // Instruction / Prompt direct (-i ou --instruction)
             else if (arg.equals("-i") || arg.equals("--instruction")) {
@@ -204,6 +218,10 @@ public class CliParser {
                   -c, --code <snippet|fichier>   Injecter un extrait de code ou le contenu d'un fichier source.
                   -V, --verbose                  Activer le mode verbeux détaillant l'analyse NLP et les métriques.
 
+                Inférence Locale & LLMs Embarqués (100% Hors-ligne) :
+                  -e, --exec                     Exécuter directement le prompt optimisé avec le LLM local expert.
+                  -m, --model <nom>              Forcer un modèle local (auto, qwen, gemma, deepseek, smollm).
+
                 Options avancées & personnalisation :
                   -a, --agent <nom>              Adapter le format pour un LLM (claude, gpt, deepseek, gemini, llama).
                   -t, --template <nom>           Forcer un template spécifique (ex: architecture_systeme, feynman).
@@ -216,8 +234,9 @@ public class CliParser {
                   -C, --clipboard                Copier directement le résultat dans le presse-papiers.
 
                 Exemples :
-                  java -cp "bin:lib/*" Main -i "Explique le tri fusion en Java" -V
-                  java -cp "bin:lib/*" Main -i "Trouve le bug" -c "src/Utils.java"
+                  java -cp "bin:lib/*" Main -i "Explique le tri fusion en Java" -e
+                  java -cp "bin:lib/*" Main -i "Trouve le bug" -c "src/Utils.java" -e -m qwen
+                  java -cp "bin:lib/*" Main -i "Compare Postgres et MongoDB" -e -m deepseek
                   java -cp "bin:lib/*" Main -h
                 """;
     }
@@ -288,7 +307,7 @@ public class CliParser {
         // 7. Tokens & Coûts API
         double baseCost = profile.tokenMetrics().estimatedCostDollars();
         sb.append("\n[7. MÉTRIQUES DE TOKENS & ESTIMATION DES COÛTS]\n");
-        sb.append("  • Caractères       : ").append(profile.tokenMetrics().characterCount()).append("\n");
+        sb.append("  • Caractètres       : ").append(profile.tokenMetrics().characterCount()).append("\n");
         sb.append("  • Mots             : ").append(profile.tokenMetrics().wordCount()).append("\n");
         sb.append("  • Tokens BPE est.  : ").append(profile.tokenMetrics().estimatedTokens()).append("\n");
         sb.append("  • Context Fitness  : ").append(profile.tokenMetrics().contextWindowFitness()).append("\n");

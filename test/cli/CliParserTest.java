@@ -33,12 +33,14 @@ public class CliParserTest {
         Assert.assertContains(help, "*  Prompting tool 4 a better work from AI  *", "La bannière doit contenir le titre exact du projet");
         Assert.assertContains(help, "*        MANUEL D'UTILISATION (CLI)        *", "La bannière doit mentionner le manuel CLI");
 
-        // Validation de la présence de la description de tous les 14 arguments
+        // Validation de la présence de la description des arguments
         Assert.assertContains(help, "-h, --help", "L'aide doit documenter -h, --help");
         Assert.assertContains(help, "-v, --version", "L'aide doit documenter -v, --version");
         Assert.assertContains(help, "-i, --instruction", "L'aide doit documenter -i, --instruction");
         Assert.assertContains(help, "-c, --code", "L'aide doit documenter -c, --code");
         Assert.assertContains(help, "-V, --verbose", "L'aide doit documenter -V, --verbose");
+        Assert.assertContains(help, "-e, --exec", "L'aide doit documenter -e, --exec");
+        Assert.assertContains(help, "-m, --model", "L'aide doit documenter -m, --model");
         Assert.assertContains(help, "-a, --agent", "L'aide doit documenter -a, --agent");
         Assert.assertContains(help, "-o, --output", "L'aide doit documenter -o, --output");
         Assert.assertContains(help, "-t, --template", "L'aide doit documenter -t, --template");
@@ -59,7 +61,7 @@ public class CliParserTest {
         Assert.assertTrue(argsLong.isVersion(), "Le flag --version doit activer isVersion");
 
         String versionInfo = CliParser.getVersionInfo();
-        Assert.assertContains(versionInfo, "1.0.0", "Les infos de version doivent contenir la version 1.0.0");
+        Assert.assertContains(versionInfo, "1.1.0", "Les infos de version doivent contenir la version 1.1.0");
         Assert.assertContains(versionInfo, "Pierre Untersinger", "Les infos doivent mentionner l'auteur");
         Assert.assertContains(versionInfo, "@kaets0ner", "Les infos doivent mentionner le compte GitHub");
         Assert.assertNotContains(versionInfo, "@gmail", "Aucune adresse email ne doit figurer dans les métadonnées");

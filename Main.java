@@ -2,6 +2,7 @@ import cli.CliArgs;
 import cli.CliClipboard;
 import cli.CliParser;
 import gen.MetaPromptEngine;
+import llm.LlmEngine;
 import menu.Menu;
 import nlp.Lemmatizer;
 import nlp.PromptProfile;
@@ -119,7 +120,7 @@ public class Main {
             }
         }
 
-        // 6. Affichage du résultat
+        // 6. Affichage du prompt optimisé
         if (cliArgs.isRaw() || isJson) {
             // Mode brut pour pipeline Unix ou flux JSON
             System.out.println(contenuFinal);
@@ -150,6 +151,13 @@ public class Main {
             System.out.println("\n--- [2. PROMPT OPTIMISÉ POUR LE LLM] ---\n");
             System.out.println(contenuFinal);
             System.out.println("\n----------------------------------------");
+        }
+
+        // 7. Exécution locale par LLM si demandée (-e / --exec)
+        if (cliArgs.isExec()) {
+            LlmEngine engine = new LlmEngine();
+            boolean isInteractive = (menu != null);
+            engine.execute(promptOptimise, profil, cliArgs.model(), isInteractive);
         }
 
         // Fermeture du scanner si ouvert
