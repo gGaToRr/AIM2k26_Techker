@@ -44,6 +44,48 @@ public class TemplateLoader {
         return fallbackTemplate(type);
     }
 
+    // Charge un template spécifique par son nom ou son chemin (utilisé pour le flag -t/--template)
+    public static java.util.Optional<String> chargerTemplateParNom(String nom) {
+        if (nom == null || nom.isBlank()) return java.util.Optional.empty();
+        String clean = nom.trim().replace(".md", "");
+
+        // 1. Recherche par chemin direct
+        Path directPath = Path.of(nom.endsWith(".md") ? nom : nom + ".md");
+        if (Files.exists(directPath) && Files.isRegularFile(directPath)) {
+            try {
+                return java.util.Optional.of(Files.readString(directPath));
+            } catch (IOException ignored) {}
+        }
+
+        // 2. Recherche dans genPrompt/*/<clean>.md
+        String[] dossiers = {"learning", "architecture", "troubleshooting", "creation", "protocol", "comparison", "concept"};
+        for (String dossier : dossiers) {
+            Path p = Path.of("genPrompt", dossier, clean + ".md");
+            if (Files.exists(p)) {
+                try {
+                    return java.util.Optional.of(Files.readString(p));
+                } catch (IOException ignored) {}
+            }
+        }
+
+        // 3. Recherche par correspondance souple (ex: "feynman" -> "feynman_learning.md" ou "vulgarisation_feynman.md")
+        for (String dossier : dossiers) {
+            Path dir = Path.of("genPrompt", dossier);
+            if (Files.isDirectory(dir)) {
+                try (var stream = Files.list(dir)) {
+                    for (Path file : stream.toList()) {
+                        String fname = file.getFileName().toString().replace(".md", "");
+                        if (fname.equalsIgnoreCase(clean) || fname.toLowerCase().contains(clean.toLowerCase())) {
+                            return java.util.Optional.of(Files.readString(file));
+                        }
+                    }
+                } catch (IOException ignored) {}
+            }
+        }
+
+        return java.util.Optional.empty();
+    }
+
     // Template de secours universel au cas où le fichier n'est pas trouvé
     private static String fallbackTemplate(TypeOfPrompt type) {
         return """

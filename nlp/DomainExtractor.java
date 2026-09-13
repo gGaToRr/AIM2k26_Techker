@@ -165,6 +165,23 @@ public class DomainExtractor {
         return new DomainInfo("Général", "", "Tu es un Assistant IA Expert et Pédagogue de haut niveau.", false);
     }
 
+    // Crée un profil de domaine forcé par l'utilisateur (flag -d/--domain)
+    public static DomainInfo creerDomaineForce(String nomDomaine, String sujet) {
+        if (nomDomaine == null || nomDomaine.isBlank()) {
+            return new DomainInfo("Général", sujet != null ? sujet : "", "Tu es un Assistant IA Expert et Pédagogue de haut niveau.", false);
+        }
+
+        String dLower = nomDomaine.toLowerCase().trim();
+        for (DomainDefinition def : DOMAIN_REGISTRY) {
+            if (def.name().toLowerCase().contains(dLower) || dLower.contains(def.name().toLowerCase())) {
+                return new DomainInfo(def.name(), (sujet != null && !sujet.isBlank()) ? sujet : def.name(), def.personaTemplate(), true);
+            }
+        }
+
+        String personaCustom = "Tu es un Spécialiste Senior, Consultant et Pédagogue d'Élite en " + nomDomaine.trim() + ".";
+        return new DomainInfo(nomDomaine.trim(), (sujet != null && !sujet.isBlank()) ? sujet : nomDomaine.trim(), personaCustom, true);
+    }
+
     // Extrait le groupe nominal principal après le verbe d'action
     private static String extraireSujetPivot(String text) {
         for (Pattern pattern : TOPIC_EXTRACTION_PATTERNS) {
