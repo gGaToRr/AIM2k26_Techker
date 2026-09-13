@@ -93,6 +93,14 @@ public class DomainExtractor {
             )
     );
 
+    // Patterns de mots-clés précompilés par domaine (aligné par index sur DOMAIN_REGISTRY), construits
+    // une seule fois au chargement de la classe : évite de recompiler ~200 regex à chaque appel de analyser().
+    private static final List<List<Pattern>> DOMAIN_KEYWORD_PATTERNS = DOMAIN_REGISTRY.stream()
+            .map(def -> def.keywords().stream()
+                    .map(kw -> Pattern.compile("(?i)(?<![a-zA-Z0-9])" + Pattern.quote(kw) + "(?![a-zA-Z0-9])"))
+                    .toList())
+            .toList();
+
     // Modèles d'extraction d'intention et de sujet pivot
     private static final List<Pattern> TOPIC_EXTRACTION_PATTERNS = List.of(
             // Intentions d'apprentissage / maîtrise / explications
@@ -130,11 +138,11 @@ public class DomainExtractor {
         DomainDefinition matchingDomain = null;
         int maxScore = 0;
 
-        for (DomainDefinition def : DOMAIN_REGISTRY) {
+        for (int i = 0; i < DOMAIN_REGISTRY.size(); i++) {
+            DomainDefinition def = DOMAIN_REGISTRY.get(i);
             int score = 0;
-            for (String kw : def.keywords()) {
-                String regex = "(?i)(?<![a-zA-Z0-9])" + Pattern.quote(kw) + "(?![a-zA-Z0-9])";
-                if (Pattern.compile(regex).matcher(lower).find()) {
+            for (Pattern p : DOMAIN_KEYWORD_PATTERNS.get(i)) {
+                if (p.matcher(lower).find()) {
                     score += 2;
                 }
             }

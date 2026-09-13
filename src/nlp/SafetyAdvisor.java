@@ -6,28 +6,47 @@ import java.util.regex.Pattern;
 // Détecte les termes susceptibles de déclencher les filtres de sécurité des LLMs (OpenAI, Anthropic, Google)
 public class SafetyAdvisor {
 
-    // Liste de mots et thématiques à haut risque de déclenchement de filtres
-    private static final Map<String, String> TERMES_SENSIBLES = Map.ofEntries(
-            // Armes & Explosifs
-            Map.entry("bombe", "Matières dangereuses / Explosifs"),
-            Map.entry("explosif", "Matières dangereuses / Explosifs"),
-            Map.entry("detonateur", "Matières dangereuses / Explosifs"),
-            Map.entry("tnt", "Matières dangereuses / Explosifs"),
-            Map.entry("arme a feu", "Armes"),
+    // Règle de détection : terme sensible, sa catégorie et son pattern précompilé
+    private record TermRule(String keyword, String category, Pattern pattern) {}
 
-            // Cyberattaques & Malwares
-            Map.entry("ransomware", "Malware / Cyberattaque"),
-            Map.entry("keylogger", "Malware / Cyberattaque"),
-            Map.entry("trojan", "Malware / Cyberattaque"),
-            Map.entry("ddos", "Cyberattaque"),
-            Map.entry("exploit zero day", "Cyberattaque"),
+    // Liste de mots et thématiques à haut risque de déclenchement de filtres.
+    // LinkedHashMap (et non Map.ofEntries) pour garantir un ordre d'itération stable : Map.ofEntries
+    // randomise son ordre à chaque lancement de JVM, ce qui rendait l'ordre des termes cités dans le
+    // message d'avertissement imprévisible d'une exécution à l'autre pour un même prompt.
+    private static final Map<String, String> TERMES_SENSIBLES = new LinkedHashMap<>();
 
-            // Tentatives de Jailbreak
-            Map.entry("ignore previous instructions", "Tentative de Jailbreak"),
-            Map.entry("ignore toute instruction precedente", "Tentative de Jailbreak"),
-            Map.entry("dan mode", "Tentative de Jailbreak"),
-            Map.entry("jailbreak", "Tentative de Jailbreak")
-    );
+    // Règles précompilées, construites une seule fois au chargement de la classe
+    // (évite de recompiler chaque regex à chaque appel de analyser)
+    private static final List<TermRule> REGLES;
+
+    static {
+        // Armes & Explosifs
+        TERMES_SENSIBLES.put("bombe", "Matières dangereuses / Explosifs");
+        TERMES_SENSIBLES.put("explosif", "Matières dangereuses / Explosifs");
+        TERMES_SENSIBLES.put("detonateur", "Matières dangereuses / Explosifs");
+        TERMES_SENSIBLES.put("tnt", "Matières dangereuses / Explosifs");
+        TERMES_SENSIBLES.put("arme a feu", "Armes");
+
+        // Cyberattaques & Malwares
+        TERMES_SENSIBLES.put("ransomware", "Malware / Cyberattaque");
+        TERMES_SENSIBLES.put("keylogger", "Malware / Cyberattaque");
+        TERMES_SENSIBLES.put("trojan", "Malware / Cyberattaque");
+        TERMES_SENSIBLES.put("ddos", "Cyberattaque");
+        TERMES_SENSIBLES.put("exploit zero day", "Cyberattaque");
+
+        // Tentatives de Jailbreak
+        TERMES_SENSIBLES.put("ignore previous instructions", "Tentative de Jailbreak");
+        TERMES_SENSIBLES.put("ignore toute instruction precedente", "Tentative de Jailbreak");
+        TERMES_SENSIBLES.put("dan mode", "Tentative de Jailbreak");
+        TERMES_SENSIBLES.put("jailbreak", "Tentative de Jailbreak");
+
+        List<TermRule> regles = new ArrayList<>(TERMES_SENSIBLES.size());
+        for (Map.Entry<String, String> entry : TERMES_SENSIBLES.entrySet()) {
+            Pattern p = Pattern.compile("(?i)(?<![a-zA-Z0-9])" + Pattern.quote(entry.getKey()) + "(?![a-zA-Z0-9])");
+            regles.add(new TermRule(entry.getKey(), entry.getValue(), p));
+        }
+        REGLES = Collections.unmodifiableList(regles);
+    }
 
     public record SafetyReport(
             boolean containsSensitiveTerms,
@@ -46,12 +65,10 @@ public class SafetyAdvisor {
         List<String> detectes = new ArrayList<>();
         Set<String> categories = new LinkedHashSet<>();
 
-        for (Map.Entry<String, String> entry : TERMES_SENSIBLES.entrySet()) {
-            String motCle = entry.getKey();
-            Pattern p = Pattern.compile("(?i)(?<![a-zA-Z0-9])" + Pattern.quote(motCle) + "(?![a-zA-Z0-9])");
-            if (p.matcher(lower).find()) {
-                detectes.add(motCle);
-                categories.add(entry.getValue());
+        for (TermRule regle : REGLES) {
+            if (regle.pattern().matcher(lower).find()) {
+                detectes.add(regle.keyword());
+                categories.add(regle.category());
             }
         }
 
@@ -59,7 +76,7 @@ public class SafetyAdvisor {
             return new SafetyReport(false, List.of(), List.of(), "");
         }
 
-        String warning = "⚠️ Attention : ce prompt contient des termes sensibles (" + String.join(", ", detectes) + 
+        String warning = "⚠️ Attention : ce prompt contient des termes sensibles (" + String.join(", ", detectes) +
                 ") susceptibles d'être bloqués par les filtres des LLMs (OpenAI, Anthropic, Gemini). Retirez-les ou reformulez pour un meilleur résultat.";
 
         return new SafetyReport(true, detectes, new ArrayList<>(categories), warning);
