@@ -42,13 +42,14 @@ public class ModelInstallerTest {
         ModelInstaller.afficherMessageOnboardingDebutants(ps, ModelType.QWEN_CODER);
         String output = baos.toString();
 
-        Assert.assertContains(output, "BIENVENUE DANS L'EXÉCUTION D'IA 100% LOCALE & PRIVÉE", "Titre banner");
-        Assert.assertContains(output, "QU'EST-CE QUE C'EST", "Explication noob");
-        Assert.assertContains(output, "100% CONFIDENTIEL & HORS-LIGNE", "Mention confidentialité");
-        Assert.assertContains(output, "100% GRATUIT & SANS ABONNEMENT", "Mention gratuité");
-        Assert.assertContains(output, "ESPACE DISQUE REQUIS", "Mention espace disque");
+        Assert.assertContains(output, "*------------------------------------------*", "Bordure supérieure de style Menu");
+        Assert.assertContains(output, "*  Prompting tool 4 a better work from AI  *", "Titre exact de Menu.java");
+        Assert.assertContains(output, "*      INSTALLATION DES MODELES LOCAUX     *", "Titre de section");
+        Assert.assertContains(output, "100% Hors-ligne & Prive", "Mention confidentialité");
+        Assert.assertContains(output, "100% Gratuit", "Mention gratuité");
+        Assert.assertContains(output, "Espace disque requis", "Mention espace disque");
         Assert.assertContains(output, "Qwen 2.5 Coder", "Mention modèle recommandé");
-        Assert.assertContains(output, "Voulez-vous autoriser", "Demande d'autorisation");
+        Assert.assertContains(output, "Voulez-vous autoriser le telechargement", "Demande d'autorisation");
     }
 
     public void testDemanderPermissionUtilisateurAccepteOption1() {

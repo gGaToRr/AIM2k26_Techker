@@ -52,8 +52,8 @@ public class LlmEngineTest {
         Assert.assertEquals(ModelType.QWEN_CODER, result.modelUsed(), "Routé vers Qwen Coder");
 
         String output = baos.toString();
-        Assert.assertContains(output, "Routage Intelligent", "Bannière de routage");
-        Assert.assertContains(output, "Performance", "Statistiques de performance");
+        Assert.assertContains(output, "ROUTAGE DU MODELE EXPERT", "Bannière de routage");
+        Assert.assertContains(output, "Statistiques", "Statistiques de performance");
     }
 
     public void testLlmEngineWithModelOverride() {
@@ -89,6 +89,6 @@ public class LlmEngineTest {
 
         Assert.assertNull(result, "Si permission refusée, renvoie null");
         String output = baos.toString();
-        Assert.assertContains(output, "annulé", "Mention d'annulation");
+        Assert.assertContains(output, "ignore", "Mention d'annulation");
     }
 }

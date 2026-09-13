@@ -28,9 +28,10 @@ public class LlmEngine {
         ModelRouter.RoutingDecision routing = ModelRouter.resolve(modelOverride, profile);
         ModelType targetModel = routing.selectedModel();
 
-        out.println("\n🧠 [Routage Intelligent] Modèle sélectionné : " + targetModel.getNomAffiche());
-        out.println("   Justification : " + routing.rationale());
-        out.println("   Confiance : " + (int)(routing.confidenceScore() * 100) + "%\n");
+        out.println("\n--- [ROUTAGE DU MODELE EXPERT] ---");
+        out.println("Modele selectionne : " + targetModel.getNomAffiche());
+        out.println("Justification       : " + routing.rationale());
+        out.println("Confiance           : " + (int)(routing.confidenceScore() * 100) + "%\n");
 
         // 2. Vérification de l'installation et onboarding si premier lancement
         boolean isInstalled = ModelInstaller.isModelInstalled(targetModel, config.getRepertoireModeles());
@@ -44,8 +45,8 @@ public class LlmEngine {
                 targetModel = accepted;
                 isInstalled = ModelInstaller.isModelInstalled(targetModel, config.getRepertoireModeles());
             } else {
-                out.println("⚠️ Le modèle " + targetModel.getNomAffiche() + " n'est pas encore installé localement.");
-                out.println("   Lancez le programme en mode interactif pour télécharger le modèle avec l'assistant pour débutants.");
+                out.println("[!] Avertissement : Le modele " + targetModel.getNomAffiche() + " n'est pas encore installe localement.");
+                out.println("    Lancez l'outil sans argument pour le telecharger via l'assistant.");
                 return null;
             }
         }
@@ -54,14 +55,13 @@ public class LlmEngine {
         if (!isInstalled && config.isPermissionAccordee()) {
             boolean success = ModelInstaller.telechargerModele(targetModel, config.getRepertoireModeles(), out, null);
             if (!success) {
-                out.println("❌ Impossible de télécharger le modèle. Poursuite sans exécution locale.");
+                out.println("[!] Impossible de telecharger le modele. Poursuite sans execution locale.");
                 return null;
             }
         }
 
         // 3. Exécution de l'inférence locale
-        out.println("⚡ [Inférence Locale en cours avec " + targetModel.getNomAffiche() + "] :");
-        out.println("──────────────────────────────────────────────────────────────────────────────────");
+        out.println("\n--- [REPONSE DU MODELE LOCAL (" + targetModel.getNomAffiche() + ")] ---\n");
 
         try {
             LlmBackend.GenerationResult result = backend.generate(targetModel, metaPrompt, config, token -> {
@@ -75,15 +75,15 @@ public class LlmEngine {
                 out.println(result.fullText());
             }
 
-            out.println("\n──────────────────────────────────────────────────────────────────────────────────");
-            out.printf("📊 [Performance] %d tokens générés en %d ms (%.1f tokens/sec) via %s%n",
-                    result.totalTokens(), result.elapsedMs(), result.tokensPerSecond(), targetModel.getNomAffiche());
-            out.println();
+            out.println("\n\n--------------------------------------------");
+            out.printf("Statistiques : %d tokens generes en %d ms (%.1f tokens/sec)%n",
+                    result.totalTokens(), result.elapsedMs(), result.tokensPerSecond());
+            out.println("--------------------------------------------\n");
 
             return result;
 
         } catch (Exception e) {
-            out.println("\n❌ Erreur pendant l'inférence locale : " + e.getMessage());
+            out.println("\n[!] Erreur pendant l'inference locale : " + e.getMessage());
             return null;
         }
     }
