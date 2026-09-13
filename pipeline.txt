@@ -1,0 +1,60 @@
+================================================================================
+          ARCHITECTURE GLOBALE DU PROJET - PIPELINE END-TO-END
+================================================================================
+
+                           ┌────────────────────────────┐
+                           │    UTILISATEUR / TERMINAL  │
+                           └─────────────┬──────────────┘
+                                         │
+                                         ▼
+    ┌────────────────────────────────────────────────────────────────────────┐
+    │ 1. MODULE CLI & SAISIE INTERACTIVE (menu/Menu.java)                    │
+    ├────────────────────────────────────────────────────────────────────────┤
+    │ • Bannière d'accueil et invites de commande                            │
+    │ • Saisie multiligne & support du copier-coller de code source          │
+    │ • Validation par mot-clé (:done, :end) ou double retour à la ligne     │
+    │ • Gestion universelle des flux (clavier interactif ou stdin / pipe)    │
+    └────────────────────────────────────┬───────────────────────────────────┘
+                                         │
+                                         ▼
+    ┌────────────────────────────────────────────────────────────────────────┐
+    │ 2. PIPELINE D'ANALYSE SÉMANTIQUE NLP (nlp/Lemmatizer.java)             │
+    ├────────────────────────────────────────────────────────────────────────┤
+    │ • Sanitization : Restauration d'élisions (lavion -> l'avion), accents  │
+    │ • Tokenisation : Expressions multi-mots (pas a pas), CamelCase, lemmes │
+    │ • Détection Stack & Contexte Spécial (TechStackDetector.java)          │
+    │ • Extraction Domaine & Persona Expert (DomainExtractor.java)           │
+    │ • Décomposition flux de pensée & Sous-Objectifs (QuestionDecomposer)   │
+    │ • Diagnostic Qualité & Estimations Tokens BPE (PromptQualityScorer)    │
+    │ • Classification 7 Archétypes Universels (PromptClassifier.java)       │
+    │                                                                        │
+    │ ➔ Production du record immuable : PromptProfile                        │
+    └────────────────────────────────────┬───────────────────────────────────┘
+                                         │
+                                         ▼
+    ┌────────────────────────────────────────────────────────────────────────┐
+    │ 3. MOTEUR DE GÉNÉRATION META-PROMPTING (gen/MetaPromptEngine.java)     │
+    ├────────────────────────────────────────────────────────────────────────┤
+    │ • Routage fin vers le sous-template Markdown (TemplateLoader.java)     │
+    │ • Sélection parmi les 7 Archétypes (genPrompt/) :                      │
+    │   - learning/        (guide_debutant, feynman_learning)                │
+    │   - architecture/    (frontend_ui, architecture_systeme, code_gen)     │
+    │   - troubleshooting/ (audit_review, refactor_clean, root_cause_debug)  │
+    │   - creation/        (storytelling, brainstorming, proofreading, etc.) │
+    │   - protocol/        (recette_culinaire, protocole_technique)          │
+    │   - comparison/      (aide_decision, matrice_comparative)              │
+    │   - concept/         (concept_encyclopedique, vulgarisation_feynman)   │
+    │ • Injection dynamique du contexte Mustache (5 règles d'optimisation)   │
+    │ • Compilation et rendu haute performance sans échappement HTML         │
+    │                                                                        │
+    │ ➔ Production du Super Prompt Markdown optimisé                         │
+    └────────────────────────────────────┬───────────────────────────────────┘
+                                         │
+                                         ▼
+    ┌────────────────────────────────────────────────────────────────────────┐
+    │ 4. AFFICHAGE & RESTITUTION (Main.java)                                 │
+    ├────────────────────────────────────────────────────────────────────────┤
+    │ • Bloc 1 : Métriques d'analyse (nature, confiance, domaine, tokens...) │
+    │ • Bloc 2 : Prompt enrichi prêt à copier-coller dans n'importe quel LLM │
+    │ • Boucle interactive continue jusqu'à saisie de 'q' / 'quit'           │
+    └────────────────────────────────────────────────────────────────────────┘
