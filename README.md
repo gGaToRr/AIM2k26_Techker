@@ -1,4 +1,4 @@
-# KAETS-Prompt (Project_Ia)
+# Prompting_Tool (AIM2k26_Techker)
 Vous en avez marre des réponses vagues ou incomplètes des LLMs ? Le moteur **[Prompting Tool]** est un optimiseur de requêtes open-source : il analyse votre consigne brute via un pipeline NLP et génère un Super-Prompt ultra-structuré (Meta-Prompting).
 
 <div align="center">
