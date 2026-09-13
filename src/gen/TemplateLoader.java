@@ -29,7 +29,10 @@ public class TemplateLoader {
             return CACHE_TEMPLATES.get(cleCache);
         }
 
-        Path cheminFichier = Path.of("genPrompt", dossier, subType + ".md");
+        Path cheminFichier = Path.of("src", "genPrompt", dossier, subType + ".md");
+        if (!Files.exists(cheminFichier)) {
+            cheminFichier = Path.of("genPrompt", dossier, subType + ".md");
+        }
 
         try {
             if (Files.exists(cheminFichier)) {
@@ -56,11 +59,20 @@ public class TemplateLoader {
                 return java.util.Optional.of(Files.readString(directPath));
             } catch (IOException ignored) {}
         }
+        Path srcDirectPath = Path.of("src", nom.endsWith(".md") ? nom : nom + ".md");
+        if (Files.exists(srcDirectPath) && Files.isRegularFile(srcDirectPath)) {
+            try {
+                return java.util.Optional.of(Files.readString(srcDirectPath));
+            } catch (IOException ignored) {}
+        }
 
-        // 2. Recherche dans genPrompt/*/<clean>.md
+        // 2. Recherche dans src/genPrompt/*/<clean>.md ou genPrompt/*/<clean>.md
         String[] dossiers = {"learning", "architecture", "troubleshooting", "creation", "protocol", "comparison", "concept"};
         for (String dossier : dossiers) {
-            Path p = Path.of("genPrompt", dossier, clean + ".md");
+            Path p = Path.of("src", "genPrompt", dossier, clean + ".md");
+            if (!Files.exists(p)) {
+                p = Path.of("genPrompt", dossier, clean + ".md");
+            }
             if (Files.exists(p)) {
                 try {
                     return java.util.Optional.of(Files.readString(p));
@@ -70,7 +82,10 @@ public class TemplateLoader {
 
         // 3. Recherche par correspondance souple (ex: "feynman" -> "feynman_learning.md" ou "vulgarisation_feynman.md")
         for (String dossier : dossiers) {
-            Path dir = Path.of("genPrompt", dossier);
+            Path dir = Path.of("src", "genPrompt", dossier);
+            if (!Files.isDirectory(dir)) {
+                dir = Path.of("genPrompt", dossier);
+            }
             if (Files.isDirectory(dir)) {
                 try (var stream = Files.list(dir)) {
                     for (Path file : stream.toList()) {
