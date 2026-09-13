@@ -1,4 +1,4 @@
-# 📄 Documentation : Pipeline NLP (`nlp/pipeline.txt`)
+# 📄 Documentation : Pipeline NLP (`doc/pipelines/pipeline_nlp.txt`)
 
 ## 📌 Rôle du Pipeline NLP
 Le pipeline NLP est le cœur analytique de l'application. Il extrait le sens, la structure, le domaine et la complexité d'un prompt utilisateur **sans faire appel à une API externe**.

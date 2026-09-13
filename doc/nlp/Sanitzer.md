@@ -1,7 +1,7 @@
-# 📄 Documentation : `nlp/Sanitzer.java`
+# 📄 Documentation : `src/nlp/Sanitzer.java`
 
 ## 📌 Rôle du Fichier
-`nlp/Sanitzer.java` prépare et normalise le texte brut. Il résout les fautes de frappe d'élision courantes (ex: `cest`, `lavion`, `quon`, `dargent`) et nettoie la ponctuation tout en protégeant les symboles technologiques essentiels.
+`src/nlp/Sanitzer.java` prépare et normalise le texte brut. Il résout les fautes de frappe d'élision courantes (ex: `cest`, `lavion`, `quon`, `dargent`) et nettoie la ponctuation tout en protégeant les symboles technologiques essentiels.
 
 ---
 

@@ -1,7 +1,7 @@
-# 📄 Documentation : `cli/CliClipboard.java`
+# 📄 Documentation : `src/cli/CliClipboard.java`
 
 ## 📌 Rôle du Fichier
-`cli/CliClipboard.java` offre une couche d'abstraction pour copier automatiquement le prompt généré dans le **presse-papiers système** de la machine hôte.
+`src/cli/CliClipboard.java` offre une couche d'abstraction pour copier automatiquement le prompt généré dans le **presse-papiers système** de la machine hôte.
 
 ---
 

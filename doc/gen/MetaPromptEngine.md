@@ -1,7 +1,7 @@
-# 📄 Documentation : `gen/MetaPromptEngine.java`
+# 📄 Documentation : `src/gen/MetaPromptEngine.java`
 
 ## 📌 Rôle du Fichier
-`gen/MetaPromptEngine.java` est le **moteur d'orchestration Meta-Prompting**. Il construit le dictionnaire de contexte, applique les 5 règles d'optimisation de prompt, compile le template Mustache et applique les adaptations ciblées pour les différents modèles d'IA.
+`src/gen/MetaPromptEngine.java` est le **moteur d'orchestration Meta-Prompting**. Il construit le dictionnaire de contexte, applique les 5 règles d'optimisation de prompt, compile le template Mustache et applique les adaptations ciblées pour les différents modèles d'IA.
 
 ---
 

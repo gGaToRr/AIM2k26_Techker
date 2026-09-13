@@ -10,13 +10,13 @@ cd "$DIR"
 
 echo "🔨 Compilation du projet et des suites de tests..."
 mkdir -p bin
-javac -cp ".:lib/jmustache-1.16.jar" -d bin \
+javac -sourcepath ".:src" -cp ".:lib/jmustache-1.16.jar" -d bin \
     Main.java \
-    menu/Menu.java \
-    cli/*.java \
-    nlp/*.java \
-    gen/*.java \
-    llm/*.java \
+    src/menu/*.java \
+    src/cli/*.java \
+    src/nlp/*.java \
+    src/gen/*.java \
+    src/llm/*.java \
     test/*.java \
     test/framework/*.java \
     test/nlp/*.java \

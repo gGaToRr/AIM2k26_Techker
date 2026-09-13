@@ -1,7 +1,7 @@
-# 📄 Documentation : `nlp/QuestionDecomposer.java`
+# 📄 Documentation : `src/nlp/QuestionDecomposer.java`
 
 ## 📌 Rôle du Fichier
-`nlp/QuestionDecomposer.java` décompose les requêtes complexes comportant plusieurs consignes en une séquence ordonnée de **sous-objectifs clairs**.
+`src/nlp/QuestionDecomposer.java` décompose les requêtes complexes comportant plusieurs consignes en une séquence ordonnée de **sous-objectifs clairs**.
 
 ---
 

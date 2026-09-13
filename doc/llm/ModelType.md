@@ -1,4 +1,4 @@
-# 📋 Documentation : `llm/ModelType.java`
+# 📋 Documentation : `src/llm/ModelType.java`
 
 ## 🎯 Rôle du Fichier
 

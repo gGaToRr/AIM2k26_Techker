@@ -1,7 +1,7 @@
-# 📄 Documentation : `nlp/PromptProfile.java`
+# 📄 Documentation : `src/nlp/PromptProfile.java`
 
 ## 📌 Rôle du Fichier
-`nlp/PromptProfile.java` est le **Record Java immuable** servant de pivot de données entre la phase d'analyse NLP et la phase de méta-génération de prompt.
+`src/nlp/PromptProfile.java` est le **Record Java immuable** servant de pivot de données entre la phase d'analyse NLP et la phase de méta-génération de prompt.
 
 ---
 

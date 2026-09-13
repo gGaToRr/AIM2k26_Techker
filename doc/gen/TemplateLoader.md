@@ -1,7 +1,7 @@
-# 📄 Documentation : `gen/TemplateLoader.java`
+# 📄 Documentation : `src/gen/TemplateLoader.java`
 
 ## 📌 Rôle du Fichier
-`gen/TemplateLoader.java` est responsable de la lecture, de la mise en cache mémoire et de la résolution des fichiers de templates Markdown situés dans le dossier `genPrompt/`.
+`src/gen/TemplateLoader.java` est responsable de la lecture, de la mise en cache mémoire et de la résolution des fichiers de templates Markdown situés dans le dossier `genPrompt/`.
 
 ---
 

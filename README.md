@@ -98,9 +98,17 @@ Avant d'écrire le code, effectue une brève analyse (2-3 phrases) :
 git clone https://github.com/gGaToRr/Project_Ia.git
 cd Project_Ia
 
-# Compiler et lancer
-javac -cp ".:lib/jmustache-1.16.jar" -d bin Main.java menu/Menu.java nlp/*.java gen/*.java
+# Compiler le projet
+javac -sourcepath ".:src" -cp ".:lib/jmustache-1.16.jar" -d bin Main.java src/menu/*.java src/cli/*.java src/nlp/*.java src/gen/*.java src/llm/*.java
+
+# Lancer la suite complète de 129 tests TDD
+./scripts/run_tests.sh
+
+# Lancer en mode interactif
 java -cp "bin:lib/jmustache-1.16.jar" Main
+
+# Lancer en ligne de commande (CLI direct + inférence locale)
+java -cp "bin:lib/jmustache-1.16.jar" Main -i "Crée une fonction de tri en Java" -e
 ```
 
 <br />
@@ -110,9 +118,14 @@ java -cp "bin:lib/jmustache-1.16.jar" Main
 git clone https://github.com/gGaToRr/Project_Ia.git
 cd Project_Ia
 
-# Compiler et lancer (séparateur ;)
-javac -cp ".;lib/jmustache-1.16.jar" -d bin Main.java menu/Menu.java nlp/*.java gen/*.java
+# Compiler le projet (séparateur ;)
+javac -sourcepath ".;src" -cp ".;lib/jmustache-1.16.jar" -d bin Main.java src/menu/*.java src/cli/*.java src/nlp/*.java src/gen/*.java src/llm/*.java
+
+# Lancer en mode interactif
 java -cp "bin;lib/jmustache-1.16.jar" Main
+
+# Lancer en ligne de commande
+java -cp "bin;lib/jmustache-1.16.jar" Main -i "Crée une fonction de tri en Java" -e
 ```
 
 <br />

@@ -12,7 +12,7 @@
 
 2. **Compilation du Code Source et des Tests** :
    - Crée le dossier `bin/` si nécessaire.
-   - Compile l'ensemble des fichiers `.java` (`nlp/`, `gen/`, `menu/`, `cli/`, `test/`, `Main.java`) avec le classpath `lib/jmustache-1.16.jar:.`.
+   - Compile l'ensemble des fichiers `.java` (`src/nlp/`, `src/gen/`, `src/menu/`, `src/cli/`, `test/`, `Main.java`) avec le classpath `lib/jmustache-1.16.jar:.`.
    - Si la compilation échoue, le script affiche un message d'erreur et s'arrête avec le code de sortie `1`.
 
 3. **Exécution de la Suite Globale** :

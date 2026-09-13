@@ -1,7 +1,7 @@
-# 📄 Documentation : `nlp/TechStackDetector.java`
+# 📄 Documentation : `src/nlp/TechStackDetector.java`
 
 ## 📌 Rôle du Fichier
-`nlp/TechStackDetector.java` identifie les technologies logicielles, langages de programmation, frameworks, contextes académiques et langues cibles mentionnés dans le prompt.
+`src/nlp/TechStackDetector.java` identifie les technologies logicielles, langages de programmation, frameworks, contextes académiques et langues cibles mentionnés dans le prompt.
 
 ---
 

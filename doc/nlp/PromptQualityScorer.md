@@ -1,7 +1,7 @@
-# 📄 Documentation : `nlp/PromptQualityScorer.java`
+# 📄 Documentation : `src/nlp/PromptQualityScorer.java`
 
 ## 📌 Rôle du Fichier
-`nlp/PromptQualityScorer.java` analyse la clarté et l'exhaustivité du prompt de l'utilisateur pour lui attribuer une note de **qualité globale sur 100 points**, tout en fournissant des pistes d'amélioration concrètes.
+`src/nlp/PromptQualityScorer.java` analyse la clarté et l'exhaustivité du prompt de l'utilisateur pour lui attribuer une note de **qualité globale sur 100 points**, tout en fournissant des pistes d'amélioration concrètes.
 
 ---
 

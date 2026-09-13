@@ -1,7 +1,7 @@
-# 📄 Documentation : `nlp/PromptClassifier.java`
+# 📄 Documentation : `src/nlp/PromptClassifier.java`
 
 ## 📌 Rôle du Fichier
-`nlp/PromptClassifier.java` est le **classifieur probabiliste** du système. Il évalue les scores sémantiques de chaque catégorie et applique une fonction **Softmax** pour générer une distribution de probabilité sommée à 100% sur les 7 Archétypes Universels.
+`src/nlp/PromptClassifier.java` est le **classifieur probabiliste** du système. Il évalue les scores sémantiques de chaque catégorie et applique une fonction **Softmax** pour générer une distribution de probabilité sommée à 100% sur les 7 Archétypes Universels.
 
 ---
 
