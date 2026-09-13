@@ -17,6 +17,7 @@ public record PromptProfile(
         List<String> detectedTechnologies,
         Optional<String> targetTranslationLanguage,
         DomainExtractor.DomainInfo domainInfo,
+        QuestionDecomposer.DecompositionResult decomposition,
         TokenCounter.TokenMetrics tokenMetrics,
         PromptQualityScorer.Diagnostic qualityDiagnostic,
         PromptClassifier.ClassificationResult classification

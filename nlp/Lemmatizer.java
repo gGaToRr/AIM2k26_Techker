@@ -173,7 +173,7 @@ public class Lemmatizer {
     // Méthode principale qui exécute toute la chaîne d'analyse
     public static PromptProfile analyser(String rawPrompt) {
         if (rawPrompt == null || rawPrompt.isBlank()) {
-            return new PromptProfile("", "", List.of(), Map.of(), Map.of(), 0.0, false, false, "UNKNOWN", List.of(), Optional.empty(), new DomainExtractor.DomainInfo("Général", "", "", false), TokenCounter.analyser(""), new PromptQualityScorer.Diagnostic(0,0,0,0,List.of(),List.of()), new PromptClassifier.ClassificationResult(TypeOfPrompt.FACTUALQUESTIONS, 0, PromptClassifier.ConfidenceLevel.LOW, Map.of(), "Vide"));
+            return new PromptProfile("", "", List.of(), Map.of(), Map.of(), 0.0, false, false, "UNKNOWN", List.of(), Optional.empty(), new DomainExtractor.DomainInfo("Général", "", "", false), new QuestionDecomposer.DecompositionResult(false, List.of(), ""), TokenCounter.analyser(""), new PromptQualityScorer.Diagnostic(0,0,0,0,List.of(),List.of()), new PromptClassifier.ClassificationResult(TypeOfPrompt.FACTUALQUESTIONS, 0, PromptClassifier.ConfidenceLevel.LOW, Map.of(), "Vide"));
         }
 
         // Nettoyage et découpage
@@ -186,14 +186,15 @@ public class Lemmatizer {
         boolean isCommand = detecterCommande(tokens);
         String language = detecterLangue(rawPrompt, tokens);
 
-        // Détection technique, domaine sémantique et métriques
+        // Détection technique, domaine sémantique, décomposition et métriques
         List<String> techStack = TechStackDetector.detecterTechnologies(rawPrompt);
         Optional<String> langueCible = TechStackDetector.detecterLangueCibleTraduction(rawPrompt);
         DomainExtractor.DomainInfo domainInfo = DomainExtractor.analyser(rawPrompt);
+        QuestionDecomposer.DecompositionResult decomposition = QuestionDecomposer.decomposer(rawPrompt);
         TokenCounter.TokenMetrics tokenMetrics = TokenCounter.analyser(rawPrompt);
         PromptQualityScorer.Diagnostic qualityDiag = PromptQualityScorer.evaluer(rawPrompt, codeDensity >= 0.15 || !techStack.isEmpty(), isCommand, isQuestion);
         PromptClassifier.ClassificationResult classification = PromptClassifier.classifier(
-                new PromptProfile(rawPrompt, sanitized, tokens, frequences, weightedScores, codeDensity, isQuestion, isCommand, language, techStack, langueCible, domainInfo, tokenMetrics, qualityDiag, null),
+                new PromptProfile(rawPrompt, sanitized, tokens, frequences, weightedScores, codeDensity, isQuestion, isCommand, language, techStack, langueCible, domainInfo, decomposition, tokenMetrics, qualityDiag, null),
                 techStack,
                 langueCible
         );
@@ -211,6 +212,7 @@ public class Lemmatizer {
                 techStack,
                 langueCible,
                 domainInfo,
+                decomposition,
                 tokenMetrics,
                 qualityDiag,
                 classification
