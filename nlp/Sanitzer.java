@@ -1,7 +1,6 @@
 package nlp;
 
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 // Nettoie le texte, restaure les élisions et répare les contractions orthographiques courantes
@@ -11,7 +10,13 @@ public class Sanitzer {
     private static final Pattern APOSTROPHES_TYPO = Pattern.compile("[’‘`]");
 
     // Liste ordonnée des règles de restauration d'élisions et contractions (terme erroné -> forme correcte)
+    // Les regex sont stockées sous forme de String (au lieu de Pattern précompilé) afin de conserver
+    // une déclaration statique lisible ; elles sont compilées une seule fois dans ELISIONS_PATTERNS.
     private static final Map<String, String> DICTIONNAIRE_ELISIONS = new LinkedHashMap<>();
+
+    // Version précompilée de DICTIONNAIRE_ELISIONS, construite une seule fois au chargement de la classe
+    // (évite de recompiler ~60 regex à chaque appel de restaurerElisions, qui est invoqué plusieurs fois par prompt)
+    private static final List<Map.Entry<Pattern, String>> ELISIONS_PATTERNS;
 
     static {
         // Formes verbales et expressions composées (prioritaires sur les mots isolés)
@@ -101,6 +106,12 @@ public class Sanitzer {
 
         // Espaces parasites entre pronom élidé et voyelle (ex: "l avion" -> "l'avion", "d un" -> "d'un")
         DICTIONNAIRE_ELISIONS.put("(?i)\\b([ldcjsmnt]|qu)\\s+([aeiouyhéèêëàâîïôûù])", "$1'$2");
+
+        List<Map.Entry<Pattern, String>> precompiled = new ArrayList<>(DICTIONNAIRE_ELISIONS.size());
+        for (Map.Entry<String, String> entry : DICTIONNAIRE_ELISIONS.entrySet()) {
+            precompiled.add(Map.entry(Pattern.compile(entry.getKey()), entry.getValue()));
+        }
+        ELISIONS_PATTERNS = Collections.unmodifiableList(precompiled);
     }
 
     // Restaure les élisions contractées et les apostrophes manquantes
@@ -111,8 +122,8 @@ public class Sanitzer {
 
         String resultat = APOSTROPHES_TYPO.matcher(text).replaceAll("'");
 
-        for (Map.Entry<String, String> entry : DICTIONNAIRE_ELISIONS.entrySet()) {
-            resultat = resultat.replaceAll(entry.getKey(), entry.getValue());
+        for (Map.Entry<Pattern, String> entry : ELISIONS_PATTERNS) {
+            resultat = entry.getKey().matcher(resultat).replaceAll(entry.getValue());
         }
 
         return resultat;

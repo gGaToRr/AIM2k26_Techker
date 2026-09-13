@@ -1,7 +1,6 @@
 package nlp;
 
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 // Décompose les flux de pensée continus et les requêtes complexes en sous-objectifs ordonnés

@@ -1,5 +1,4 @@
 # Workflow GitHub Actions pour exécuter la suite de tests TDD
-# À placer dans .github/workflows/test.yml
 name: Java TDD Test Suite
 
 on:

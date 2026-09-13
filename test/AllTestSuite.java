@@ -23,6 +23,7 @@ public class AllTestSuite {
         runner.registerTestClass(TokenCounterTest.class);
         runner.registerTestClass(PromptQualityScorerTest.class);
         runner.registerTestClass(PromptClassifierTest.class);
+        runner.registerTestClass(SafetyAdvisorTest.class);
 
         // 2. Tests GenPrompt
         runner.registerTestClass(TemplateLoaderTest.class);
