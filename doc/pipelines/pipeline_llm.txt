@@ -41,12 +41,39 @@
                                               │
                                               ▼
                                 ┌──────────────────────────┐
+                                │ 2bis. RUNTIME NATIF      │
+                                │  (RuntimeInstaller.java) │
+                                │                          │
+                                │ • Runtime deja installe ?│
+                                │   -> oui : rien a faire  │
+                                │ • Sinon, sous la meme    │
+                                │   autorisation :         │
+                                │   - detecte OS/arch      │
+                                │   - GET releases GitHub  │
+                                │     ggml-org/llama.cpp   │
+                                │   - choisit le build CPU │
+                                │     (exclut cuda/vulkan/ │
+                                │     sycl/rocm/openvino)  │
+                                │   - telecharge + extrait │
+                                │     (.tar.gz via tar /   │
+                                │     .zip anti zip-slip)  │
+                                │   - localise llama-cli   │
+                                │     dans l'arbo extraite │
+                                │ • Echec -> avertissement │
+                                │   explicite (jamais de   │
+                                │   fallback simule cache) │
+                                └─────────────┬────────────┘
+                                              │
+                                              ▼
+                                ┌──────────────────────────┐
                                 │ 3. INFÉRENCE LOCALE      │
                                 │   (LocalLlmBackend.java) │
                                 │                          │
-                                │ • Détection runner natif │
-                                │   (llama-cli / GGUF)     │
+                                │ • Détection runner :     │
+                                │   runtime/ (app-managed) │
+                                │   -> chemins fixes -> PATH│
                                 │ • Mode autonome sécurisé │
+                                │   si aucun runner trouvé │
                                 │ • Injection du prompt    │
                                 │ • Paramètres (temp, max) │
                                 └─────────────┬────────────┘
