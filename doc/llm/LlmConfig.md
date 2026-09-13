@@ -17,6 +17,7 @@ Par défaut, la configuration est enregistrée dans `.llm_config/settings.json` 
   "permissionAccordee": true,
   "modeleParDefaut": "auto",
   "repertoireModeles": "models",
+  "repertoireRuntime": "runtime",
   "temperature": 0.7,
   "maxTokens": 2048,
   "streamingActive": true
@@ -32,6 +33,7 @@ Par défaut, la configuration est enregistrée dans `.llm_config/settings.json` 
 | `permissionAccordee` | `boolean` | `false` | Indique si l'utilisateur a accordé l'autorisation d'installer les modèles. |
 | `modeleParDefaut` | `String` | `"auto"` | Modèle favori forcé (`auto`, `qwen`, `gemma`, `deepseek`, `smollm`). |
 | `repertoireModeles` | `String` | `"models"` | Répertoire local où sont stockés les binaires GGUF. |
+| `repertoireRuntime` | `String` | `"runtime"` | Répertoire local où est installé le runtime natif llama-cli (voir [`RuntimeInstaller`](RuntimeInstaller.md)). |
 | `temperature` | `double` | `0.7` | Degré de créativité/déterminisme de la génération (0.0 à 1.0). |
 | `maxTokens` | `int` | `2048` | Nombre maximum de tokens à générer par réponse. |
 | `streamingActive` | `boolean` | `true` | Affichage token par token en temps réel dans la console. |
