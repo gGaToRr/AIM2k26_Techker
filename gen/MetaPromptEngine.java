@@ -104,6 +104,15 @@ public class MetaPromptEngine {
                 () -> ctx.put("hasTargetLanguage", false)
         );
 
+        // Injection de Domaine & Persona Expert (Issue #2)
+        boolean hasDomain = profile.domainInfo() != null && profile.domainInfo().isDomainIdentified();
+        ctx.put("hasDomainExpertise", hasDomain);
+        if (hasDomain) {
+            ctx.put("domainName", profile.domainInfo().domainName());
+            ctx.put("domainTopic", profile.domainInfo().extractedTopic());
+            ctx.put("domainPersona", profile.domainInfo().expertPersona());
+        }
+
         // Règle 5 : Auto-correction des faiblesses du prompt
         List<String> autoConstraints = genererContraintesAutomatiques(profile);
         ctx.put("hasAutoConstraints", !autoConstraints.isEmpty());

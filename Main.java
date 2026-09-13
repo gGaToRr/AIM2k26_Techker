@@ -36,7 +36,12 @@ public class Main {
         System.out.println("Nature détectée : " + profil.classification().primaryType());
         System.out.println("Confiance       : " + profil.classification().primaryProbability() + "% (" + profil.classification().confidenceLevel() + ")");
         System.out.println("Langue          : " + profil.language());
-        System.out.println("Technologies    : " + profil.detectedTechnologies());
+        if (!profil.detectedTechnologies().isEmpty()) {
+            System.out.println("Technologies    : " + profil.detectedTechnologies());
+        }
+        if (profil.domainInfo() != null && profil.domainInfo().isDomainIdentified()) {
+            System.out.println("Domaine & Sujet : " + profil.domainInfo().domainName() + " (" + profil.domainInfo().extractedTopic() + ")");
+        }
         System.out.println("Tokens estimés  : " + profil.tokenMetrics().estimatedTokens());
         System.out.println("Score qualité   : " + profil.qualityDiagnostic().scoreGlobal() + "/100");
 
