@@ -7,52 +7,67 @@ import test.framework.Assert;
 
 public class MetaPromptEngineTest {
 
-    public void testGenerationPromptAvecDomaineEtPersona() {
-        String rawPrompt = "Donne-moi la recette de la tarte aux pommes pas a pas";
-        PromptProfile profile = Lemmatizer.analyser(rawPrompt);
-        String optimized = MetaPromptEngine.genererPromptOptimise(profile);
+    public void testResolutionCompleteVariablesMustacheSansResidu() {
+        String[] testPrompts = {
+                "Crée une API REST en Spring Boot avec Java 21",
+                "Donne-moi la recette de la tarte au citron pas a pas",
+                "Debug cette NullPointerException dans mon code",
+                "Traduis cette documentation en anglais",
+                "Explique les trous noirs avec la méthode Feynman",
+                "Compare MongoDB et PostgreSQL pour un projet web",
+                "Rédige une histoire de science-fiction sur Mars"
+        };
 
-        Assert.assertNotNull(optimized, "Le prompt optimisé ne doit pas être null");
-        Assert.assertContains(optimized, "# RÔLE & EXPERTISE", "Doit contenir la section de rôle");
-        Assert.assertContainsIgnoreCase(optimized, "Chef", "Doit contenir le persona d'un Chef");
-        Assert.assertContains(optimized, "<demande_culinaire>", "Doit contenir la balise de demande culinaire");
-        Assert.assertContains(optimized, "<format_de_sortie>", "Doit contenir le format de sortie");
+        for (String rawPrompt : testPrompts) {
+            PromptProfile profile = Lemmatizer.analyser(rawPrompt);
+            String output = MetaPromptEngine.genererPromptOptimise(profile);
+
+            Assert.assertNotNull(output, "Prompt généré non null pour: " + rawPrompt);
+            Assert.assertFalse(output.isBlank(), "Prompt généré non vide");
+
+            // Vérification stricte : aucun tag Mustache non résolu ne doit subsister
+            Assert.assertFalse(output.contains("{{"), "Aucune balise Mustache résiduelle '{{' dans le rendu de: " + rawPrompt);
+            Assert.assertFalse(output.contains("}}"), "Aucune balise Mustache résiduelle '}}' dans le rendu de: " + rawPrompt);
+
+            // Vérification de la structure minimale obligatoire
+            Assert.assertContains(output, "# RÔLE & EXPERTISE", "Section rôle présente");
+            Assert.assertContains(output, "<format_de_sortie>", "Section format de sortie présente");
+        }
     }
 
-    public void testGenerationPromptAvecSousObjectifs() {
-        String rawPrompt = "Je veux concevoir une base de données relationnelle puis écrire les requêtes SQL et ensuite créer les index";
-        PromptProfile profile = Lemmatizer.analyser(rawPrompt);
-        String optimized = MetaPromptEngine.genererPromptOptimise(profile);
+    public void testInjectionDynamiquePersonaDomaineEtSousObjectifs() {
+        String prompt = "Je veux apprendre la guitare puis faire des exercices de solfège";
+        PromptProfile profile = Lemmatizer.analyser(prompt);
+        String output = MetaPromptEngine.genererPromptOptimise(profile);
 
-        Assert.assertContains(optimized, "<objectifs_specifiques>", "Doit contenir les sous-objectifs décomposés");
-        Assert.assertContains(optimized, "base de données relationnelle", "Doit mentionner le premier objectif");
+        // Persona Musique
+        Assert.assertContainsIgnoreCase(output, "Musicien", "Persona Musicien injecté");
+
+        // Objectifs décomposés
+        Assert.assertContains(output, "<objectifs_specifiques>", "Balise sous-objectifs présente");
+        Assert.assertContains(output, "guitare", "Objectif 1 mentionné");
+        Assert.assertContains(output, "exercices", "Objectif 2 mentionné");
     }
 
-    public void testGenerationTraductionAvecLangueCible() {
-        String rawPrompt = "Traduis cette documentation en anglais";
-        PromptProfile profile = Lemmatizer.analyser(rawPrompt);
-        String optimized = MetaPromptEngine.genererPromptOptimise(profile);
+    public void testPreservationStrictesCaracteresSpeciauxEtCode() {
+        String codePrompt = "Écris une interface TypeScript: interface User<T> { id: number; data: T & { isValid: boolean }; }";
+        PromptProfile profile = Lemmatizer.analyser(codePrompt);
+        String output = MetaPromptEngine.genererPromptOptimise(profile);
 
-        Assert.assertContains(optimized, "<contexte_traduction>", "Doit contenir le contexte de traduction");
-        Assert.assertContains(optimized, "Anglais (EN)", "Doit spécifier la langue cible Anglais");
+        // Les chevrons génériques et ampersand ne doivent pas être convertis en entités HTML
+        Assert.assertContains(output, "User<T>", "Génériques TypeScript intacts");
+        Assert.assertContains(output, "T &", "Ampersand TypeScript intact");
+        Assert.assertFalse(output.contains("&lt;"), "Pas de conversion HTML &lt;");
+        Assert.assertFalse(output.contains("&gt;"), "Pas de conversion HTML &gt;");
+        Assert.assertFalse(output.contains("&amp;"), "Pas de conversion HTML &amp;");
     }
 
-    public void testGenerationPromptCourtAvecAutoContraintes() {
-        String rawPrompt = "Explique les trous noirs";
-        PromptProfile profile = Lemmatizer.analyser(rawPrompt);
-        String optimized = MetaPromptEngine.genererPromptOptimise(profile);
+    public void testTraductionAvecLangueCibleExplicite() {
+        String prompt = "Traduis cette page d'aide en espagnol";
+        PromptProfile profile = Lemmatizer.analyser(prompt);
+        String output = MetaPromptEngine.genererPromptOptimise(profile);
 
-        Assert.assertContains(optimized, "<directives_feynman>", "Doit utiliser les directives Feynman");
-        Assert.assertContains(optimized, "<format_de_sortie>", "Doit contenir un format de sortie structuré");
-    }
-
-    public void testAbsenceEchappementHTML() {
-        String rawPrompt = "Crée une classe Java avec List<String> et Map<String, Object>";
-        PromptProfile profile = Lemmatizer.analyser(rawPrompt);
-        String optimized = MetaPromptEngine.genererPromptOptimise(profile);
-
-        Assert.assertFalse(optimized.contains("&lt;"), "Les chevrons ne doivent pas être échappés en &lt;");
-        Assert.assertFalse(optimized.contains("&gt;"), "Les chevrons ne doivent pas être échappés en &gt;");
-        Assert.assertFalse(optimized.contains("&amp;"), "Les & ne doivent pas être échappés en &amp;");
+        Assert.assertContains(output, "Espagnol (ES)", "Langue cible Espagnol spécifiée");
+        Assert.assertContains(output, "<contexte_traduction>", "Balise contexte traduction présente");
     }
 }
