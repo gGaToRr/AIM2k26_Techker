@@ -12,6 +12,14 @@ Tu transformes des descriptions d'interfaces en spécifications UI précises et 
 {{cleanedMission}}
 </demande_ui_utilisateur>
 
+{{#hasMultipleObjectives}}
+<objectifs_specifiques>
+{{#objectives}}
+- {{.}}
+{{/objectives}}
+</objectifs_specifiques>
+{{/hasMultipleObjectives}}
+
 <directives_de_conception_strictes>
 1. **Design System & Harmonie Visuelle** : Définir une palette de couleurs cohérente, des contrastes accessibles (WCAG) et une hiérarchie typographique claire.
 2. **Composants & États Interactifs** : Structurer les cartes, boutons, ombres (`box-shadow`), arrondis (`border-radius`) et transitions douces au survol (`:hover`, `:focus`).

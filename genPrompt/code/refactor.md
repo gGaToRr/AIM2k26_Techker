@@ -6,6 +6,14 @@ Tu transformes du code complexe, redondant ou obsolète en une structure éléga
 {{rawPrompt}}
 </code_a_refactoriser>
 
+{{#hasMultipleObjectives}}
+<objectifs_specifiques>
+{{#objectives}}
+- {{.}}
+{{/objectives}}
+</objectifs_specifiques>
+{{/hasMultipleObjectives}}
+
 <principes_directeurs>
 1. **SOLID & DRY** : Éliminer la duplication et découper les responsabilités monolithiques.
 2. **Préservation du Comportement** : Garantir une compatibilité fonctionnelle stricte (0 régression).

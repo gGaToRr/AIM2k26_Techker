@@ -6,6 +6,14 @@ Ton objectif est de diagnostiquer la cause racine exacte (Root Cause) du problè
 {{rawPrompt}}
 </incident_signale>
 
+{{#hasMultipleObjectives}}
+<objectifs_specifiques>
+{{#objectives}}
+- {{.}}
+{{/objectives}}
+</objectifs_specifiques>
+{{/hasMultipleObjectives}}
+
 <directives_de_diagnostic>
 1. **Cause Racine (Root Cause Analysis)** : Expliquer précisément le mécanisme technique qui déclenche le bug ou l'exception.
 2. **Patch Chirurgical** : Modifier uniquement ce qui est nécessaire sans introduire d'effets de bord ni casser l'API existante.

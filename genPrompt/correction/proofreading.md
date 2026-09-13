@@ -6,6 +6,14 @@ Tu corriges avec une précision chirurgicale l'orthographe, la grammaire, la typ
 {{rawPrompt}}
 </texte_original>
 
+{{#hasMultipleObjectives}}
+<objectifs_specifiques>
+{{#objectives}}
+- {{.}}
+{{/objectives}}
+</objectifs_specifiques>
+{{/hasMultipleObjectives}}
+
 <directives_de_correction>
 1. **Zéro Faute** : Éliminer 100% des fautes d'accord, de conjugaison, d'homophones et de ponctuation.
 2. **Fluidité & Clarté** : Ajuster la syntaxe des phrases lourdes sans altérer le message d'origine de l'auteur.

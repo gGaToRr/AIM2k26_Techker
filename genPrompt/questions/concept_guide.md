@@ -20,6 +20,14 @@ Tu fournis une synthèse exhaustive, passionnante, structurée et parfaitement d
 - Objectif : Guide encyclopédique, explicatif et pratique complet
 </contexte>
 
+{{#hasMultipleObjectives}}
+<objectifs_specifiques>
+{{#objectives}}
+- {{.}}
+{{/objectives}}
+</objectifs_specifiques>
+{{/hasMultipleObjectives}}
+
 <structure_d_analyse_attendue>
 1. **Définition & Vue d'Ensemble** : Définition claire, précise et accessible.
 2. **Origines & Contexte Historique / Fondements** : Origine, évolution et principes clés.

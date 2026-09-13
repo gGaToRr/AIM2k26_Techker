@@ -12,6 +12,14 @@ Ton rôle est d'analyser le code ci-dessous avec une rigueur absolue pour identi
 {{rawPrompt}}
 </code_ou_demande_a_analyser>
 
+{{#hasMultipleObjectives}}
+<objectifs_specifiques>
+{{#objectives}}
+- {{.}}
+{{/objectives}}
+</objectifs_specifiques>
+{{/hasMultipleObjectives}}
+
 <grille_evaluation_stricte>
 1. **Sécurité (Priorité 1)** : Injections, fuites de données, validation d'entrées, authentification/autorisation.
 2. **Performance & Ressources** : Fuites mémoire, requêtes N+1, complexité algorithmique excessive.

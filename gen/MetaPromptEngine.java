@@ -113,6 +113,14 @@ public class MetaPromptEngine {
             ctx.put("domainPersona", profile.domainInfo().expertPersona());
         }
 
+        // Décomposition des sous-objectifs (Issue #3)
+        boolean hasMultiObjectives = profile.decomposition() != null && profile.decomposition().hasMultipleObjectives();
+        ctx.put("hasMultipleObjectives", hasMultiObjectives);
+        if (hasMultiObjectives) {
+            ctx.put("objectives", profile.decomposition().objectives());
+            ctx.put("formattedObjectivesXml", profile.decomposition().xmlFormattedList());
+        }
+
         // Règle 5 : Auto-correction des faiblesses du prompt
         List<String> autoConstraints = genererContraintesAutomatiques(profile);
         ctx.put("hasAutoConstraints", !autoConstraints.isEmpty());
