@@ -251,25 +251,25 @@ public class Lemmatizer {
     );
 
     // Poids sémantiques pour orienter la classification
-    private static final Map<String, Double> POIDS_LEMMES = Map.of(
-            "compar", 3.2,
-            "protocol", 3.0,
-            "depann", 2.8,
-            "apprend", 2.8,
-            "architect", 2.6,
-            "code", 2.5,
-            "creer", 2.4,
-            "corrig", 2.4,
-            "traduir", 2.6,
-            "concept", 2.5,
-            "expliqu", 2.5,
-            "question", 2.0
+    private static final Map<String, Double> POIDS_LEMMES = Map.ofEntries(
+            Map.entry("compar", 3.2),
+            Map.entry("protocol", 3.0),
+            Map.entry("depann", 2.8),
+            Map.entry("apprend", 2.8),
+            Map.entry("architect", 2.6),
+            Map.entry("code", 2.5),
+            Map.entry("creer", 2.4),
+            Map.entry("corrig", 2.4),
+            Map.entry("traduir", 2.6),
+            Map.entry("concept", 2.5),
+            Map.entry("expliqu", 2.5),
+            Map.entry("question", 2.0)
     );
 
     // Méthode principale qui exécute toute la chaîne d'analyse
     public static PromptProfile analyser(String rawPrompt) {
         if (rawPrompt == null || rawPrompt.isBlank()) {
-            return new PromptProfile("", "", List.of(), Map.of(), Map.of(), 0.0, false, false, "UNKNOWN", List.of(), Optional.empty(), new DomainExtractor.DomainInfo("Général", "", "", false), new QuestionDecomposer.DecompositionResult(false, List.of(), ""), TokenCounter.analyser(""), new PromptQualityScorer.Diagnostic(0,0,0,0,List.of(),List.of()), new PromptClassifier.ClassificationResult(TypeOfPrompt.FACTUALQUESTIONS, 0, PromptClassifier.ConfidenceLevel.LOW, Map.of(), "Vide"));
+            return new PromptProfile("", "", List.of(), Map.of(), Map.of(), 0.0, false, false, "UNKNOWN", List.of(), Optional.empty(), new DomainExtractor.DomainInfo("Général", "", "", false), new QuestionDecomposer.DecompositionResult(false, List.of(), ""), TokenCounter.analyser(""), new PromptQualityScorer.Diagnostic(0,0,0,0,List.of(),List.of()), new PromptClassifier.ClassificationResult(TypeOfPrompt.CONCEPT_VULGARISATION, 0, PromptClassifier.ConfidenceLevel.LOW, Map.of(), "Vide"));
         }
 
         // Nettoyage et découpage
