@@ -44,6 +44,7 @@ public class AllTestSuite {
         runner.registerTestClass(ModelRouterTest.class);
         runner.registerTestClass(LlmConfigTest.class);
         runner.registerTestClass(ModelInstallerTest.class);
+        runner.registerTestClass(RuntimeInstallerTest.class);
         runner.registerTestClass(LlmEngineTest.class);
 
         // 5. Tests d'Intégration End-to-End

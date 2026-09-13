@@ -58,6 +58,15 @@ public class LlmEngine {
                 out.println("[!] Impossible de telecharger le modele. Poursuite sans execution locale.");
                 return null;
             }
+
+            // Premier provisioning : installe aussi le runtime natif (llama-cli) sous la meme autorisation,
+            // pour que l'execution locale soit reelle et non simulee.
+            if (!LocalLlmBackend.isRuntimeAvailable(config.getRepertoireRuntime())) {
+                boolean runtimeOk = RuntimeInstaller.telechargerEtInstallerRuntime(config.getRepertoireRuntime(), out);
+                if (!runtimeOk) {
+                    out.println("[!] Runtime natif indisponible. Execution en mode degrade (reponse simulee) en attendant.");
+                }
+            }
         }
 
         // 3. Exécution de l'inférence locale
