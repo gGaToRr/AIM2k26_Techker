@@ -24,5 +24,5 @@ jobs:
 
       - name: Run Test Suite Script
         run: |
-          chmod +x scripts/run_tests.sh
-          ./scripts/run_tests.sh
+          chmod +x src/scripts/run_tests.sh
+          ./src/scripts/run_tests.sh
