@@ -1,0 +1,88 @@
+================================================================================
+              PIPELINE DU MOTEUR DE GÉNÉRATION META-PROMPT (genPrompt)
+================================================================================
+
+                                ┌──────────────────────────┐
+                                │   PROMPT PROFILE (NLP)   │
+                                │   (Record immuable issu  │
+                                │    de Lemmatizer.java)   │
+                                └─────────────┬────────────┘
+                                              │
+                                              ▼
+                                ┌──────────────────────────┐
+                                │  1. ROUTAGE DU SOUS-TYPE │
+                                │   (MetaPromptEngine.java)│
+                                │                          │
+                                │ Analyse de l'intention   │
+                                │ fine selon l'Archétype : │
+                                │                          │
+                                │ • APPRENTISSAGE_TUTO     │
+                                │   ├─ guide_debutant      │
+                                │   └─ feynman_learning    │
+                                │ • CONCEPTION_ARCHI       │
+                                │   ├─ frontend_ui         │
+                                │   ├─ architecture_syst.  │
+                                │   └─ code_generation     │
+                                │ • DEPANNAGE_DIAGNOSTIC   │
+                                │   ├─ audit_review        │
+                                │   ├─ refactor_clean      │
+                                │   └─ root_cause_debug    │
+                                │ • CREATION_REDACTION     │
+                                │   ├─ technical_translat. │
+                                │   ├─ proofreading        │
+                                │   ├─ brainstorming       │
+                                │   └─ storytelling        │
+                                │ • PROTOCOLE_RECETTE      │
+                                │   ├─ recette_culinaire   │
+                                │   └─ protocole_technique │
+                                │ • COMPARAISON_DECISION   │
+                                │   ├─ aide_decision       │
+                                │   └─ matrice_comparative │
+                                │ • CONCEPT_VULGARISAT.    │
+                                │   ├─ concept_encycloped. │
+                                │   └─ vulgarisation_feynm │
+                                └─────────────┬────────────┘
+                                              │
+                                              ▼
+                                ┌──────────────────────────┐
+                                │ 2. CHARGEMENT DU TEMPLATE│
+                                │   (TemplateLoader.java)  │
+                                │                          │
+                                │ • Résolution du chemin   │
+                                │   genPrompt/<arch>/<sub- │
+                                │   type>.md               │
+                                │ • Cache en mémoire (Map) │
+                                │ • Fallback sécurisé      │
+                                └─────────────┬────────────┘
+                                              │
+                                              ▼
+                                ┌──────────────────────────┐
+                                │ 3. CONTEXTE MUSTACHE     │
+                                │    (5 Règles d'Élite)    │
+                                │                          │
+                                │ • Nettoyage mission pure │
+                                │ • Persona expert domaine │
+                                │   (DomainExtractor)      │
+                                │ • Stack tech & contextes │
+                                │ • Sous-objectifs XML     │
+                                │   (QuestionDecomposer)   │
+                                │ • Auto-contraintes &     │
+                                │   garde-fous anti-halluc.│
+                                └─────────────┬────────────┘
+                                              │
+                                              ▼
+                                ┌──────────────────────────┐
+                                │ 4. COMPILATION JMustache │
+                                │                          │
+                                │ • Rendu ultra-rapide     │
+                                │ • Échappement HTML désac.│
+                                │ • Injection des balises  │
+                                └─────────────┬────────────┘
+                                              │
+                                              ▼
+                                ┌──────────────────────────┐
+                                │   SUPER PROMPT MARKDOWN  │
+                                │                          │
+                                │ ➔ Rendu final optimisé   │
+                                │   prêt pour tout LLM     │
+                                └──────────────────────────┘

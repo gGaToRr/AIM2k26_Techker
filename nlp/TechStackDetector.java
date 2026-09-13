@@ -42,7 +42,10 @@ public class TechStackDetector {
     private static final Map<String, String> CONTEXTES_SPECIAUX = Map.of(
             "epitech", "Projet Académique Epitech (Exigence Clean Code & Architecture)",
             "42", "Projet Académique École 42 (Norme stricte)",
-            "etudiant", "Projet Étudiant (Pédagogie & Bonnes pratiques)"
+            "etudiant", "Projet Étudiant (Pédagogie & Bonnes pratiques)",
+            "universite", "Projet Universitaire & Académique",
+            "these", "Projet Universitaire de Recherche & Thèse",
+            "doctorat", "Projet Universitaire de Recherche & Thèse"
     );
 
     // Repère les technos mentionnées dans le texte avec gestion précise des symboles (C++, C#)
@@ -80,13 +83,14 @@ public class TechStackDetector {
         return Optional.empty();
     }
 
-    // Repère si une langue cible est demandée (ex: "en anglais")
+    // Repère si une langue cible est demandée (ex: "en anglais", "vers l'espagnol")
     public static Optional<String> detecterLangueCibleTraduction(String text) {
         if (text == null || text.isBlank()) return Optional.empty();
 
-        String lower = text.toLowerCase();
+        String lower = " " + text.toLowerCase().replace("'", " ").replace("’", " ") + " ";
         for (Map.Entry<String, String> entry : LANGUES_TRADUCTION.entrySet()) {
-            if (lower.contains("en " + entry.getKey()) || lower.contains("vers " + entry.getKey()) || lower.contains("in " + entry.getKey()) || lower.contains("to " + entry.getKey())) {
+            String l = entry.getKey();
+            if (lower.contains(" en " + l) || lower.contains(" vers " + l) || lower.contains(" vers l " + l) || lower.contains(" in " + l) || lower.contains(" to " + l) || lower.contains(" into " + l)) {
                 return Optional.of(entry.getValue());
             }
         }

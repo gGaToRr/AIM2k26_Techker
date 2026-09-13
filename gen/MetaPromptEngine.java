@@ -7,7 +7,7 @@ import nlp.TypeOfPrompt;
 
 import java.util.*;
 
-// Moteur Meta-Prompting d'élite appliquant les 5 règles d'ingénierie de prompt
+// Moteur Meta-Prompting d'élite orchestrant les 7 Archétypes Universels d'Intention
 public class MetaPromptEngine {
 
     // Génère le super prompt optimisé en Markdown
@@ -31,38 +31,62 @@ public class MetaPromptEngine {
                 .trim();
     }
 
-    // Détermine le sous-template le plus adapté à l'intention fine
+    // Détermine le sous-template le plus adapté à l'intention fine parmi les 7 Archétypes
     private static String determinerSousType(PromptProfile profile, TypeOfPrompt type) {
         String lower = profile.rawText().toLowerCase();
         int nbMots = profile.rawText().trim().split("\\s+").length;
 
         return switch (type) {
-            case CODE -> {
-                // Vérifie si c'est réellement du design web / CSS
+            case APPRENTISSAGE_TUTORIEL -> {
+                if (lower.contains("debutant") || lower.contains("initiation") || lower.contains("premier") || lower.contains("bases") || lower.contains("cours")) {
+                    yield "guide_debutant";
+                }
+                yield "feynman_learning";
+            }
+            case CONCEPTION_ARCHITECTURE -> {
                 boolean isWebUI = lower.contains("site") || lower.contains("css") || lower.contains("html") || lower.contains("tailwind") || lower.contains("frontend") || lower.contains("web") || lower.contains("responsive");
                 if (isWebUI && (lower.contains("design") || lower.contains("bouton") || lower.contains("carte") || lower.contains("ombre") || lower.contains("layout"))) {
                     yield "frontend_ui";
-                } else if (lower.contains("architecture") || lower.contains("arborescence") || lower.contains("structure de dossier") || lower.contains("structure des dossier") || lower.contains("organisation des fichier")) {
-                    yield "architecture";
-                } else if (lower.contains("debug") || lower.contains("bug") || lower.contains("erreur") || lower.contains("exception") || lower.contains("crash")) {
-                    yield "debug";
-                } else if (lower.contains("review") || lower.contains("audit") || lower.contains("securite")) {
-                    yield "review";
-                } else if (lower.contains("refactor") || lower.contains("amelior") || lower.contains("optimis") || lower.contains("clean")) {
-                    yield "refactor";
+                } else if (lower.contains("architecture") || lower.contains("arborescence") || lower.contains("structure de dossier") || lower.contains("structure des dossier") || lower.contains("organisation")) {
+                    yield "architecture_systeme";
                 }
-                yield "generation";
+                yield "code_generation";
             }
-            case TRANSLATE -> "technical";
-            case CORRECTANSWERS -> lower.contains("reformul") ? "rewrite" : "proofreading";
-            case CREATION -> lower.contains("brainstorm") || lower.contains("idee") ? "brainstorming" : "storytelling";
-            case FACTUALQUESTIONS -> {
-                if (!profile.detectedTechnologies().isEmpty() || profile.hasCode()) {
-                    yield "deep_technical";
-                } else if (nbMots <= 3 && !profile.rawText().contains("?")) {
-                    yield "concept_guide";
+            case DEPANNAGE_DIAGNOSTIC -> {
+                if (lower.contains("review") || lower.contains("audit") || lower.contains("securite") || lower.contains("conformite")) {
+                    yield "audit_review";
+                } else if (lower.contains("refactor") || lower.contains("clean") || lower.contains("amelior") || lower.contains("optimis")) {
+                    yield "refactor_clean";
                 }
-                yield "feynman";
+                yield "root_cause_debug";
+            }
+            case CREATION_REDACTION -> {
+                if (profile.targetTranslationLanguage().isPresent() || lower.contains("tradui") || lower.contains("translate")) {
+                    yield "technical_translation";
+                } else if (lower.contains("corrig") || lower.contains("orthographe") || lower.contains("grammaire") || lower.contains("relectur")) {
+                    yield "proofreading";
+                } else if (lower.contains("brainstorm") || lower.contains("idee") || lower.contains("concept")) {
+                    yield "brainstorming";
+                }
+                yield "storytelling";
+            }
+            case PROTOCOLE_RECETTE -> {
+                if (lower.contains("recette") || lower.contains("cuisin") || lower.contains("cuisson") || lower.contains("gateau") || lower.contains("tarte") || lower.contains("plat") || lower.contains("ingredient")) {
+                    yield "recette_culinaire";
+                }
+                yield "protocole_technique";
+            }
+            case COMPARAISON_DECISION -> {
+                if (lower.contains("choisir") || lower.contains("choix") || lower.contains("arbitrage") || lower.contains("decision") || lower.contains("lequel")) {
+                    yield "aide_decision";
+                }
+                yield "matrice_comparative";
+            }
+            case CONCEPT_VULGARISATION -> {
+                if (nbMots <= 3 && !profile.rawText().contains("?")) {
+                    yield "concept_encyclopedique";
+                }
+                yield "vulgarisation_feynman";
             }
         };
     }
@@ -77,6 +101,7 @@ public class MetaPromptEngine {
         ctx.put("cleanedMission", cleanMission);
         ctx.put("sanitizedPrompt", profile.sanitizedText());
         ctx.put("type", type.name());
+        ctx.put("typeLabel", type.getLabel());
         ctx.put("language", profile.language().equals("FR") ? "Français" : "English");
         ctx.put("confidence", profile.classification().confidenceLevel().name() + " (" + String.format("%.1f%%", profile.classification().primaryProbability()) + ")");
 
