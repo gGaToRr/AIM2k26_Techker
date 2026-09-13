@@ -83,14 +83,14 @@ public class TechStackDetector {
         return Optional.empty();
     }
 
-    // Repère si une langue cible est demandée (ex: "en anglais", "vers l'espagnol")
+    // Repère si une langue cible est demandée (ex: "en anglais", "vers l'espagnol", "vers le japonais")
     public static Optional<String> detecterLangueCibleTraduction(String text) {
         if (text == null || text.isBlank()) return Optional.empty();
 
         String lower = " " + text.toLowerCase().replace("'", " ").replace("’", " ") + " ";
         for (Map.Entry<String, String> entry : LANGUES_TRADUCTION.entrySet()) {
             String l = entry.getKey();
-            if (lower.contains(" en " + l) || lower.contains(" vers " + l) || lower.contains(" vers l " + l) || lower.contains(" in " + l) || lower.contains(" to " + l) || lower.contains(" into " + l)) {
+            if (lower.contains(" en " + l) || lower.contains(" vers " + l) || lower.contains(" vers l " + l) || lower.contains(" vers le " + l) || lower.contains(" vers la " + l) || lower.contains(" in " + l) || lower.contains(" to " + l) || lower.contains(" into " + l)) {
                 return Optional.of(entry.getValue());
             }
         }

@@ -387,11 +387,12 @@ public class Lemmatizer {
         return CAMEL_CASE_PATTERN.matcher(texte.replace('_', ' ')).replaceAll(" ");
     }
 
-    // Découpe le texte en mots
+    // Découpe le texte en mots avec normalisation des accents et camelCase
     public static List<String> tokeniser(String texte) {
         if (texte == null || texte.isBlank()) return Collections.emptyList();
+        String normalise = retirerAccents(normaliserIdentifiants(texte)).toLowerCase();
         List<String> tokens = new ArrayList<>();
-        for (String mot : MOTS_PATTERN.split(texte.toLowerCase())) {
+        for (String mot : MOTS_PATTERN.split(normalise)) {
             String propre = mot.trim();
             if (propre.length() > 1 && !STOP_WORDS.contains(propre)) {
                 tokens.add(propre);

@@ -5,20 +5,37 @@ import test.framework.Assert;
 
 public class PromptQualityScorerTest {
 
-    public void testScorePromptVagueVsPromptPrecis() {
-        String promptVague = "Fais un truc";
-        PromptQualityScorer.Diagnostic diagVague = PromptQualityScorer.evaluer(promptVague, false, false, false);
+    public void testInvariantsDesScoresEtIntervalles() {
+        String prompt = "Écris une fonction Java avec gestion des erreurs et tests";
+        PromptQualityScorer.Diagnostic diag = PromptQualityScorer.evaluer(prompt, true, true, false);
 
-        String promptPrecis = "Rédige une fonction Java 21 avec Spring Boot pour valider un token JWT en respectant les principes SOLID et en gérant les exceptions.";
-        PromptQualityScorer.Diagnostic diagPrecis = PromptQualityScorer.evaluer(promptPrecis, true, true, false);
-
-        Assert.assertTrue(diagPrecis.scoreGlobal() > diagVague.scoreGlobal(), "Un prompt précis et riche en contraintes doit avoir un score supérieur à un prompt vague");
-        Assert.assertInRange(0, 100, diagPrecis.scoreGlobal(), "Le score total doit être compris entre 0 et 100");
+        Assert.assertBetweenInclusive(0, 100, diag.scoreGlobal(), "Score global entre 0 et 100");
+        Assert.assertBetweenInclusive(0, 40, diag.scoreClarte(), "Score clarté dans les bornes");
+        Assert.assertBetweenInclusive(0, 35, diag.scoreContexte(), "Score contexte dans les bornes");
+        Assert.assertBetweenInclusive(0, 25, diag.scoreContraintes(), "Score contraintes dans les bornes");
+        Assert.assertFalse(diag.pointsForts().isEmpty(), "Au moins 1 point fort");
     }
 
-    public void testDiagnosticsRecommandations() {
-        String promptCourt = "Aide-moi";
-        PromptQualityScorer.Diagnostic diag = PromptQualityScorer.evaluer(promptCourt, false, true, false);
-        Assert.assertNotNull(diag.pistesAmelioration(), "La liste des pistes d'amélioration ne doit pas être null");
+    public void testImpactCodeEtContraintesSurLeScore() {
+        String promptBasique = "Fais un script";
+        PromptQualityScorer.Diagnostic diagBasique = PromptQualityScorer.evaluer(promptBasique, false, false, false);
+
+        String promptRiche = "Génère un composant React avec Tailwind en respectant la charte graphique et sans utiliser de dépendances externes";
+        PromptQualityScorer.Diagnostic diagRiche = PromptQualityScorer.evaluer(promptRiche, true, true, false);
+
+        Assert.assertTrue(diagRiche.scoreGlobal() > diagBasique.scoreGlobal(), "Le prompt riche doit avoir un score strictement supérieur");
+        Assert.assertTrue(diagRiche.scoreContexte() >= diagBasique.scoreContexte(), "Score contexte supérieur");
+    }
+
+    public void testPromptVideScoreNul() {
+        PromptQualityScorer.Diagnostic vide = PromptQualityScorer.evaluer("", false, false, false);
+        Assert.assertEquals(0, vide.scoreGlobal(), "Score nul pour prompt vide");
+        Assert.assertEquals(0, vide.scoreClarte(), "Score clarté nul");
+        Assert.assertEquals(0, vide.scoreContexte(), "Score contexte nul");
+        Assert.assertEquals(0, vide.scoreContraintes(), "Score contraintes nul");
+        Assert.assertFalse(vide.pistesAmelioration().isEmpty(), "Pistes d'amélioration fournies");
+
+        PromptQualityScorer.Diagnostic nul = PromptQualityScorer.evaluer(null, false, false, false);
+        Assert.assertEquals(0, nul.scoreGlobal(), "Score nul pour null");
     }
 }
