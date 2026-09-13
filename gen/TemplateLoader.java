@@ -7,19 +7,21 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-// Charge et met en cache les templates Markdown du dossier genPrompt
+// Charge et met en cache les templates Markdown du dossier genPrompt pour les 7 Archétypes Universels
 public class TemplateLoader {
 
     private static final Map<String, String> CACHE_TEMPLATES = new HashMap<>();
 
-    // Charge un template à partir de la catégorie et du nom de fichier
+    // Charge un template à partir de l'Archétype et du sous-type
     public static String chargerTemplate(TypeOfPrompt type, String subType) {
         String dossier = switch (type) {
-            case CODE -> "code";
-            case TRANSLATE -> "translate";
-            case CORRECTANSWERS -> "correction";
-            case CREATION -> "creation";
-            case FACTUALQUESTIONS -> "questions";
+            case APPRENTISSAGE_TUTORIEL -> "learning";
+            case CONCEPTION_ARCHITECTURE -> "architecture";
+            case DEPANNAGE_DIAGNOSTIC -> "troubleshooting";
+            case CREATION_REDACTION -> "creation";
+            case PROTOCOLE_RECETTE -> "protocol";
+            case COMPARAISON_DECISION -> "comparison";
+            case CONCEPT_VULGARISATION -> "concept";
         };
 
         String cleCache = dossier + "/" + subType;
@@ -46,20 +48,36 @@ public class TemplateLoader {
     private static String fallbackTemplate(TypeOfPrompt type) {
         return """
                 # RÔLE & EXPERTISE
-                Tu es un assistant IA expert de haut niveau.
+                {{#hasDomainExpertise}}
+                {{domainPersona}}
+                {{/hasDomainExpertise}}
+                {{^hasDomainExpertise}}
+                Tu es un Assistant IA Expert et Conseiller Stratégique de rang mondial.
+                {{/hasDomainExpertise}}
 
                 <contexte>
-                - Catégorie : {{type}}
+                - Archétype : {{type}}
+                {{#hasDomainExpertise}}
+                - Domaine : {{domainName}} (Sujet : {{domainTopic}})
+                {{/hasDomainExpertise}}
                 - Langue : {{language}}
                 </contexte>
 
                 <instruction_principale>
-                {{rawPrompt}}
+                {{cleanedMission}}
                 </instruction_principale>
 
+                {{#hasMultipleObjectives}}
+                <objectifs_specifiques>
+                {{#objectives}}
+                - {{.}}
+                {{/objectives}}
+                </objectifs_specifiques>
+                {{/hasMultipleObjectives}}
+
                 <directives>
-                - Répondre avec rigueur, précision et clarté.
-                - Découper la réponse en étapes logiques.
+                - Répondre avec rigueur, précision, clarté et pédagogie.
+                - Découper la réponse en étapes logiques et structurées.
                 {{#hasAutoConstraints}}
                 {{#autoConstraints}}
                 - {{.}}
@@ -68,7 +86,7 @@ public class TemplateLoader {
                 </directives>
 
                 <format_de_sortie>
-                - Rédiger la réponse en Markdown clair et structuré.
+                - Rédiger la réponse en Markdown clair et soigné.
                 </format_de_sortie>
                 """;
     }
