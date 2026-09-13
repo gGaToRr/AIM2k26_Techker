@@ -24,8 +24,11 @@ public class TemplateSyntaxValidationTest {
     );
 
     public void testIntegriteEtSyntaxeTousLesTemplatesMarkdown() throws IOException {
-        Path rootGenPrompt = Path.of("genPrompt");
-        Assert.assertTrue(Files.exists(rootGenPrompt), "Le dossier genPrompt doit exister");
+        Path rootGenPrompt = Path.of("src", "genPrompt");
+        if (!Files.exists(rootGenPrompt)) {
+            rootGenPrompt = Path.of("genPrompt");
+        }
+        Assert.assertTrue(Files.exists(rootGenPrompt), "Le dossier genPrompt doit exister (dans src/genPrompt ou genPrompt)");
 
         try (Stream<Path> stream = Files.walk(rootGenPrompt)) {
             List<Path> markdownFiles = stream

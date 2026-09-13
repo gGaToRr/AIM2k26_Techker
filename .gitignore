@@ -40,7 +40,9 @@ output_prompt.md
 .promptctx-cache/
 .llm_config/
 bin/
+src/bin/
 models/
+src/models/
 *.gguf
 *.part
 sessions/
