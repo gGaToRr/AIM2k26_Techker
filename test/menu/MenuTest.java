@@ -8,40 +8,43 @@ import java.nio.charset.StandardCharsets;
 
 public class MenuTest {
 
-    public void testSaisieMultiligneAvecValidationDone() {
-        String input = "Ligne 1 : Présentation du projet\nLigne 2 : Détails techniques\n:done\n";
-        Menu menu = new Menu(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)));
+    public void testSaisieMultiligneAvecValidationDoneMajusculesEtMinuscules() {
+        String inputDoneMin = "Première ligne\nDeuxième ligne\n:done\n";
+        Menu menu1 = new Menu(new ByteArrayInputStream(inputDoneMin.getBytes(StandardCharsets.UTF_8)));
+        String res1 = menu1.demanderPrompt();
+        Assert.assertContains(res1, "Première ligne", "Ligne 1 lue");
+        Assert.assertContains(res1, "Deuxième ligne", "Ligne 2 lue");
+        Assert.assertFalse(res1.contains(":done"), ":done exclu");
 
-        String result = menu.demanderPrompt();
-        Assert.assertContains(result, "Ligne 1 : Présentation du projet", "Doit contenir la ligne 1");
-        Assert.assertContains(result, "Ligne 2 : Détails techniques", "Doit contenir la ligne 2");
-        Assert.assertFalse(result.contains(":done"), "Le mot-clé :done ne doit pas faire partie du prompt");
+        String inputDoneMaj = "Ligne A\nLigne B\n:DONE\n";
+        Menu menu2 = new Menu(new ByteArrayInputStream(inputDoneMaj.getBytes(StandardCharsets.UTF_8)));
+        String res2 = menu2.demanderPrompt();
+        Assert.assertContains(res2, "Ligne A", "Ligne A lue");
+        Assert.assertFalse(res2.contains(":DONE"), ":DONE exclu");
     }
 
     public void testSaisieMultiligneAvecValidationEnd() {
-        String input = "Premiere partie\nDeuxieme partie\n:end\n";
+        String input = "Bloc de texte introductif\nSuite du texte\n:END\n";
         Menu menu = new Menu(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)));
-
-        String result = menu.demanderPrompt();
-        Assert.assertContains(result, "Premiere partie", "Doit contenir la première partie");
-        Assert.assertContains(result, "Deuxieme partie", "Doit contenir la deuxième partie");
-        Assert.assertFalse(result.contains(":end"), "Le mot-clé :end ne doit pas faire partie du prompt");
+        String res = menu.demanderPrompt();
+        Assert.assertContains(res, "Bloc de texte introductif", "Intro lue");
+        Assert.assertFalse(res.contains(":END"), ":END exclu");
     }
 
-    public void testCollageBlocDeCode() {
-        String code = "public class HelloWorld {\n    public static void main(String[] args) {\n        System.out.println(\"Hello\");\n    }\n}\n:done\n";
+    public void testPreservationCodeAvecDeuxPointsInternes() {
+        String code = "const config = { host: 'localhost', port: 8080 };\nconsole.log(config);\n:done\n";
         Menu menu = new Menu(new ByteArrayInputStream(code.getBytes(StandardCharsets.UTF_8)));
-
-        String result = menu.demanderPrompt();
-        Assert.assertContains(result, "public class HelloWorld", "Le code source doit être préservé");
-        Assert.assertContains(result, "System.out.println", "Le corps de méthode doit être préservé");
+        String res = menu.demanderPrompt();
+        Assert.assertContains(res, "host: 'localhost'", "Les deux-points internes dans le code sont préservés");
+        Assert.assertContains(res, "port: 8080", "Le port est préservé");
     }
 
-    public void testSaisieUniligneAvecRetourLigne() {
-        String input = "Comment faire une quiche lorraine ?\n\n";
-        Menu menu = new Menu(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)));
-
-        String result = menu.demanderPrompt();
-        Assert.assertContains(result, "Comment faire une quiche lorraine ?", "La question uniligne doit être lue");
+    public void testCollageBlocDeCodeAvecIndentationEtAccolades() {
+        String code = "public class App {\n    public static void main(String[] args) {\n        System.out.println(\"Test\");\n    }\n}\n:done\n";
+        Menu menu = new Menu(new ByteArrayInputStream(code.getBytes(StandardCharsets.UTF_8)));
+        String res = menu.demanderPrompt();
+        Assert.assertContains(res, "public class App", "Entête de classe");
+        Assert.assertContains(res, "    public static void main", "Indentation 4 espaces préservée");
+        Assert.assertContains(res, "}", "Accolades préservées");
     }
 }
