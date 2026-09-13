@@ -1,7 +1,7 @@
-# 📄 Documentation : `menu/Menu.java`
+# 📄 Documentation : `src/menu/Menu.java`
 
 ## 📌 Rôle du Fichier
-`menu/Menu.java` gère l'interface textuelle interactive de l'application lorsqu'aucun argument direct (`-i`, `-f`) n'est passé en ligne de commande.
+`src/menu/Menu.java` gère l'interface textuelle interactive de l'application lorsqu'aucun argument direct (`-i`, `-f`) n'est passé en ligne de commande.
 
 ---
 

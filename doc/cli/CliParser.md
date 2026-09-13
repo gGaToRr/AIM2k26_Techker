@@ -1,7 +1,7 @@
-# 📄 Documentation : `cli/CliParser.java`
+# 📄 Documentation : `src/cli/CliParser.java`
 
 ## 📌 Rôle du Fichier
-`cli/CliParser.java` est le **moteur d'analyse syntaxique (parser)** de la ligne de commande. Il prend en entrée le tableau brut `String[] args` et produit un objet `CliArgs` validé et normalisé.
+`src/cli/CliParser.java` est le **moteur d'analyse syntaxique (parser)** de la ligne de commande. Il prend en entrée le tableau brut `String[] args` et produit un objet `CliArgs` validé et normalisé.
 
 ---
 

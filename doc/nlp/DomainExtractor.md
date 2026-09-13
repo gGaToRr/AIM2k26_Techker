@@ -1,7 +1,7 @@
-# 📄 Documentation : `nlp/DomainExtractor.java`
+# 📄 Documentation : `src/nlp/DomainExtractor.java`
 
 ## 📌 Rôle du Fichier
-`nlp/DomainExtractor.java` identifie le **domaine d'expertise métier**, extrait le **sujet pivot** de la requête et forge un **persona d'expert adapté** pour guider le LLM.
+`src/nlp/DomainExtractor.java` identifie le **domaine d'expertise métier**, extrait le **sujet pivot** de la requête et forge un **persona d'expert adapté** pour guider le LLM.
 
 ---
 

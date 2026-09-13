@@ -1,7 +1,7 @@
-# 📄 Documentation : `nlp/SafetyAdvisor.java`
+# 📄 Documentation : `src/nlp/SafetyAdvisor.java`
 
 ## 📌 Rôle du Fichier
-`nlp/SafetyAdvisor.java` est un **module d'analyse préventive et non bloquant**. Il vérifie si le prompt contient des secrets accidentels (mots de passe, clés API, tokens JWT) ou des termes sensibles avant envoi vers un LLM.
+`src/nlp/SafetyAdvisor.java` est un **module d'analyse préventive et non bloquant**. Il vérifie si le prompt contient des secrets accidentels (mots de passe, clés API, tokens JWT) ou des termes sensibles avant envoi vers un LLM.
 
 ---
 

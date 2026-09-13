@@ -1,4 +1,4 @@
-# 🔄 Documentation : Pipeline du Moteur d'Inférence LLM (`llm/pipeline.txt`)
+# 🔄 Documentation : Pipeline du Moteur d'Inférence LLM (`doc/pipelines/pipeline_llm.txt`)
 
 Ce document détaille les 4 étapes du flux d'exécution locale des Small Language Models (SLMs).
 

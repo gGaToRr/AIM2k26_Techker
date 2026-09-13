@@ -1,4 +1,4 @@
-# 📄 Documentation : Pipeline de Génération (`genPrompt/pipeline.txt`)
+# 📄 Documentation : Pipeline de Génération (`doc/pipelines/pipeline_genprompt.txt`)
 
 ## 📌 Rôle du Pipeline de Génération
 Le pipeline de génération transforme les informations extraites par le NLP en un **Super-Prompt d'élite** formaté en Markdown pour les modèles de langage.

@@ -1,4 +1,4 @@
-# ⚙️ Documentation : `llm/LlmConfig.java`
+# ⚙️ Documentation : `src/llm/LlmConfig.java`
 
 ## 🎯 Rôle du Fichier
 

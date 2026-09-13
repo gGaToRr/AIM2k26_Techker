@@ -1,7 +1,7 @@
-# 📄 Documentation : `nlp/TypeOfPrompt.java`
+# 📄 Documentation : `src/nlp/TypeOfPrompt.java`
 
 ## 📌 Rôle du Fichier
-`nlp/TypeOfPrompt.java` définit les **7 Archétypes Universels d'Intention** qui catégorisent l'intégralité des requêtes possibles qu'un humain peut adresser à un modèle de langage.
+`src/nlp/TypeOfPrompt.java` définit les **7 Archétypes Universels d'Intention** qui catégorisent l'intégralité des requêtes possibles qu'un humain peut adresser à un modèle de langage.
 
 ---
 

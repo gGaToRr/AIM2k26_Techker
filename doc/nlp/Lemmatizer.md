@@ -1,7 +1,7 @@
-# 📄 Documentation : `nlp/Lemmatizer.java`
+# 📄 Documentation : `src/nlp/Lemmatizer.java`
 
 ## 📌 Rôle du Fichier
-`nlp/Lemmatizer.java` est le **moteur d'analyse morphologique et de tokenisation**. Il extrait les mots significatifs, filtre les mots vides (stopwords), calcule la densité de code et orchestre la création du `PromptProfile`.
+`src/nlp/Lemmatizer.java` est le **moteur d'analyse morphologique et de tokenisation**. Il extrait les mots significatifs, filtre les mots vides (stopwords), calcule la densité de code et orchestre la création du `PromptProfile`.
 
 ---
 

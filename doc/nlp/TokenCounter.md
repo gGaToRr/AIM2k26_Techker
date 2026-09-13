@@ -1,7 +1,7 @@
-# 📄 Documentation : `nlp/TokenCounter.java`
+# 📄 Documentation : `src/nlp/TokenCounter.java`
 
 ## 📌 Rôle du Fichier
-`nlp/TokenCounter.java` estime le nombre de sous-mots **BPE (Byte-Pair Encoding)** du prompt et calcule une estimation prédictive des coûts d'inférence sur les APIs LLM.
+`src/nlp/TokenCounter.java` estime le nombre de sous-mots **BPE (Byte-Pair Encoding)** du prompt et calcule une estimation prédictive des coûts d'inférence sur les APIs LLM.
 
 ---
 

@@ -2,7 +2,7 @@
 
 ## 📖 Présentation Générale
 
-Le module `llm/` apporte au projet la capacité d'**exécuter directement et localement les méta-prompts générés** sur des modèles de langage légers (*Small Language Models* ou SLMs) sans recourir à des services cloud externes (OpenAI, Anthropic, Google).
+Le module `src/llm/` apporte au projet la capacité d'**exécuter directement et localement les méta-prompts générés** sur des modèles de langage légers (*Small Language Models* ou SLMs) sans recourir à des services cloud externes (OpenAI, Anthropic, Google).
 
 L'architecture repose sur le concept de **"System-Level Mixture of Specialists" (MoS)** : au lieu d'utiliser un modèle généraliste lourd et consommateur en ressources, l'outil analyse la nature sémantique du prompt via le pipeline NLP et aiguille la requête vers le modèle compact expert le plus compétent (1.0 Go à 1.6 Go).
 

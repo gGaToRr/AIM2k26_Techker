@@ -1,7 +1,7 @@
-# 📄 Documentation : `cli/CliArgs.java`
+# 📄 Documentation : `src/cli/CliArgs.java`
 
 ## 📌 Rôle du Fichier
-`cli/CliArgs.java` est un **Record Java immuable** servant de conteneur typé pour l'ensemble des options, drapeaux et arguments fournis lors de l'appel en ligne de commande.
+`src/cli/CliArgs.java` est un **Record Java immuable** servant de conteneur typé pour l'ensemble des options, drapeaux et arguments fournis lors de l'appel en ligne de commande.
 
 ---
 
