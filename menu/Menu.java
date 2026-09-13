@@ -23,6 +23,7 @@ public class Menu {
         System.out.println("   drop the output in your model (All       ");
         System.out.println("   models are working). - Thanks 4 using    \n");
         System.out.println("          Pierre Untersinger - **\n");
+        System.out.println("\n--------------------------------------------\n");
     }
 
     // Méthode pour demander un prompt au user (support multiligne, copier-coller et redirection de flux)
