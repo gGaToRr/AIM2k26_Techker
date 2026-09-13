@@ -45,6 +45,8 @@ public class ModelInstaller {
         out.println("   - 100% Hors-ligne & Prive (zero fuite de donnees)");
         out.println("   - 100% Gratuit (aucun abonnement ni cle API)");
         out.println("   - Espace disque requis : ~1.1 a 1.6 Go par modele");
+        out.println("   - Le moteur d'inference natif (llama-cli) sera aussi installe");
+        out.println("     automatiquement s'il n'est pas deja present sur la machine.");
         out.println();
         if (recommendedModel != null) {
             out.println("Modele recommande pour votre requete :");

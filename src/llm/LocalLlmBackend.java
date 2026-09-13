@@ -27,6 +27,17 @@ public class LocalLlmBackend implements LlmBackend {
     }
 
     public static String detectRunnerBinary() {
+        return detectRunnerBinary(null);
+    }
+
+    // Cherche d'abord le runtime installé automatiquement par l'application (RuntimeInstaller),
+    // avant de retomber sur une installation système existante de llama-cli.
+    public static String detectRunnerBinary(String runtimeDir) {
+        java.nio.file.Path runtimeManage = RuntimeInstaller.getRuntimeBinaryPath(runtimeDir);
+        if (runtimeManage != null) {
+            return runtimeManage.toAbsolutePath().toString();
+        }
+
         for (String candidate : RUNNER_CANDIDATES) {
             File f = new File(candidate);
             if (f.exists() && f.canExecute()) {
@@ -46,12 +57,17 @@ public class LocalLlmBackend implements LlmBackend {
         return null;
     }
 
+    // Vérifie si un runtime natif est utilisable (installé par l'app ou déjà présent sur le système)
+    public static boolean isRuntimeAvailable(String runtimeDir) {
+        return detectRunnerBinary(runtimeDir) != null;
+    }
+
     @Override
     public GenerationResult generate(ModelType model, String prompt, LlmConfig config, TokenConsumer tokenConsumer) throws Exception {
         long startTime = System.currentTimeMillis();
         Path modelPath = ModelInstaller.getModelPath(model, config.getRepertoireModeles());
 
-        String runner = detectRunnerBinary();
+        String runner = detectRunnerBinary(config.getRepertoireRuntime());
 
         if (runner != null && Files.exists(modelPath)) {
             return runNativeInference(runner, modelPath, model, prompt, config, tokenConsumer, startTime);
