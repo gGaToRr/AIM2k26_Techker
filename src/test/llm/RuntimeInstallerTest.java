@@ -141,6 +141,31 @@ public class RuntimeInstallerTest {
         Assert.assertSize(assets, 0, "JSON vide renvoie une liste vide, pas une exception");
     }
 
+    // Reproduit le vrai schéma de l'API GitHub : un objet "uploader" imbriqué (avec ses propres
+    // accolades) se trouve entre "name" et "browser_download_url" de chaque asset.
+    private static final String JSON_RELEASE_AVEC_UPLOADER_IMBRIQUE = "[{\n" +
+            "  \"tag_name\": \"b10948\",\n" +
+            "  \"name\": \"b10948\",\n" +
+            "  \"assets\": [\n" +
+            "    {\"url\": \"https://api.github.com/x\", \"id\": 1, \"name\": \"llama-b10948-bin-ubuntu-x64.tar.gz\", \"label\": \"\", " +
+            "\"uploader\": {\"login\": \"github-actions[bot]\", \"id\": 41898282, \"url\": \"https://api.github.com/users/x\"}, " +
+            "\"content_type\": \"application/gzip\", \"size\": 12345, " +
+            "\"browser_download_url\": \"https://github.com/ggml-org/llama.cpp/releases/download/b10948/llama-b10948-bin-ubuntu-x64.tar.gz\"}\n" +
+            "  ]\n" +
+            "}]";
+
+    public void testExtraireAssetsDepuisJsonAvecUploaderImbrique() {
+        List<RuntimeInstaller.RuntimeAsset> assets = RuntimeInstaller.extraireAssetsDepuisJson(JSON_RELEASE_AVEC_UPLOADER_IMBRIQUE);
+        Assert.assertSize(assets, 1, "Un seul asset malgré l'objet uploader imbriqué entre les deux champs");
+        Assert.assertEquals("llama-b10948-bin-ubuntu-x64.tar.gz", assets.get(0).name(), "Nom correctement isolé");
+        Assert.assertContains(assets.get(0).url(), "ubuntu-x64.tar.gz", "URL correctement isolée malgré l'objet imbriqué");
+    }
+
+    public void testExtraireTagVersionAvecNomDeReleaseAmbigu() {
+        Assert.assertEquals("b10948", RuntimeInstaller.extraireTagVersion(JSON_RELEASE_AVEC_UPLOADER_IMBRIQUE),
+                "Le tag_name du release ne doit pas être confondu avec son champ name");
+    }
+
     // --- Extraction ZIP (Windows) avec protection zip-slip ---
 
     public void testExtraireZipExtraitFichierAttendu() throws Exception {
