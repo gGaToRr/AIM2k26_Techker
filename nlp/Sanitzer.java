@@ -174,4 +174,11 @@ public class Sanitzer {
 
         return propre;
     }
+
+    // Supprime les accents d'une chaîne de caractères (ex: Médecine -> Medecine)
+    public static String supprimerAccents(String texte) {
+        if (texte == null) return "";
+        String normalise = java.text.Normalizer.normalize(texte, java.text.Normalizer.Form.NFD);
+        return normalise.replaceAll("\\p{M}", "");
+    }
 }
