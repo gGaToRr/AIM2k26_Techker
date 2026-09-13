@@ -13,13 +13,17 @@ mkdir -p bin
 javac -cp ".:lib/jmustache-1.16.jar" -d bin \
     Main.java \
     menu/Menu.java \
+    cli/*.java \
     nlp/*.java \
     gen/*.java \
+    llm/*.java \
     test/*.java \
     test/framework/*.java \
     test/nlp/*.java \
     test/gen/*.java \
     test/menu/*.java \
+    test/cli/*.java \
+    test/llm/*.java \
     test/integration/*.java
 
 echo ""

@@ -8,6 +8,7 @@ public record CliArgs(
         boolean isRaw,
         boolean isDryRun,
         boolean isClipboard,
+        boolean isExec,
         String instruction,
         String code,
         String agent,
@@ -15,7 +16,8 @@ public record CliArgs(
         String template,
         String domain,
         String language,
-        String filePath
+        String filePath,
+        String model
 ) {
     public boolean hasInstruction() {
         return instruction != null && !instruction.isBlank();
@@ -49,6 +51,10 @@ public record CliArgs(
         return filePath != null && !filePath.isBlank();
     }
 
+    public boolean hasModel() {
+        return model != null && !model.isBlank();
+    }
+
     // Combine l'instruction et le code injecté pour l'analyse NLP
     public String getFullPrompt() {
         StringBuilder sb = new StringBuilder();
@@ -76,6 +82,7 @@ public record CliArgs(
         private boolean isRaw = false;
         private boolean isDryRun = false;
         private boolean isClipboard = false;
+        private boolean isExec = false;
         private String instruction = null;
         private String code = null;
         private String agent = null;
@@ -84,6 +91,7 @@ public record CliArgs(
         private String domain = null;
         private String language = null;
         private String filePath = null;
+        private String model = null;
 
         public Builder help(boolean isHelp) { this.isHelp = isHelp; return this; }
         public Builder version(boolean isVersion) { this.isVersion = isVersion; return this; }
@@ -91,6 +99,7 @@ public record CliArgs(
         public Builder raw(boolean isRaw) { this.isRaw = isRaw; return this; }
         public Builder dryRun(boolean isDryRun) { this.isDryRun = isDryRun; return this; }
         public Builder clipboard(boolean isClipboard) { this.isClipboard = isClipboard; return this; }
+        public Builder exec(boolean isExec) { this.isExec = isExec; return this; }
         public Builder instruction(String instruction) { this.instruction = instruction; return this; }
         public Builder code(String code) { this.code = code; return this; }
         public Builder agent(String agent) { this.agent = agent; return this; }
@@ -99,11 +108,12 @@ public record CliArgs(
         public Builder domain(String domain) { this.domain = domain; return this; }
         public Builder language(String language) { this.language = language; return this; }
         public Builder filePath(String filePath) { this.filePath = filePath; return this; }
+        public Builder model(String model) { this.model = model; return this; }
 
         public CliArgs build() {
             return new CliArgs(
-                    isHelp, isVersion, isVerbose, isRaw, isDryRun, isClipboard,
-                    instruction, code, agent, output, template, domain, language, filePath
+                    isHelp, isVersion, isVerbose, isRaw, isDryRun, isClipboard, isExec,
+                    instruction, code, agent, output, template, domain, language, filePath, model
             );
         }
     }

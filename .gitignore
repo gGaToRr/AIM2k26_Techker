@@ -34,7 +34,12 @@ out/
 ### VS Code ###
 .vscode/
 
-### Output files & logs ###
+# Output files & logs
 *.log
 output_prompt.md
 .promptctx-cache/
+.llm_config/
+bin/
+models/
+*.gguf
+*.part

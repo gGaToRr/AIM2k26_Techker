@@ -9,7 +9,7 @@ Ce dossier `doc/` a été conçu pour permettre à **n'importe quel développeur
 ## 🗺️ Sommaire de la Documentation
 
 ### 1. Architecture Globale & Point d'Entrée
-* 📄 [`doc/architecture_globale.md`](file:///home/kaets0ner/Desktop/Project_Ia/doc/architecture_globale.md) : Vue d'ensemble du flux end-to-end (saisie → NLP → Meta-Prompting → sortie).
+* 📄 [`doc/architecture_globale.md`](file:///home/kaets0ner/Desktop/Project_Ia/doc/architecture_globale.md) : Vue d'ensemble du flux end-to-end (saisie → NLP → Meta-Prompting → Inférence Locale → sortie).
 * 📄 [`doc/Main.md`](file:///home/kaets0ner/Desktop/Project_Ia/doc/Main.md) : Orchestration et point d'entrée principal (`Main.java`).
 * 📄 [`doc/menu/Menu.md`](file:///home/kaets0ner/Desktop/Project_Ia/doc/menu/Menu.md) : Interface utilisateur CLI interactive et saisie multiligne (`menu/Menu.java`).
 
@@ -38,9 +38,17 @@ Ce dossier `doc/` a été conçu pour permettre à **n'importe quel développeur
 * 📄 [`doc/gen/TemplateLoader.md`](file:///home/kaets0ner/Desktop/Project_Ia/doc/gen/TemplateLoader.md) : Chargeur et cache mémoire des templates (`gen/TemplateLoader.java`).
 * 📄 [`doc/gen/templates.md`](file:///home/kaets0ner/Desktop/Project_Ia/doc/gen/templates.md) : Guide des 18 templates Markdown spécialisés.
 
-### 5. Suite de Tests TDD & Automatisation (`test/` & `scripts/`)
+### 5. Module LLM — Inférence Locale & Routage Intelligent (`llm/`)
+* 📄 [`doc/llm/README.md`](file:///home/kaets0ner/Desktop/Project_Ia/doc/llm/README.md) : Présentation générale de l'inférence locale privée.
+* 📄 [`doc/llm/ModelType.md`](file:///home/kaets0ner/Desktop/Project_Ia/doc/llm/ModelType.md) : Registre des 4 modèles légers (Qwen Coder, Gemma 2, DeepSeek R1, SmolLM2).
+* 📄 [`doc/llm/ModelRouter.md`](file:///home/kaets0ner/Desktop/Project_Ia/doc/llm/ModelRouter.md) : Routage automatique sémantique selon le profil NLP.
+* 📄 [`doc/llm/ModelInstaller.md`](file:///home/kaets0ner/Desktop/Project_Ia/doc/llm/ModelInstaller.md) : Assistant d'onboarding pour débutants et gestionnaire de téléchargement.
+* 📄 [`doc/llm/LlmConfig.md`](file:///home/kaets0ner/Desktop/Project_Ia/doc/llm/LlmConfig.md) : Gestion de la configuration persistante (`settings.json`).
+* 📄 [`doc/llm/LlmEngine.md`](file:///home/kaets0ner/Desktop/Project_Ia/doc/llm/LlmEngine.md) : Moteur d'inférence, streaming console et métriques de débit.
+
+### 6. Suite de Tests TDD & Automatisation (`test/` & `scripts/`)
 * 📄 [`doc/test/framework.md`](file:///home/kaets0ner/Desktop/Project_Ia/doc/test/framework.md) : Mini-framework d'assertions et runner de test (`test/framework/`).
-* 📄 [`doc/test/test_suites.md`](file:///home/kaets0ner/Desktop/Project_Ia/doc/test/test_suites.md) : Vue d'ensemble des 101 tests unitaires et d'intégration.
+* 📄 [`doc/test/test_suites.md`](file:///home/kaets0ner/Desktop/Project_Ia/doc/test/test_suites.md) : Vue d'ensemble des 129 tests unitaires et d'intégration.
 * 📄 [`doc/scripts/run_tests.md`](file:///home/kaets0ner/Desktop/Project_Ia/doc/scripts/run_tests.md) : Script d'exécution automatisée (`scripts/run_tests.sh`).
 
 ---
@@ -48,4 +56,5 @@ Ce dossier `doc/` a été conçu pour permettre à **n'importe quel développeur
 ## 💡 Principes Clés du Projet
 1. **Zéro dépendance lourde** : Utilise uniquement la bibliothèque standard Java + `JMustache` (45 KB) pour le rendu Markdown.
 2. **Exécution ultra-rapide** : Analyse NLP + génération de super-prompt en **moins de 5 millisecondes**.
-3. **100% Test-Driven (TDD)** : 101 tests garantissant la non-régression et la robustesse face aux cas limites.
+3. **Inférence 100% Locale & Privée** : Possibilité d'exécuter localement le prompt généré sur des SLMs spécialisés sans envoyer de données sur le cloud.
+4. **100% Test-Driven (TDD)** : 129 tests unitaires et d'intégration garantissant la robustesse face aux cas limites.
