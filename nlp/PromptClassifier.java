@@ -2,7 +2,7 @@ package nlp;
 
 import java.util.*;
 
-// Détermine la nature du prompt avec un pourcentage de confiance
+// Détermine l'Archétype Universel du prompt avec une distribution de confiance probabiliste
 public class PromptClassifier {
 
     public enum ConfidenceLevel {
@@ -17,7 +17,7 @@ public class PromptClassifier {
             String justification
     ) {}
 
-    // Calcule la répartition des probabilités sur chaque type de prompt
+    // Calcule la répartition des probabilités sur chacun des 7 Archétypes Universels
     public static ClassificationResult classifier(PromptProfile profile, List<String> techStack, Optional<String> langueCible) {
         Map<TypeOfPrompt, Double> scores = new EnumMap<>(TypeOfPrompt.class);
         for (TypeOfPrompt type : TypeOfPrompt.values()) {
@@ -26,49 +26,57 @@ public class PromptClassifier {
 
         Map<String, Double> weights = profile.weightedScores();
 
-        // 1. Scoring CODE (nécessite de vrais indices dev, code ou techStack)
-        double codeScore = weights.getOrDefault("code", 0.0) * 2.0 + weights.getOrDefault("debug", 0.0) * 2.0;
+        // 1. APPRENTISSAGE_TUTORIEL
+        double learningScore = weights.getOrDefault("apprend", 0.0) * 4.0;
+        scores.put(TypeOfPrompt.APPRENTISSAGE_TUTORIEL, scores.get(TypeOfPrompt.APPRENTISSAGE_TUTORIEL) + learningScore);
+
+        // 2. CONCEPTION_ARCHITECTURE
+        double archScore = weights.getOrDefault("architect", 0.0) * 3.5 + weights.getOrDefault("code", 0.0) * 2.5;
         if (profile.hasCode()) {
-            codeScore += profile.codeDensity() * 15.0;
+            archScore += profile.codeDensity() * 12.0;
         }
         if (!techStack.isEmpty()) {
-            codeScore += techStack.size() * 8.0;
+            archScore += techStack.size() * 6.0;
         }
-        scores.put(TypeOfPrompt.CODE, scores.get(TypeOfPrompt.CODE) + codeScore);
+        scores.put(TypeOfPrompt.CONCEPTION_ARCHITECTURE, scores.get(TypeOfPrompt.CONCEPTION_ARCHITECTURE) + archScore);
 
-        // 2. Scoring TRANSLATE
-        double translateScore = weights.getOrDefault("traduir", 0.0) * 4.0;
+        // 3. DEPANNAGE_DIAGNOSTIC
+        double troubleScore = weights.getOrDefault("depann", 0.0) * 4.0;
+        scores.put(TypeOfPrompt.DEPANNAGE_DIAGNOSTIC, scores.get(TypeOfPrompt.DEPANNAGE_DIAGNOSTIC) + troubleScore);
+
+        // 4. CREATION_REDACTION
+        double createScore = weights.getOrDefault("creer", 0.0) * 3.5 + weights.getOrDefault("corrig", 0.0) * 3.5 + weights.getOrDefault("traduir", 0.0) * 3.5;
         if (langueCible.isPresent()) {
-            translateScore += 12.0;
+            createScore += 10.0;
         }
-        scores.put(TypeOfPrompt.TRANSLATE, scores.get(TypeOfPrompt.TRANSLATE) + translateScore);
+        scores.put(TypeOfPrompt.CREATION_REDACTION, scores.get(TypeOfPrompt.CREATION_REDACTION) + createScore);
 
-        // 3. Scoring CORRECTANSWERS
-        double correctScore = weights.getOrDefault("corrig", 0.0) * 4.0;
-        scores.put(TypeOfPrompt.CORRECTANSWERS, scores.get(TypeOfPrompt.CORRECTANSWERS) + correctScore);
+        // 5. PROTOCOLE_RECETTE
+        double protocolScore = weights.getOrDefault("protocol", 0.0) * 4.5;
+        scores.put(TypeOfPrompt.PROTOCOLE_RECETTE, scores.get(TypeOfPrompt.PROTOCOLE_RECETTE) + protocolScore);
 
-        // 4. Scoring CREATION
-        double createScore = weights.getOrDefault("creer", 0.0) * 3.0;
-        scores.put(TypeOfPrompt.CREATION, scores.get(TypeOfPrompt.CREATION) + createScore);
+        // 6. COMPARAISON_DECISION
+        double comparisonScore = weights.getOrDefault("compar", 0.0) * 4.5;
+        scores.put(TypeOfPrompt.COMPARAISON_DECISION, scores.get(TypeOfPrompt.COMPARAISON_DECISION) + comparisonScore);
 
-        // 5. Scoring FACTUALQUESTIONS
-        double questionScore = weights.getOrDefault("expliqu", 0.0) * 2.5 + weights.getOrDefault("question", 0.0) * 2.5;
+        // 7. CONCEPT_VULGARISATION
+        double conceptScore = weights.getOrDefault("concept", 0.0) * 3.5 + weights.getOrDefault("expliqu", 0.0) * 2.5 + weights.getOrDefault("question", 0.0) * 2.0;
         if (profile.isQuestion()) {
-            questionScore += 3.0;
+            conceptScore += 2.0;
         }
 
-        // Si aucune intention spécifique n'est détectée (ex: mot isolé "frangipane"), fallback sur FACTUALQUESTIONS
-        boolean aucuneIntentionSpecifique = (codeScore == 0.0 && translateScore == 0.0 && correctScore == 0.0 && createScore == 0.0 && questionScore == 0.0);
+        // Fallback encyclopédique si aucune intention d'action spécifique n'est détectée
+        boolean aucuneIntentionSpecifique = (learningScore == 0.0 && archScore == 0.0 && troubleScore == 0.0 && createScore == 0.0 && protocolScore == 0.0 && comparisonScore == 0.0 && conceptScore == 0.0);
         if (aucuneIntentionSpecifique) {
-            questionScore += 2.0;
+            conceptScore += 2.0;
         }
-        scores.put(TypeOfPrompt.FACTUALQUESTIONS, scores.get(TypeOfPrompt.FACTUALQUESTIONS) + questionScore);
+        scores.put(TypeOfPrompt.CONCEPT_VULGARISATION, scores.get(TypeOfPrompt.CONCEPT_VULGARISATION) + conceptScore);
 
         // Normalisation en pourcentages
         double totalScore = scores.values().stream().mapToDouble(Double::doubleValue).sum();
         Map<TypeOfPrompt, Double> distribution = new EnumMap<>(TypeOfPrompt.class);
 
-        TypeOfPrompt topType = TypeOfPrompt.FACTUALQUESTIONS;
+        TypeOfPrompt topType = TypeOfPrompt.CONCEPT_VULGARISATION;
         double maxProb = 0.0;
 
         for (Map.Entry<TypeOfPrompt, Double> entry : scores.entrySet()) {
@@ -80,16 +88,18 @@ public class PromptClassifier {
             }
         }
 
-        ConfidenceLevel level = maxProb >= 55.0 ? ConfidenceLevel.HIGH : (maxProb >= 35.0 ? ConfidenceLevel.MEDIUM : ConfidenceLevel.LOW);
+        ConfidenceLevel level = maxProb >= 50.0 ? ConfidenceLevel.HIGH : (maxProb >= 30.0 ? ConfidenceLevel.MEDIUM : ConfidenceLevel.LOW);
 
         String justification = switch (topType) {
-            case CODE -> "Code, architecture ou technologies détectés (" + (techStack.isEmpty() ? "vocabulaire dev" : String.join(", ", techStack)) + ")";
-            case TRANSLATE -> "Demande de traduction" + (langueCible.map(l -> " vers " + l).orElse(""));
-            case CORRECTANSWERS -> "Mots-clés de correction / relecture dominants";
-            case CREATION -> "Génération créative ou rédaction narrative";
-            case FACTUALQUESTIONS -> aucuneIntentionSpecifique
-                    ? "Terme ou sujet isolé sans contexte spécifique : traitement par synthèse encyclopédique et explicative"
-                    : "Question factuelle ou demande d'explication";
+            case APPRENTISSAGE_TUTORIEL -> "Intention d'apprentissage, d'initiation ou guide pédagogique progressif";
+            case CONCEPTION_ARCHITECTURE -> "Conception de système, code source, design UI/UX ou arborescence de fichiers (" + (techStack.isEmpty() ? "modélisation" : String.join(", ", techStack)) + ")";
+            case DEPANNAGE_DIAGNOSTIC -> "Diagnostic de panne, résolution de bugs, audit de sécurité ou refactoring";
+            case CREATION_REDACTION -> "Génération narrative, écriture créative, réécriture, relecture ou traduction";
+            case PROTOCOLE_RECETTE -> "Protocole opératoire, recette culinaire, procédure chronologique ou checklist";
+            case COMPARAISON_DECISION -> "Analyse comparative multicritères, benchmark ou arbitrage décisionnel";
+            case CONCEPT_VULGARISATION -> aucuneIntentionSpecifique
+                    ? "Sujet ou terme isolé : synthèse encyclopédique et explicative"
+                    : "Explication de concept théorique, définition ou vulgarisation scientifique";
         };
 
         return new ClassificationResult(topType, maxProb, level, distribution, justification);

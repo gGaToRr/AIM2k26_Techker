@@ -36,28 +36,63 @@ public class Lemmatizer {
 
     // Expressions de plusieurs mots clés
     private static final Map<String, String> EXPRESSIONS_COMPOSEES = Map.ofEntries(
+            // Comparaison & Décision
+            Map.entry("quelle est la difference", "compar"),
+            Map.entry("quelle difference", "compar"),
+            Map.entry("avantages et inconvenients", "compar"),
+            Map.entry("lequel choisir", "compar"),
+            Map.entry("comparatif entre", "compar"),
+            Map.entry("pour ou contre", "compar"),
+            Map.entry("benchmark de", "compar"),
+
+            // Protocole & Recette
+            Map.entry("recette de", "protocol"),
+            Map.entry("recette pour", "protocol"),
+            Map.entry("protocole de", "protocol"),
+            Map.entry("procedure de", "protocol"),
+            Map.entry("etapes pour", "protocol"),
+            Map.entry("mode d emploi", "protocol"),
+            Map.entry("guide de fabrication", "protocol"),
+
+            // Apprentissage & Tutoriel
+            Map.entry("je veux apprendre", "apprend"),
+            Map.entry("guide du debutant", "apprend"),
+            Map.entry("premiers pas", "apprend"),
+            Map.entry("pas a pas", "apprend"),
+            Map.entry("step by step", "apprend"),
+            Map.entry("ligne par ligne", "apprend"),
+            Map.entry("comment on fait", "apprend"),
+            Map.entry("comment faire", "apprend"),
+
+            // Conception & Architecture
+            Map.entry("architecture logicielle", "architect"),
+            Map.entry("arborescence des fichiers", "architect"),
+            Map.entry("arborescence du projet", "architect"),
+            Map.entry("structure de dossier", "architect"),
+            Map.entry("structure des dossiers", "architect"),
+            Map.entry("design du site", "architect"),
+            Map.entry("refaire le design", "architect"),
+            Map.entry("design system", "architect"),
+
+            // Dépannage & Diagnostic
+            Map.entry("revue de code", "depann"),
+            Map.entry("code review", "depann"),
+            Map.entry("audit de securite", "depann"),
+            Map.entry("cause racine", "depann"),
+            Map.entry("root cause", "depann"),
+
+            // Traduction & Rédaction
             Map.entry("en anglais", "traduir"),
             Map.entry("en francais", "traduir"),
             Map.entry("en espagnol", "traduir"),
-            Map.entry("revue de code", "code"),
-            Map.entry("code review", "code"),
-            Map.entry("design du site", "code"),
-            Map.entry("refaire le design", "code"),
-            Map.entry("arborescence des fichiers", "code"),
-            Map.entry("arborescence du projet", "code"),
-            Map.entry("architecture logicielle", "code"),
-            Map.entry("structure de dossier", "code"),
-            Map.entry("sur mobile", "code"),
-            Map.entry("jeu video", "code"),
-            Map.entry("qu est ce que", "question"),
-            Map.entry("c est quoi", "question"),
-            Map.entry("comment ca marche", "expliqu"),
-            Map.entry("comment on fait", "expliqu"),
-            Map.entry("je veux apprendre", "expliqu"),
-            Map.entry("explication simple", "expliqu"),
-            Map.entry("pas a pas", "expliqu"),
-            Map.entry("step by step", "expliqu"),
-            Map.entry("ligne par ligne", "expliqu")
+
+            // Concept & Vulgarisation
+            Map.entry("qu est ce que", "concept"),
+            Map.entry("c est quoi", "concept"),
+            Map.entry("comment ca marche", "concept"),
+            Map.entry("explication simple", "concept"),
+            Map.entry("theorie de", "concept"),
+            Map.entry("histoire de", "concept")
     );
 
     // Mots vides sans valeur sémantique
@@ -73,7 +108,31 @@ public class Lemmatizer {
 
     // Dictionnaire des racines métier
     private static final Map<String, String> DICTIONNAIRE_LEMMES = Map.ofEntries(
-            // Code, Dev & Architecture
+            // 1. Apprentissage & Tutoriel
+            Map.entry("apprendre", "apprend"),
+            Map.entry("apprentissage", "apprend"),
+            Map.entry("tutoriel", "apprend"),
+            Map.entry("tuto", "apprend"),
+            Map.entry("guide", "apprend"),
+            Map.entry("debutant", "apprend"),
+            Map.entry("initiation", "apprend"),
+            Map.entry("initier", "apprend"),
+            Map.entry("cours", "apprend"),
+            Map.entry("exercice", "apprend"),
+            Map.entry("exercices", "apprend"),
+            Map.entry("entrainement", "apprend"),
+            Map.entry("pedagogie", "apprend"),
+
+            // 2. Conception & Architecture
+            Map.entry("architecture", "architect"),
+            Map.entry("arborescence", "architect"),
+            Map.entry("concevoir", "architect"),
+            Map.entry("conception", "architect"),
+            Map.entry("structure", "architect"),
+            Map.entry("structurer", "architect"),
+            Map.entry("plan", "architect"),
+            Map.entry("schema", "architect"),
+            Map.entry("diagramme", "architect"),
             Map.entry("programme", "code"),
             Map.entry("fonction", "code"),
             Map.entry("methode", "code"),
@@ -82,54 +141,37 @@ public class Lemmatizer {
             Map.entry("developpe", "code"),
             Map.entry("programmer", "code"),
             Map.entry("coder", "code"),
-            Map.entry("architecture", "code"),
-            Map.entry("arborescence", "code"),
+            Map.entry("css", "architect"),
+            Map.entry("html", "architect"),
+            Map.entry("tailwind", "architect"),
+            Map.entry("responsive", "architect"),
+            Map.entry("frontend", "architect"),
+            Map.entry("ui", "architect"),
+            Map.entry("ux", "architect"),
             Map.entry("unity", "code"),
             Map.entry("unreal", "code"),
-            Map.entry("cpp", "code"),
-            Map.entry("endpoint", "code"),
             Map.entry("api", "code"),
+            Map.entry("endpoint", "code"),
 
-            // Frontend & Web Spécifique (termes sans ambiguïté)
-            Map.entry("css", "code"),
-            Map.entry("html", "code"),
-            Map.entry("tailwind", "code"),
-            Map.entry("responsive", "code"),
-            Map.entry("frontend", "code"),
-            Map.entry("ui", "code"),
-            Map.entry("ux", "code"),
+            // 3. Dépannage & Diagnostic
+            Map.entry("debug", "depann"),
+            Map.entry("debogue", "depann"),
+            Map.entry("deboguer", "depann"),
+            Map.entry("erreur", "depann"),
+            Map.entry("exception", "depann"),
+            Map.entry("bug", "depann"),
+            Map.entry("crash", "depann"),
+            Map.entry("panne", "depann"),
+            Map.entry("probleme", "depann"),
+            Map.entry("reparer", "depann"),
+            Map.entry("fixer", "depann"),
+            Map.entry("fix", "depann"),
+            Map.entry("audit", "depann"),
+            Map.entry("review", "depann"),
+            Map.entry("refactor", "depann"),
+            Map.entry("refactoriser", "depann"),
 
-            // Debug & Fix
-            Map.entry("debug", "debug"),
-            Map.entry("deboguer", "debug"),
-            Map.entry("erreur", "debug"),
-            Map.entry("exception", "debug"),
-            Map.entry("bug", "debug"),
-            Map.entry("crash", "debug"),
-            Map.entry("refactor", "code"),
-            Map.entry("refactoriser", "code"),
-
-            // Traduction
-            Map.entry("traduire", "traduir"),
-            Map.entry("traduis", "traduir"),
-            Map.entry("traduction", "traduir"),
-            Map.entry("translate", "traduir"),
-            Map.entry("anglais", "traduir"),
-            Map.entry("francais", "traduir"),
-            Map.entry("espagnol", "traduir"),
-
-            // Correction & Amélioration
-            Map.entry("corrige", "corrig"),
-            Map.entry("corriger", "corrig"),
-            Map.entry("correction", "corrig"),
-            Map.entry("orthographe", "corrig"),
-            Map.entry("grammaire", "corrig"),
-            Map.entry("reformule", "corrig"),
-            Map.entry("reformuler", "corrig"),
-            Map.entry("relecture", "corrig"),
-            Map.entry("faute", "corrig"),
-
-            // Création & Imagination
+            // 4. Création & Rédaction
             Map.entry("invente", "creer"),
             Map.entry("inventer", "creer"),
             Map.entry("imagine", "creer"),
@@ -139,33 +181,87 @@ public class Lemmatizer {
             Map.entry("histoire", "creer"),
             Map.entry("poeme", "creer"),
             Map.entry("scenario", "creer"),
+            Map.entry("recit", "creer"),
+            Map.entry("roman", "creer"),
+            Map.entry("dialogue", "creer"),
+            Map.entry("brainstorming", "creer"),
+            Map.entry("idee", "creer"),
+            Map.entry("idees", "creer"),
+            Map.entry("corrige", "corrig"),
+            Map.entry("corriger", "corrig"),
+            Map.entry("correction", "corrig"),
+            Map.entry("orthographe", "corrig"),
+            Map.entry("grammaire", "corrig"),
+            Map.entry("reformule", "corrig"),
+            Map.entry("reformuler", "corrig"),
+            Map.entry("relecture", "corrig"),
+            Map.entry("traduire", "traduir"),
+            Map.entry("traduis", "traduir"),
+            Map.entry("traduction", "traduir"),
+            Map.entry("translate", "traduir"),
 
-            // Pédagogie, Apprentissage & Explications
-            Map.entry("apprendre", "expliqu"),
-            Map.entry("apprentissage", "expliqu"),
-            Map.entry("comprendre", "expliqu"),
-            Map.entry("piloter", "expliqu"),
-            Map.entry("pilote", "expliqu"),
-            Map.entry("cockpit", "expliqu"),
-            Map.entry("avion", "expliqu"),
-            Map.entry("tutoriel", "expliqu"),
-            Map.entry("guide", "expliqu"),
-            Map.entry("debutant", "expliqu"),
+            // 5. Protocole & Recette
+            Map.entry("recette", "protocol"),
+            Map.entry("protocole", "protocol"),
+            Map.entry("procedure", "protocol"),
+            Map.entry("etape", "protocol"),
+            Map.entry("etapes", "protocol"),
+            Map.entry("cuisiner", "protocol"),
+            Map.entry("cuisine", "protocol"),
+            Map.entry("cuisson", "protocol"),
+            Map.entry("ingredient", "protocol"),
+            Map.entry("ingredients", "protocol"),
+            Map.entry("dosage", "protocol"),
+            Map.entry("preparation", "protocol"),
+            Map.entry("preparer", "protocol"),
+            Map.entry("fabriquer", "protocol"),
+            Map.entry("assemblage", "protocol"),
+            Map.entry("checklist", "protocol"),
+            Map.entry("deployer", "protocol"),
+
+            // 6. Comparaison & Décision
+            Map.entry("comparer", "compar"),
+            Map.entry("comparaison", "compar"),
+            Map.entry("comparatif", "compar"),
+            Map.entry("difference", "compar"),
+            Map.entry("versus", "compar"),
+            Map.entry("vs", "compar"),
+            Map.entry("choisir", "compar"),
+            Map.entry("choix", "compar"),
+            Map.entry("meilleur", "compar"),
+            Map.entry("avantage", "compar"),
+            Map.entry("avantages", "compar"),
+            Map.entry("inconvenient", "compar"),
+            Map.entry("inconvenients", "compar"),
+            Map.entry("arbitrage", "compar"),
+            Map.entry("benchmark", "compar"),
+
+            // 7. Concept & Vulgarisation
+            Map.entry("definition", "concept"),
+            Map.entry("concept", "concept"),
+            Map.entry("theorie", "concept"),
             Map.entry("explique", "expliqu"),
             Map.entry("expliquer", "expliqu"),
             Map.entry("explication", "expliqu"),
-            Map.entry("definition", "expliqu"),
+            Map.entry("comprendre", "expliqu"),
             Map.entry("pourquoi", "question"),
-            Map.entry("quand", "question")
+            Map.entry("feynman", "concept"),
+            Map.entry("vulgarisation", "concept"),
+            Map.entry("encyclopedie", "concept")
     );
 
-    // Poids pour donner plus d'importance aux verbes d'action
+    // Poids sémantiques pour orienter la classification
     private static final Map<String, Double> POIDS_LEMMES = Map.of(
-            "traduir", 3.0,
-            "corrig", 2.8,
-            "debug", 2.8,
+            "compar", 3.2,
+            "protocol", 3.0,
+            "depann", 2.8,
+            "apprend", 2.8,
+            "architect", 2.6,
             "code", 2.5,
-            "creer", 2.2,
+            "creer", 2.4,
+            "corrig", 2.4,
+            "traduir", 2.6,
+            "concept", 2.5,
             "expliqu", 2.5,
             "question", 2.0
     );

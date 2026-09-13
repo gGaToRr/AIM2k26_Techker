@@ -1,12 +1,14 @@
 package nlp;
 
-// Definition d'une classe enum pour les différents types de Prompts
+// Les 7 Archétypes Universels d'Intention applicables à tout domaine
 public enum TypeOfPrompt {
-    CODE("Prompt4Coding", 1),
-    TRANSLATE("Prompt4Translate", 2),
-    CORRECTANSWERS("Prompt4CorrectAnswers", 3),
-    CREATION("Prompt4Creation", 4),
-    FACTUALQUESTIONS("Prompt4FactualQuestions", 5);
+    APPRENTISSAGE_TUTORIEL("Archetype4Learning", 1),
+    CONCEPTION_ARCHITECTURE("Archetype4Architecture", 2),
+    DEPANNAGE_DIAGNOSTIC("Archetype4Troubleshooting", 3),
+    CREATION_REDACTION("Archetype4Creation", 4),
+    PROTOCOLE_RECETTE("Archetype4Protocol", 5),
+    COMPARAISON_DECISION("Archetype4Comparison", 6),
+    CONCEPT_VULGARISATION("Archetype4FactualConcept", 7);
 
     private final String label;
     private final int count;
