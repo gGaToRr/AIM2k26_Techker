@@ -13,9 +13,11 @@
                                 │     1. SANITIZATION      │
                                 │     (Sanitzer.java)      │
                                 │                          │
-                                │ • Retrait ponctuation    │
-                                │ • Passage en minuscules  │
+                                │ • Restauration élisions  │
+                                │   (lavion -> l'avion...) │
                                 │ • Normalisation espaces  │
+                                │ • Nettoyage ponctuation  │
+                                │ • Passage en minuscules  │
                                 └─────────────┬────────────┘
                                               │
                                               ▼
@@ -23,8 +25,10 @@
                                 │ 2. TOKENISATION & LEMMES │
                                 │    (Lemmatizer.java)     │
                                 │                          │
-                                │ • Suppression accents    │
+                                │ • Expressions multi-mots │
+                                │   (pas a pas, root cause)│
                                 │ • Découpage CamelCase    │
+                                │ • Suppression accents    │
                                 │ • Filtrage Stopwords     │
                                 │ • Dictionnaire de lemmes │
                                 │ • Racinisation suffixes  │
@@ -32,10 +36,10 @@
                                               │
                                               ▼
                                 ┌──────────────────────────┐
-                                │ 3. ANALYSES PARALLÈLES   │
+                                │ 3. ANALYSES SÉMANTIQUES  │
                                 ├──────────────────────────┤
                                 │ A. Densité de Code       │
-                                │    (Keyword & Syntax)    │
+                                │    (Mots-clés & syntaxe) │
                                 │                          │
                                 │ B. Mode Grammatical      │
                                 │    (Commande vs Question)│
@@ -43,10 +47,18 @@
                                 │ C. Détection de Langue   │
                                 │    (FR vs EN)            │
                                 │                          │
-                                │ D. Stack & Entités       │
+                                │ D. Stack & Contexte Spé. │
                                 │    (TechStackDetector)   │
                                 │                          │
-                                │ E. Tokens BPE & Coûts    │
+                                │ E. Extraction Domaine    │
+                                │    & Persona Expert      │
+                                │    (DomainExtractor)     │
+                                │                          │
+                                │ F. Décomposition Pensees │
+                                │    & Sous-Objectifs      │
+                                │    (QuestionDecomposer)  │
+                                │                          │
+                                │ G. Tokens BPE & Coûts    │
                                 │    (TokenCounter)        │
                                 └─────────────┬────────────┘
                                               │
@@ -55,28 +67,36 @@
                                 │ 4. SCORING & QUALITÉ     │
                                 │ (PromptQualityScorer.java│
                                 │                          │
-                                │ • Clarté de consigne     │
-                                │ • Richesse contexte      │
+                                │ • Clarté de la consigne  │
+                                │ • Richesse du contexte   │
                                 │ • Contraintes définies   │
                                 │ • Diagnostic score / 100 │
                                 └─────────────┬────────────┘
                                               │
                                               ▼
                                 ┌──────────────────────────┐
-                                │ 5. CLASSIFICATION        │
+                                │ 5. CLASSIFICATION 7 ARCH.│
                                 │  (PromptClassifier.java) │
                                 │                          │
-                                │ • Scoring pondéré        │
+                                │ • Scoring sémantique     │
                                 │ • Distribution Softmax   │
-                                │ • Élection TypeOfPrompt  │
-                                │   (CODE, TRANSLATE...)   │
+                                │ • Confiance (LOW/MED/HI) │
+                                │ • 7 Archétypes :         │
+                                │   - APPRENTISSAGE_TUTO   │
+                                │   - CONCEPTION_ARCHI     │
+                                │   - DEPANNAGE_DIAGNOSTIC │
+                                │   - CREATION_REDACTION   │
+                                │   - PROTOCOLE_RECETTE    │
+                                │   - COMPARAISON_DECISION │
+                                │   - CONCEPT_VULGARISAT.  │
                                 └─────────────┬────────────┘
                                               │
                                               ▼
                                 ┌──────────────────────────┐
-                                │    PROMPT PROFILE FINAL  │
+                                │   PROMPT PROFILE FINAL   │
                                 │   (PromptProfile.java)   │
                                 │                          │
-                                │ ➔ Prêt pour génération   │
-                                │   du Markdown final      │
+                                │ ➔ Record immuable prêt   │
+                                │   pour le moteur Meta-   │
+                                │   Prompting (genPrompt/) │
                                 └──────────────────────────┘
