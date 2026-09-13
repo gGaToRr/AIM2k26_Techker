@@ -60,11 +60,14 @@ public class Sanitzer {
         // Articles contractés manquants avec prépositions (d'...)
         DICTIONNAIRE_ELISIONS.put("(?i)\\bdun\\b", "d'un");
         DICTIONNAIRE_ELISIONS.put("(?i)\\bdune\\b", "d'une");
+        DICTIONNAIRE_ELISIONS.put("(?i)\\bdargent\\b", "d'argent");
         DICTIONNAIRE_ELISIONS.put("(?i)\\bdautre\\b", "d'autre");
         DICTIONNAIRE_ELISIONS.put("(?i)\\bdautres\\b", "d'autres");
         DICTIONNAIRE_ELISIONS.put("(?i)\\bdaccord\\b", "d'accord");
         DICTIONNAIRE_ELISIONS.put("(?i)\\bdavance\\b", "d'avance");
         DICTIONNAIRE_ELISIONS.put("(?i)\\bdaide\\b", "d'aide");
+        DICTIONNAIRE_ELISIONS.put("(?i)\\bdidee\\b", "d'idée");
+        DICTIONNAIRE_ELISIONS.put("(?i)\\bdimpact\\b", "d'impact");
         DICTIONNAIRE_ELISIONS.put("(?i)\\bdexemple\\b", "d'exemple");
         DICTIONNAIRE_ELISIONS.put("(?i)\\bdexemples\\b", "d'exemples");
         DICTIONNAIRE_ELISIONS.put("(?i)\\bdexercice\\b", "d'exercice");
@@ -72,8 +75,13 @@ public class Sanitzer {
 
         // Noms courants avec article élidé soudé (l'...)
         DICTIONNAIRE_ELISIONS.put("(?i)\\b(lavion|lavions)\\b", "l'avion");
+        DICTIONNAIRE_ELISIONS.put("(?i)\\blart\\b", "l'art");
         DICTIONNAIRE_ELISIONS.put("(?i)\\bleau\\b", "l'eau");
         DICTIONNAIRE_ELISIONS.put("(?i)\\blair\\b", "l'air");
+        DICTIONNAIRE_ELISIONS.put("(?i)\\blimage\\b", "l'image");
+        DICTIONNAIRE_ELISIONS.put("(?i)\\blidee\\b", "l'idée");
+        DICTIONNAIRE_ELISIONS.put("(?i)\\blimpact\\b", "l'impact");
+        DICTIONNAIRE_ELISIONS.put("(?i)\\blunivers\\b", "l'univers");
         DICTIONNAIRE_ELISIONS.put("(?i)\\blhomme\\b", "l'homme");
         DICTIONNAIRE_ELISIONS.put("(?i)\\blhumain\\b", "l'humain");
         DICTIONNAIRE_ELISIONS.put("(?i)\\blordinateur\\b", "l'ordinateur");

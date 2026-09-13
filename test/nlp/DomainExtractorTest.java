@@ -5,47 +5,76 @@ import test.framework.Assert;
 
 public class DomainExtractorTest {
 
-    public void testExtractionDomaineMusique() {
-        String prompt = "Comment accorder une guitare acoustique et jouer des accords de jazz ?";
-        DomainExtractor.DomainInfo info = DomainExtractor.analyser(prompt);
-        Assert.assertTrue(info.isDomainIdentified(), "Le domaine doit être identifié");
-        Assert.assertEquals("Musique & Lutherie", info.domainName(), "Le domaine doit être Musique & Lutherie");
-        Assert.assertContainsIgnoreCase(info.expertPersona(), "Musicien", "Le persona doit faire référence à un musicien");
+    public void testExtractionToutesLes10FamillesDeDomaines() {
+        // 1. Musique
+        DomainExtractor.DomainInfo musique = DomainExtractor.analyser("Comment accorder une guitare et jouer du piano ?");
+        Assert.assertEquals("Musique & Lutherie", musique.domainName(), "Domaine Musique");
+        Assert.assertTrue(musique.isDomainIdentified(), "Identifié");
+        Assert.assertContains(musique.expertPersona(), "Musicien", "Persona Musicien");
+
+        // 2. Gastronomie
+        DomainExtractor.DomainInfo cuisine = DomainExtractor.analyser("Recette pour faire un gâteau au chocolat au four");
+        Assert.assertEquals("Gastronomie & Arts Culinaires", cuisine.domainName(), "Domaine Gastronomie");
+        Assert.assertContains(cuisine.expertPersona(), "Chef", "Persona Chef");
+
+        // 3. Aéronautique
+        DomainExtractor.DomainInfo aero = DomainExtractor.analyser("Comment un avion génère de la portance en vol ?");
+        Assert.assertEquals("Aéronautique & Systèmes de Transport", aero.domainName(), "Domaine Aéronautique");
+        Assert.assertContains(aero.expertPersona(), "Aéronautique", "Persona Aéro");
+
+        // 4. Astrophysique
+        DomainExtractor.DomainInfo astro = DomainExtractor.analyser("Explique la formation d'un trou noir dans une galaxie");
+        Assert.assertEquals("Astrophysique & Sciences Fondamentales", astro.domainName(), "Domaine Astrophysique");
+        Assert.assertContains(astro.expertPersona(), "Astrophysicien", "Persona Astrophysicien");
+
+        // 5. Génie Mécanique
+        DomainExtractor.DomainInfo meca = DomainExtractor.analyser("Fonctionnement d'un moteur à piston hydraulique");
+        Assert.assertEquals("Génie Mécanique & Industrie", meca.domainName(), "Domaine Mécanique");
+        Assert.assertContains(meca.expertPersona(), "Mécanicien", "Persona Mécanicien");
+
+        // 6. Sport & Biomécanique
+        DomainExtractor.DomainInfo sport = DomainExtractor.analyser("Programme de musculation et cardio pour un marathon");
+        Assert.assertEquals("Sciences du Sport & Biomécanique", sport.domainName(), "Domaine Sport");
+        Assert.assertContains(sport.expertPersona(), "Athlètes", "Persona Préparateur Physique");
+
+        // 7. Histoire & Civilisations
+        DomainExtractor.DomainInfo histoire = DomainExtractor.analyser("Histoire de la Révolution française et de l'Empire");
+        Assert.assertEquals("Histoire & Sciences des Civilisations", histoire.domainName(), "Domaine Histoire");
+        Assert.assertContains(histoire.expertPersona(), "Historien", "Persona Historien");
+
+        // 8. Droit & Réglementation
+        DomainExtractor.DomainInfo droit = DomainExtractor.analyser("Règles relatives au contrat de travail et code civil");
+        Assert.assertEquals("Droit & Réglementation", droit.domainName(), "Domaine Droit");
+        Assert.assertContains(droit.expertPersona(), "Juriste", "Persona Juriste");
+
+        // 9. Économie & Marchés Financiers
+        DomainExtractor.DomainInfo finance = DomainExtractor.analyser("Impact de l'inflation sur les actions en bourse");
+        Assert.assertEquals("Économie & Marchés Financiers", finance.domainName(), "Domaine Finance");
+        Assert.assertContains(finance.expertPersona(), "Économiste", "Persona Économiste");
+
+        // 10. Médecine & Neurosciences
+        DomainExtractor.DomainInfo medecine = DomainExtractor.analyser("Fonctionnement des neurones et du cerveau humain");
+        Assert.assertEquals("Médecine & Sciences Biomédicales", medecine.domainName(), "Domaine Médecine");
+        Assert.assertContains(medecine.expertPersona(), "Médecin", "Persona Médecin");
     }
 
-    public void testExtractionDomaineCuisine() {
-        String prompt = "Donne-moi la recette de la tarte au citron meringuée avec temps de cuisson";
-        DomainExtractor.DomainInfo info = DomainExtractor.analyser(prompt);
-        Assert.assertTrue(info.isDomainIdentified(), "Le domaine cuisine doit être identifié");
-        Assert.assertEquals("Gastronomie & Arts Culinaires", info.domainName(), "Le domaine doit être Gastronomie");
-        Assert.assertContainsIgnoreCase(info.expertPersona(), "Chef", "Le persona doit faire référence à un Chef");
+    public void testExtractionSujetPivotDynamique() {
+        DomainExtractor.DomainInfo info = DomainExtractor.analyser("Explique le fonctionnement de la blockchain");
+        Assert.assertNotNull(info.extractedTopic(), "Sujet pivot non null");
+        Assert.assertFalse(info.extractedTopic().isEmpty(), "Sujet pivot non vide");
     }
 
-    public void testExtractionDomaineAeronautique() {
-        String prompt = "Explique le fonctionnement du turboréacteur d'un avion supersonique";
-        DomainExtractor.DomainInfo info = DomainExtractor.analyser(prompt);
-        Assert.assertTrue(info.isDomainIdentified(), "Le domaine aéronautique doit être identifié");
-        Assert.assertEquals("Aéronautique & Systèmes de Transport", info.domainName(), "Le domaine doit être Aéronautique");
-        Assert.assertContainsIgnoreCase(info.expertPersona(), "Ingénieur", "Le persona doit faire référence à un Ingénieur");
+    public void testPersonaFallbackSurPromptSansDomaine() {
+        DomainExtractor.DomainInfo info = DomainExtractor.analyser("Fais un tri");
+        Assert.assertNotNull(info, "Info non null");
+        Assert.assertFalse(info.expertPersona().isEmpty(), "Persona fallback non vide");
     }
 
-    public void testExtractionDomaineFinance() {
-        String prompt = "Comment construire un portefeuille d'actions et obligations avec bon rendement ?";
-        DomainExtractor.DomainInfo info = DomainExtractor.analyser(prompt);
-        Assert.assertTrue(info.isDomainIdentified(), "Le domaine finance doit être identifié");
-        Assert.assertEquals("Économie & Marchés Financiers", info.domainName(), "Le domaine doit être Économie & Marchés Financiers");
-    }
+    public void testEntreeVideEtNull() {
+        DomainExtractor.DomainInfo vide = DomainExtractor.analyser("");
+        Assert.assertFalse(vide.isDomainIdentified(), "Vide non identifié");
 
-    public void testExtractionDomaineDroit() {
-        String prompt = "Quelles sont les clauses obligatoires dans un contrat de travail ?";
-        DomainExtractor.DomainInfo info = DomainExtractor.analyser(prompt);
-        Assert.assertTrue(info.isDomainIdentified(), "Le domaine droit doit être identifié");
-        Assert.assertEquals("Droit & Réglementation", info.domainName(), "Le domaine doit être Droit & Réglementation");
-    }
-
-    public void testExtractionDomaineInconnuFallback() {
-        String prompt = "Fais un résumé";
-        DomainExtractor.DomainInfo info = DomainExtractor.analyser(prompt);
-        Assert.assertNotNull(info, "Les infos de domaine ne doivent pas être null");
+        DomainExtractor.DomainInfo nul = DomainExtractor.analyser(null);
+        Assert.assertFalse(nul.isDomainIdentified(), "Null non identifié");
     }
 }
