@@ -29,8 +29,11 @@ public class AllTestSuite {
         runner.registerTestClass(MetaPromptEngineTest.class);
         runner.registerTestClass(TemplateSyntaxValidationTest.class);
 
-        // 3. Tests Menu CLI & Intégration End-to-End
+        // 3. Tests Menu & Arguments CLI
         runner.registerTestClass(MenuTest.class);
+        runner.registerTestClass(test.cli.CliParserTest.class);
+
+        // 4. Tests d'Intégration End-to-End
         runner.registerTestClass(EndToEndIntegrationTest.class);
 
         boolean success = runner.runAll();
