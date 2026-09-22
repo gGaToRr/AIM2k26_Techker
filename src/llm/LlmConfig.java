@@ -16,6 +16,7 @@ public class LlmConfig {
     private boolean permissionAccordee;
     private String modeleParDefaut;
     private String repertoireModeles;
+    private String repertoireRuntime;
     private double temperature;
     private int maxTokens;
     private boolean streamingActive;
@@ -24,6 +25,7 @@ public class LlmConfig {
         this.permissionAccordee = false;
         this.modeleParDefaut = "auto";
         this.repertoireModeles = "models";
+        this.repertoireRuntime = "runtime";
         this.temperature = 0.7;
         this.maxTokens = 2048;
         this.streamingActive = true;
@@ -34,6 +36,7 @@ public class LlmConfig {
         this.permissionAccordee = permissionAccordee;
         this.modeleParDefaut = modeleParDefaut != null ? modeleParDefaut : "auto";
         this.repertoireModeles = repertoireModeles != null ? repertoireModeles : "models";
+        this.repertoireRuntime = "runtime";
         this.temperature = temperature;
         this.maxTokens = maxTokens;
         this.streamingActive = streamingActive;
@@ -61,6 +64,14 @@ public class LlmConfig {
 
     public void setRepertoireModeles(String repertoireModeles) {
         this.repertoireModeles = repertoireModeles;
+    }
+
+    public String getRepertoireRuntime() {
+        return repertoireRuntime;
+    }
+
+    public void setRepertoireRuntime(String repertoireRuntime) {
+        this.repertoireRuntime = repertoireRuntime;
     }
 
     public double getTemperature() {
@@ -93,6 +104,7 @@ public class LlmConfig {
                 "  \"permissionAccordee\": " + permissionAccordee + ",\n" +
                 "  \"modeleParDefaut\": \"" + escapeJson(modeleParDefaut) + "\",\n" +
                 "  \"repertoireModeles\": \"" + escapeJson(repertoireModeles) + "\",\n" +
+                "  \"repertoireRuntime\": \"" + escapeJson(repertoireRuntime) + "\",\n" +
                 "  \"temperature\": " + temperature + ",\n" +
                 "  \"maxTokens\": " + maxTokens + ",\n" +
                 "  \"streamingActive\": " + streamingActive + "\n" +
@@ -115,6 +127,9 @@ public class LlmConfig {
             }
             if (json.contains("\"repertoireModeles\"")) {
                 config.setRepertoireModeles(extractString(json, "repertoireModeles", "models"));
+            }
+            if (json.contains("\"repertoireRuntime\"")) {
+                config.setRepertoireRuntime(extractString(json, "repertoireRuntime", "runtime"));
             }
             if (json.contains("\"temperature\"")) {
                 config.setTemperature(extractDouble(json, "temperature", 0.7));

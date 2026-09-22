@@ -45,5 +45,7 @@ models/
 src/models/
 *.gguf
 *.part
+runtime/
+src/runtime/
 sessions/
 .sessions/

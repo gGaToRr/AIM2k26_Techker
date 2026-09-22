@@ -15,6 +15,7 @@ public class LlmConfigTest {
         Assert.assertFalse(config.isPermissionAccordee(), "Permission non accordée par défaut");
         Assert.assertEquals("auto", config.getModeleParDefaut(), "Modèle par défaut");
         Assert.assertEquals("models", config.getRepertoireModeles(), "Dossier modèles");
+        Assert.assertEquals("runtime", config.getRepertoireRuntime(), "Dossier runtime natif");
         Assert.assertTrue(Math.abs(0.7 - config.getTemperature()) < 0.001, "Température");
         Assert.assertEquals(2048, config.getMaxTokens(), "Max tokens");
         Assert.assertTrue(config.isStreamingActive(), "Streaming actif par défaut");
@@ -54,6 +55,17 @@ public class LlmConfigTest {
         } finally {
             Files.deleteIfExists(tempFile);
         }
+    }
+
+    public void testRepertoireRuntimePersisteEnJson() {
+        LlmConfig original = new LlmConfig();
+        original.setRepertoireRuntime("custom_runtime");
+        String json = original.toJson();
+
+        Assert.assertContains(json, "\"repertoireRuntime\": \"custom_runtime\"", "JSON dossier runtime");
+
+        LlmConfig parsed = LlmConfig.fromJson(json);
+        Assert.assertEquals("custom_runtime", parsed.getRepertoireRuntime(), "Parsé dossier runtime");
     }
 
     public void testCorruptedOrEmptyJsonResilience() {

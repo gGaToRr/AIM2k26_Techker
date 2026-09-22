@@ -14,8 +14,9 @@ flowchart TD
     
     Step2 --> Check{"Modèle installé sur disque ?"}
     Check -->|Non| Onboard["Onboarding Débutant & Téléchargement HTTP"]
+    Onboard --> Step2b["2bis. Runtime Natif (RuntimeInstaller.java)"]
     Check -->|Oui| Step3["3. Moteur d'Inférence Local (LocalLlmBackend.java)"]
-    Onboard --> Step3
+    Step2b --> Step3
     
     Step3 --> Step4["4. Streaming Console & Métriques (LlmEngine.java)"]
     Step4 --> Output["Restitution avec Débit (tokens/sec) et Latence"]
@@ -33,6 +34,11 @@ flowchart TD
 - Vérification de la présence du fichier `.gguf` dans `models/`.
 - Dialogue pédagogique au premier démarrage pour obtenir l'accord éclairé de l'utilisateur.
 - Téléchargement HTTP avec barre de progression dynamique `[====>  ] 45%`.
+
+### 2bis. Installation du Runtime Natif (`RuntimeInstaller.java`)
+- Déclenchée lors du premier provisioning, sous la même autorisation que le modèle.
+- Détecte l'OS/architecture, choisit et télécharge le build CPU officiel llama.cpp adapté, extrait l'archive et localise `llama-cli`.
+- En cas d'échec, avertissement explicite plutôt qu'un retour silencieux au mode simulé.
 
 ### 3. Inférence Locale (`LocalLlmBackend.java`)
 - Détection du runner matériel natif (`llama-cli`).

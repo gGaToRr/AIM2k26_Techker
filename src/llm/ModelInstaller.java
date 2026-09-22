@@ -45,6 +45,8 @@ public class ModelInstaller {
         out.println("   - 100% Hors-ligne & Prive (zero fuite de donnees)");
         out.println("   - 100% Gratuit (aucun abonnement ni cle API)");
         out.println("   - Espace disque requis : ~1.1 a 1.6 Go par modele");
+        out.println("   - Le moteur d'inference natif (llama-cli) sera aussi installe");
+        out.println("     automatiquement s'il n'est pas deja present sur la machine.");
         out.println();
         if (recommendedModel != null) {
             out.println("Modele recommande pour votre requete :");
@@ -103,6 +105,36 @@ public class ModelInstaller {
             out.println("\n[-] Telechargement ignore. Generation standard du prompt.\n");
             return null;
         }
+    }
+
+    // Demande l'autorisation d'installer le moteur d'inference natif quand le modele
+    // etait deja present sur le disque et que l'onboarding n'a donc jamais ete joue.
+    public static boolean demanderPermissionRuntime(Scanner scanner, PrintStream out, LlmConfig config) {
+        out.println("\n--------------------------------------------");
+        out.println("   MOTEUR D'INFERENCE NATIF MANQUANT");
+        out.println("--------------------------------------------");
+        out.println("   Le modele est bien present, mais le moteur");
+        out.println("   d'execution (llama-cli) est introuvable.");
+        out.println("   Sans lui, aucune inference reelle n'est possible.");
+        out.println();
+        out.println("   - Telechargement unique (~20 a 60 Mo)");
+        out.println("   - Build CPU officiel de llama.cpp, aucune dependance");
+        out.println("--------------------------------------------");
+        out.print("Autoriser l'installation du moteur ? [o/N] : ");
+        out.flush();
+
+        String saisie = scanner.hasNextLine() ? scanner.nextLine().trim() : "n";
+        boolean accepte = "o".equalsIgnoreCase(saisie) || "oui".equalsIgnoreCase(saisie)
+                || "y".equalsIgnoreCase(saisie) || "yes".equalsIgnoreCase(saisie) || "1".equals(saisie);
+
+        if (accepte) {
+            config.setPermissionAccordee(true);
+            try {
+                config.sauvegarderParDefaut();
+            } catch (Exception ignored) {}
+            out.println("\n[+] Autorisation accordee. Installation du moteur d'inference...\n");
+        }
+        return accepte;
     }
 
     // Télécharge un modèle avec affichage d'une barre de progression
