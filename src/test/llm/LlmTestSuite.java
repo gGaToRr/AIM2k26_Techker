@@ -13,6 +13,7 @@ public class LlmTestSuite {
         runner.registerTestClass(LlmConfigTest.class);
         runner.registerTestClass(ModelInstallerTest.class);
         runner.registerTestClass(LlmEngineTest.class);
+        runner.registerTestClass(LocalLlmBackendTest.class);
 
         boolean success = runner.runAll();
         if (!success) {
