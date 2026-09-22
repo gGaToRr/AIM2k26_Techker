@@ -95,37 +95,37 @@ Avant d'écrire le code, effectue une brève analyse (2-3 phrases) :
 
 ### Option A — Linux / macOS 🐧🍎
 ```bash
-git clone https://github.com/gGaToRr/Project_Ia.git
-cd Project_Ia
+git clone https://github.com/gGaToRr/AIM2k26_Techker.git
+cd AIM2k26_Techker
 
 # Compiler le projet
-javac -sourcepath ".:src" -cp ".:src/lib/jmustache-1.16.jar" -d bin Main.java src/menu/*.java src/cli/*.java src/nlp/*.java src/gen/*.java src/llm/*.java
+javac -sourcepath ".:src" -cp ".:src/lib/*" -d bin Main.java src/menu/*.java src/cli/*.java src/nlp/*.java src/gen/*.java src/llm/*.java
 
 # Lancer la suite complète de 129 tests TDD
 ./src/scripts/run_tests.sh
 
 # Lancer en mode interactif
-java -cp "bin:src/lib/jmustache-1.16.jar" Main
+java -cp "bin:src/lib/*" Main
 
 # Lancer en ligne de commande (CLI direct + inférence locale)
-java -cp "bin:src/lib/jmustache-1.16.jar" Main -i "Crée une fonction de tri en Java" -e
+java -cp "bin:src/lib/*" Main -i "Crée une fonction de tri en Java" -e
 ```
 
 <br />
 
 ### Option B — Windows (PowerShell / CMD 🪟)
 ```powershell
-git clone https://github.com/gGaToRr/Project_Ia.git
-cd Project_Ia
+git clone https://github.com/gGaToRr/AIM2k26_Techker.git
+cd AIM2k26_Techker
 
 # Compiler le projet (séparateur ;)
-javac -sourcepath ".;src" -cp ".;src/lib/jmustache-1.16.jar" -d bin Main.java src/menu/*.java src/cli/*.java src/nlp/*.java src/gen/*.java src/llm/*.java
+javac -sourcepath ".;src" -cp ".;src/lib/*" -d bin Main.java src/menu/*.java src/cli/*.java src/nlp/*.java src/gen/*.java src/llm/*.java
 
 # Lancer en mode interactif
-java -cp "bin;src/lib/jmustache-1.16.jar" Main
+java -cp "bin;src/lib/*" Main
 
 # Lancer en ligne de commande
-java -cp "bin;src/lib/jmustache-1.16.jar" Main -i "Crée une fonction de tri en Java" -e
+java -cp "bin;src/lib/*" Main -i "Crée une fonction de tri en Java" -e
 ```
 
 <br />
@@ -149,13 +149,20 @@ Vous pouvez ouvrir une *issue* sur GitHub pour signaler un bug ou proposer une a
 <details>
 <summary><b>Comment personnaliser les modèles de prompts ?</b></summary>
 
-> Les templates Markdown sont éditables directement dans le dossier `genPrompt/`.
+> Les templates Markdown sont éditables directement dans le dossier `src/genPrompt/`.
 </details>
 
 <details>
 <summary><b>Erreur de Classpath sous Windows ?</b></summary>
 
 > Utilisez le point-virgule (`;`) au lieu du deux-points (`:`) pour séparer les JARs dans `-cp`.
+</details>
+
+<details>
+<summary><b>Erreur <code>package com.samskivert.mustache does not exist</code> ?</b></summary>
+
+> Le JAR JMustache n'est pas dans le classpath. Lancez les commandes depuis la racine du projet en incluant `src/lib/*` dans `-cp`.
+> Dans un IDE : VS Code → ajoutez `"java.project.referencedLibraries": ["src/lib/**/*.jar"]` dans `.vscode/settings.json` ; IntelliJ → clic droit sur `src/lib/jmustache-1.16.jar` → *Add as Library*.
 </details>
 
 <br />
