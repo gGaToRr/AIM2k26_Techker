@@ -85,4 +85,70 @@ public class CliRobustnessAndEdgeCasesTest {
         Assert.assertEquals("Instruction   avec   espaces   multiples", args.instruction(), "Les espaces superflus aux extrémités doivent être nettoyés");
         Assert.assertTrue(args.isVerbose(), "Le mode verbeux doit être activé malgré les espaces dans le flag");
     }
+
+    // --- Table de dispatch : cas limites (Issue #62) ---
+
+    public void testFlagInconnuEstIgnoreSansCasser() {
+        CliArgs args = CliParser.parse(new String[]{"--inconnu", "-z", "-i", "Analyse ce texte"});
+
+        Assert.assertEquals("Analyse ce texte", args.instruction(), "Les flags inconnus ne doivent pas perturber le parsing");
+        Assert.assertFalse(args.isHelp(), "Aucun effet de bord sur les autres flags");
+    }
+
+    // Un flag inconnu ne doit pas non plus etre capte comme argument positionnel
+    public void testFlagInconnuNestPasUnArgumentPositionnel() {
+        CliArgs args = CliParser.parse(new String[]{"--inconnu"});
+        Assert.assertFalse(args.hasInstruction(), "Un flag inconnu ne devient pas l'instruction");
+    }
+
+    public void testOrdreDesFlagsSansImportance() {
+        CliArgs ordre1 = CliParser.parse(new String[]{"-V", "-a", "claude", "-l", "fr", "-i", "Explique X"});
+        CliArgs ordre2 = CliParser.parse(new String[]{"-i", "Explique X", "-l", "fr", "-a", "claude", "-V"});
+
+        Assert.assertEquals(ordre1.instruction(), ordre2.instruction(), "Instruction identique quel que soit l'ordre");
+        Assert.assertEquals(ordre1.agent(), ordre2.agent(), "Agent identique quel que soit l'ordre");
+        Assert.assertEquals(ordre1.language(), ordre2.language(), "Langue identique quel que soit l'ordre");
+        Assert.assertEquals(ordre1.isVerbose(), ordre2.isVerbose(), "Verbose identique quel que soit l'ordre");
+    }
+
+    // Les formes courte, longue et attachee doivent produire exactement le meme resultat
+    public void testFormesCourteLongueEtAttacheeEquivalentes() {
+        CliArgs courte = CliParser.parse(new String[]{"-a", "claude"});
+        CliArgs longue = CliParser.parse(new String[]{"--agent", "claude"});
+        CliArgs attacheeCourte = CliParser.parse(new String[]{"-a=claude"});
+        CliArgs attacheeLongue = CliParser.parse(new String[]{"--agent=claude"});
+
+        Assert.assertEquals("claude", courte.agent(), "Forme courte");
+        Assert.assertEquals("claude", longue.agent(), "Forme longue");
+        Assert.assertEquals("claude", attacheeCourte.agent(), "Forme courte attachee");
+        Assert.assertEquals("claude", attacheeLongue.agent(), "Forme longue attachee");
+    }
+
+    // Un argument positionnel contenant "=" ne doit pas etre decoupe comme un flag
+    public void testArgumentPositionnelContenantUnEgalResteIntact() {
+        CliArgs args = CliParser.parse(new String[]{"resous", "x=y+2"});
+        Assert.assertEquals("resous x=y+2", args.instruction(), "Le signe egal d'un positionnel doit etre preserve");
+    }
+
+    // Une valeur contenant "=" doit etre transmise entierement
+    public void testValeurContenantUnEgalEstPreservee() {
+        CliArgs args = CliParser.parse(new String[]{"-i", "calcule a=b"});
+        Assert.assertEquals("calcule a=b", args.instruction(), "La valeur suivante n'est jamais decoupee");
+
+        CliArgs attachee = CliParser.parse(new String[]{"--instruction=calcule a=b"});
+        Assert.assertEquals("calcule a=b", attachee.instruction(), "Seul le premier egal separe le flag de sa valeur");
+    }
+
+    // La derniere occurrence d'un flag repete l'emporte
+    public void testFlagRepeteDerniereValeurGagne() {
+        CliArgs args = CliParser.parse(new String[]{"-a", "gpt", "-a", "claude"});
+        Assert.assertEquals("claude", args.agent(), "La derniere valeur ecrase la precedente");
+    }
+
+    // -f alimente a la fois le chemin et l'instruction : le dispatch ne doit pas casser ce couplage
+    public void testFileAlimenteCheminEtInstruction() {
+        CliArgs args = CliParser.parse(new String[]{"-f=dossier_inexistant/absent_987.md"});
+        Assert.assertEquals("dossier_inexistant/absent_987.md", args.filePath(), "Chemin enregistre via la forme attachee");
+        Assert.assertEquals("", args.instruction(), "Instruction vide sans exception");
+    }
 }

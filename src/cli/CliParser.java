@@ -7,8 +7,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 // Analyseur syntaxique d'arguments CLI et formateur d'aide/verbose
 public class CliParser {
@@ -16,6 +18,58 @@ public class CliParser {
     public static final String VERSION = "1.1.0";
     public static final String AUTHOR = "Pierre Untersinger (@kaets0ner / gGaToRr)";
     public static final String TOOL_NAME = "Prompting tool 4 a better work from AI (AIM2k26)";
+
+    // Description d'une option : ce qu'elle fait du builder, et si elle consomme une valeur.
+    // La forme "--option=valeur" est derivee automatiquement, sans declaration supplementaire.
+    private record Option(String nom, boolean attendValeur, BiConsumer<CliArgs.Builder, String> appliquer) {}
+
+    // Table de dispatch : chaque alias accepte pointe vers son option.
+    // Ajouter un flag = ajouter une ligne ici, et rien d'autre.
+    private static final Map<String, Option> OPTIONS = construireTableOptions();
+
+    private static Map<String, Option> construireTableOptions() {
+        Map<String, Option> table = new LinkedHashMap<>();
+
+        declarerDrapeau(table, "help", "-h", "--help", (b, v) -> b.help(true));
+        declarerDrapeau(table, "version", "-v", "--version", (b, v) -> b.version(true));
+        declarerDrapeau(table, "verbose", "-V", "--verbose", (b, v) -> b.verbose(true));
+        declarerDrapeau(table, "raw", "-r", "--raw", (b, v) -> b.raw(true));
+        declarerDrapeau(table, "dry-run", "-n", "--dry-run", (b, v) -> b.dryRun(true));
+        declarerDrapeau(table, "clipboard", "-C", "--clipboard", (b, v) -> b.clipboard(true));
+        declarerDrapeau(table, "exec", "-e", "--exec", (b, v) -> b.exec(true));
+
+        declarerValeur(table, "model", "-m", "--model", CliArgs.Builder::model);
+        declarerValeur(table, "instruction", "-i", "--instruction", CliArgs.Builder::instruction);
+        declarerValeur(table, "agent", "-a", "--agent", CliArgs.Builder::agent);
+        declarerValeur(table, "output", "-o", "--output", CliArgs.Builder::output);
+        declarerValeur(table, "template", "-t", "--template", CliArgs.Builder::template);
+        declarerValeur(table, "domain", "-d", "--domain", CliArgs.Builder::domain);
+        declarerValeur(table, "language", "-l", "--language", CliArgs.Builder::language);
+
+        declarerValeur(table, "code", "-c", "--code", (b, v) -> b.code(resoudreContenuCode(v)));
+
+        // -f alimente deux champs : le chemin conserve, et l'instruction lue depuis le fichier
+        declarerValeur(table, "file", "-f", "--file", (b, v) -> {
+            b.filePath(v);
+            b.instruction(resoudreContenuFichier(v));
+        });
+
+        return table;
+    }
+
+    private static void declarerDrapeau(Map<String, Option> table, String nom, String court, String longue,
+                                        BiConsumer<CliArgs.Builder, String> appliquer) {
+        Option option = new Option(nom, false, appliquer);
+        table.put(court, option);
+        table.put(longue, option);
+    }
+
+    private static void declarerValeur(Map<String, Option> table, String nom, String court, String longue,
+                                       BiConsumer<CliArgs.Builder, String> appliquer) {
+        Option option = new Option(nom, true, appliquer);
+        table.put(court, option);
+        table.put(longue, option);
+    }
 
     // Parse le tableau d'arguments de la ligne de commande
     public static CliArgs parse(String[] args) {
@@ -30,133 +84,39 @@ public class CliParser {
             String arg = args[i].trim();
             if (arg.isEmpty()) continue;
 
-            // Flags d'aide
-            if (arg.equals("-h") || arg.equals("--help")) {
-                builder.help(true);
+            String cle = arg;
+            String valeurAttachee = null;
+
+            // Forme "--option=valeur" / "-o=valeur" : on ne coupe que sur un vrai flag,
+            // pour qu'un argument positionnel contenant "=" reste intact.
+            int positionEgal = arg.indexOf('=');
+            if (arg.startsWith("-") && positionEgal > 0) {
+                cle = arg.substring(0, positionEgal);
+                valeurAttachee = arg.substring(positionEgal + 1);
             }
-            // Flags de version
-            else if (arg.equals("-v") || arg.equals("--version")) {
-                builder.version(true);
-            }
-            // Mode verbeux
-            else if (arg.equals("-V") || arg.equals("--verbose")) {
-                builder.verbose(true);
-            }
-            // Sortie brute (raw)
-            else if (arg.equals("-r") || arg.equals("--raw")) {
-                builder.raw(true);
-            }
-            // Mode analyse seule (dry-run)
-            else if (arg.equals("-n") || arg.equals("--dry-run")) {
-                builder.dryRun(true);
-            }
-            // Presse-papiers
-            else if (arg.equals("-C") || arg.equals("--clipboard")) {
-                builder.clipboard(true);
-            }
-            // Exécution locale par LLM embarqué (-e ou --exec)
-            else if (arg.equals("-e") || arg.equals("--exec")) {
-                builder.exec(true);
-            }
-            // Spécification de modèle local (-m ou --model)
-            else if (arg.equals("-m") || arg.equals("--model")) {
-                if (i + 1 < args.length) {
-                    builder.model(args[++i].trim());
+
+            Option option = OPTIONS.get(cle);
+
+            if (option == null) {
+                // Flag inconnu : ignore en silence. Tout le reste est un argument positionnel.
+                if (!arg.startsWith("-")) {
+                    positionalArgs.add(arg);
                 }
-            } else if (arg.startsWith("--model=")) {
-                builder.model(arg.substring("--model=".length()).trim());
-            } else if (arg.startsWith("-m=")) {
-                builder.model(arg.substring("-m=".length()).trim());
+                continue;
             }
-            // Instruction / Prompt direct (-i ou --instruction)
-            else if (arg.equals("-i") || arg.equals("--instruction")) {
-                if (i + 1 < args.length) {
-                    builder.instruction(args[++i].trim());
-                }
-            } else if (arg.startsWith("--instruction=")) {
-                builder.instruction(arg.substring("--instruction=".length()).trim());
-            } else if (arg.startsWith("-i=")) {
-                builder.instruction(arg.substring("-i=".length()).trim());
+
+            if (!option.attendValeur()) {
+                option.appliquer().accept(builder, null);
+                continue;
             }
-            // Injection de code ou fichier source (-c ou --code)
-            else if (arg.equals("-c") || arg.equals("--code")) {
-                if (i + 1 < args.length) {
-                    builder.code(resoudreContenuCode(args[++i].trim()));
-                }
-            } else if (arg.startsWith("--code=")) {
-                builder.code(resoudreContenuCode(arg.substring("--code=".length()).trim()));
-            } else if (arg.startsWith("-c=")) {
-                builder.code(resoudreContenuCode(arg.substring("-c=".length()).trim()));
+
+            String valeur = valeurAttachee;
+            if (valeur == null && i + 1 < args.length) {
+                valeur = args[++i];
             }
-            // Fichier source (-f ou --file)
-            else if (arg.equals("-f") || arg.equals("--file")) {
-                if (i + 1 < args.length) {
-                    String chemin = args[++i].trim();
-                    builder.filePath(chemin);
-                    builder.instruction(resoudreContenuFichier(chemin));
-                }
-            } else if (arg.startsWith("--file=")) {
-                String chemin = arg.substring("--file=".length()).trim();
-                builder.filePath(chemin);
-                builder.instruction(resoudreContenuFichier(chemin));
-            } else if (arg.startsWith("-f=")) {
-                String chemin = arg.substring("-f=".length()).trim();
-                builder.filePath(chemin);
-                builder.instruction(resoudreContenuFichier(chemin));
-            }
-            // Agent cible (-a ou --agent)
-            else if (arg.equals("-a") || arg.equals("--agent")) {
-                if (i + 1 < args.length) {
-                    builder.agent(args[++i].trim());
-                }
-            } else if (arg.startsWith("--agent=")) {
-                builder.agent(arg.substring("--agent=".length()).trim());
-            } else if (arg.startsWith("-a=")) {
-                builder.agent(arg.substring("-a=".length()).trim());
-            }
-            // Format de sortie / fichier (-o ou --output)
-            else if (arg.equals("-o") || arg.equals("--output")) {
-                if (i + 1 < args.length) {
-                    builder.output(args[++i].trim());
-                }
-            } else if (arg.startsWith("--output=")) {
-                builder.output(arg.substring("--output=".length()).trim());
-            } else if (arg.startsWith("-o=")) {
-                builder.output(arg.substring("-o=".length()).trim());
-            }
-            // Forçage de template (-t ou --template)
-            else if (arg.equals("-t") || arg.equals("--template")) {
-                if (i + 1 < args.length) {
-                    builder.template(args[++i].trim());
-                }
-            } else if (arg.startsWith("--template=")) {
-                builder.template(arg.substring("--template=".length()).trim());
-            } else if (arg.startsWith("-t=")) {
-                builder.template(arg.substring("-t=".length()).trim());
-            }
-            // Forçage de domaine (-d ou --domain)
-            else if (arg.equals("-d") || arg.equals("--domain")) {
-                if (i + 1 < args.length) {
-                    builder.domain(args[++i].trim());
-                }
-            } else if (arg.startsWith("--domain=")) {
-                builder.domain(arg.substring("--domain=".length()).trim());
-            } else if (arg.startsWith("-d=")) {
-                builder.domain(arg.substring("-d=".length()).trim());
-            }
-            // Langue cible (-l ou --language)
-            else if (arg.equals("-l") || arg.equals("--language")) {
-                if (i + 1 < args.length) {
-                    builder.language(args[++i].trim());
-                }
-            } else if (arg.startsWith("--language=")) {
-                builder.language(arg.substring("--language=".length()).trim());
-            } else if (arg.startsWith("-l=")) {
-                builder.language(arg.substring("-l=".length()).trim());
-            }
-            // Arguments positionnels (non préfixés par un tiret)
-            else if (!arg.startsWith("-")) {
-                positionalArgs.add(arg);
+            // Valeur absente (flag en fin de ligne) : l'option est simplement ignoree
+            if (valeur != null) {
+                option.appliquer().accept(builder, valeur.trim());
             }
         }
 
