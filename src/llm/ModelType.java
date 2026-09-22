@@ -16,7 +16,9 @@ public enum ModelType {
             "~1.1 Go (Quantifié Q4_K_M)",
             "~1.5 Go",
             "qwen2.5-coder-1.5b-instruct-q4_k_m.gguf",
-            "https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF/resolve/main/qwen2.5-coder-1.5b-instruct-q4_k_m.gguf",
+            "https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF/resolve/f86cb2c1fa58255f8052cc32aeede1b7482d4361/qwen2.5-coder-1.5b-instruct-q4_k_m.gguf",
+            "cc324af070c2ecbfd324a30884d2f951a7ff756aba85cb811a6ec436933bb046",
+            1117320768L,
             List.of(TypeOfPrompt.CONCEPTION_ARCHITECTURE, TypeOfPrompt.DEPANNAGE_DIAGNOSTIC)
     ),
 
@@ -28,7 +30,9 @@ public enum ModelType {
             "~1.6 Go (Quantifié Q4_K_M)",
             "~2.0 Go",
             "gemma-2-2b-it-q4_k_m.gguf",
-            "https://huggingface.co/bartowski/gemma-2-2b-it-GGUF/resolve/main/gemma-2-2b-it-Q4_K_M.gguf",
+            "https://huggingface.co/bartowski/gemma-2-2b-it-GGUF/resolve/855f67caed130e1befc571b52bd181be2e858883/gemma-2-2b-it-Q4_K_M.gguf",
+            "e0aee85060f168f0f2d8473d7ea41ce2f3230c1bc1374847505ea599288a7787",
+            1708582752L,
             List.of(TypeOfPrompt.APPRENTISSAGE_TUTORIEL, TypeOfPrompt.CONCEPT_VULGARISATION, TypeOfPrompt.CREATION_REDACTION)
     ),
 
@@ -40,7 +44,9 @@ public enum ModelType {
             "~1.1 Go (Quantifié Q4_K_M)",
             "~1.5 Go",
             "DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M.gguf",
-            "https://huggingface.co/unsloth/DeepSeek-R1-Distill-Qwen-1.5B-GGUF/resolve/main/DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M.gguf",
+            "https://huggingface.co/unsloth/DeepSeek-R1-Distill-Qwen-1.5B-GGUF/resolve/3cb4d15544a2a5e07439592b9a0965b6445fbd34/DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M.gguf",
+            "f3bdf9cf31dee4b57ae4e455a1cb0d01b5c2c1b50d72d3112141c195506c2840",
+            1117321312L,
             List.of(TypeOfPrompt.COMPARAISON_DECISION, TypeOfPrompt.PROTOCOLE_RECETTE)
     ),
 
@@ -52,7 +58,9 @@ public enum ModelType {
             "~1.0 Go (Quantifié Q4_K_M)",
             "~1.2 Go",
             "smollm2-1.7b-instruct-q4_k_m.gguf",
-            "https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct-GGUF/resolve/main/smollm2-1.7b-instruct-q4_k_m.gguf",
+            "https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct-GGUF/resolve/2d4a76a30b4af41ecd395c35725ac11688d4cfe4/smollm2-1.7b-instruct-q4_k_m.gguf",
+            "decd2598bc2c8ed08c19adc3c8fdd461ee19ed5708679d1c54ef54a5a30d4f33",
+            1055609536L,
             List.of()
     );
 
@@ -64,11 +72,16 @@ public enum ModelType {
     private final String ramRecommandee;
     private final String nomFichier;
     private final String urlTelechargement;
+    // Empreinte SHA-256 de reference du fichier .gguf, relevee sur la revision epinglee
+    // dans urlTelechargement (en-tete X-Linked-ETag de Hugging Face).
+    private final String sha256;
+    private final long tailleOctets;
     private final List<TypeOfPrompt> archetypesCibles;
 
     ModelType(String id, String nomAffiche, String specialite, String description,
               String tailleDisque, String ramRecommandee, String nomFichier,
-              String urlTelechargement, List<TypeOfPrompt> archetypesCibles) {
+              String urlTelechargement, String sha256, long tailleOctets,
+              List<TypeOfPrompt> archetypesCibles) {
         this.id = id;
         this.nomAffiche = nomAffiche;
         this.specialite = specialite;
@@ -77,6 +90,8 @@ public enum ModelType {
         this.ramRecommandee = ramRecommandee;
         this.nomFichier = nomFichier;
         this.urlTelechargement = urlTelechargement;
+        this.sha256 = sha256;
+        this.tailleOctets = tailleOctets;
         this.archetypesCibles = archetypesCibles;
     }
 
@@ -110,6 +125,14 @@ public enum ModelType {
 
     public String getUrlTelechargement() {
         return urlTelechargement;
+    }
+
+    public String getSha256() {
+        return sha256;
+    }
+
+    public long getTailleOctets() {
+        return tailleOctets;
     }
 
     public List<TypeOfPrompt> getArchetypesCibles() {

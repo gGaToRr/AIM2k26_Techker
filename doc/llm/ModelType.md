@@ -31,3 +31,16 @@ La méthode `fromAlias(String alias)` permet une saisie tolérante et intuitive 
 - `"gemma"`, `"google"`, `"general"`, `"redaction"` $\rightarrow$ `GEMMA_GENERAL`
 - `"deepseek"`, `"r1"`, `"reasoning"`, `"logique"` $\rightarrow$ `DEEPSEEK_REASONING`
 - `"smollm"`, `"fast"`, `"rapide"`, `"light"` $\rightarrow$ `SMOLLM_FAST`
+
+---
+
+## 🔒 Métadonnées d'Intégrité
+
+Chaque entrée du registre porte, en plus de son URL, les deux valeurs qui permettent de valider le fichier téléchargé (voir [`ModelInstaller`](ModelInstaller.md)) :
+
+| Accesseur | Contenu |
+|:---|:---|
+| `getSha256()` | Empreinte SHA-256 de référence du `.gguf`, en minuscules sur 64 caractères |
+| `getTailleOctets()` | Taille exacte attendue, en octets |
+
+L'URL renvoyée par `getUrlTelechargement()` est épinglée sur le commit Hugging Face auquel ces deux valeurs ont été relevées (`/resolve/<commit-sha>/…`). Faire pointer une URL sur `main` invaliderait l'empreinte dès la prochaine republication du fichier en amont : un test de la suite TDD le refuse explicitement.

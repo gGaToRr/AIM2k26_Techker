@@ -27,4 +27,27 @@ Le téléchargement s'effectue via `java.net.http.HttpClient` avec :
   ```
   Progression : [===================>          ]  65% (1040.0 / 1600.0 Mo à 18.50 Mo/s)
   ```
-- Écriture dans un fichier temporaire `.part` puis renommage atomique final pour garantir l'intégrité du fichier.
+- Écriture dans un fichier temporaire `.part` puis renommage atomique final.
+
+---
+
+## 🔒 Vérification d'Intégrité (SHA-256)
+
+Le renommage `.part` → fichier final n'a lieu **qu'après validation de l'empreinte**. Un binaire de plusieurs Go exécuté ensuite par `llama-cli` ne doit jamais provenir d'une source non vérifiée : URL redirigée, miroir compromis ou transfert corrompu.
+
+Deux contrôles successifs, du moins coûteux au plus coûteux :
+
+| Contrôle | Référence | En cas d'écart |
+|:---|:---|:---|
+| Taille exacte en octets | `ModelType.getTailleOctets()` | Rejet immédiat, sans lire le fichier |
+| Empreinte SHA-256 | `ModelType.getSha256()` | Rejet, empreintes attendue/obtenue affichées |
+
+Dans les deux cas le fichier `.part` est supprimé et `telechargerModele` renvoie `false` : **aucun fichier final n'est créé**. Le `.part` est également nettoyé si une exception interrompt le transfert.
+
+`calculerSha256` travaille en flux (tampon de 64 Ko), sans jamais charger le modèle en mémoire.
+
+### Épinglage des révisions
+
+Une empreinte figée n'a de sens que face à un contenu figé. Les URL de `ModelType` pointent donc sur une **révision précise** du dépôt Hugging Face (`/resolve/<commit-sha>/…`) et non sur `main`, qui peut être republié à tout moment. Les valeurs de référence proviennent de l'en-tête `X-Linked-ETag` renvoyé par Hugging Face pour cette révision.
+
+> Mettre à jour un modèle impose donc de mettre à jour ensemble la révision, l'empreinte et la taille.

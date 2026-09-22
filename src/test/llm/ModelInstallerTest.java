@@ -89,4 +89,120 @@ public class ModelInstallerTest {
         Assert.assertNull(result, "Option 3 refuse et renvoie null");
         Assert.assertFalse(config.isPermissionAccordee(), "La permission ne doit pas être accordée");
     }
+
+    // --- Verification d'integrite des modeles telecharges (Issue #59) ---
+
+    public void testCalculerSha256SurVecteurConnu() throws Exception {
+        Path fichier = Files.createTempFile("sha_test", ".bin");
+        try {
+            Files.writeString(fichier, "abc");
+            // Vecteur de test de reference NIST pour SHA-256("abc")
+            Assert.assertEquals(
+                    "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+                    ModelInstaller.calculerSha256(fichier),
+                    "SHA-256 du vecteur de test 'abc'");
+        } finally {
+            Files.deleteIfExists(fichier);
+        }
+    }
+
+    public void testCalculerSha256SurFichierVide() throws Exception {
+        Path fichier = Files.createTempFile("sha_vide", ".bin");
+        try {
+            Assert.assertEquals(
+                    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                    ModelInstaller.calculerSha256(fichier),
+                    "SHA-256 du fichier vide");
+        } finally {
+            Files.deleteIfExists(fichier);
+        }
+    }
+
+    public void testChaqueModeleDuRegistrePossedeUneEmpreinteDeReference() {
+        for (ModelType model : ModelType.getAllAvailable()) {
+            Assert.assertNotNull(model.getSha256(), "Empreinte declaree pour " + model.getId());
+            Assert.assertMatchesRegex(model.getSha256(), "^[0-9a-f]{64}$",
+                    "Empreinte SHA-256 bien formee pour " + model.getId());
+            Assert.assertStrictPositive(model.getTailleOctets(), "Taille de reference pour " + model.getId());
+        }
+    }
+
+    // L'URL doit etre epinglee sur une revision precise : une reference mobile ("main")
+    // invaliderait l'empreinte des que le depot amont republie le fichier.
+    public void testUrlDeTelechargementEpingleeSurUneRevision() {
+        for (ModelType model : ModelType.getAllAvailable()) {
+            Assert.assertNotContains(model.getUrlTelechargement(), "/resolve/main/",
+                    "URL epinglee sur une revision pour " + model.getId());
+            Assert.assertMatchesRegex(model.getUrlTelechargement(), ".*/resolve/[0-9a-f]{40}/.*",
+                    "Revision de 40 caracteres dans l'URL de " + model.getId());
+        }
+    }
+
+    public void testVerifierIntegriteRejetteUnFichierDeTailleIncorrecte() throws Exception {
+        Path fichier = Files.createTempFile("modele_tronque", ".gguf");
+        try {
+            Files.writeString(fichier, "contenu tronque");
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+            boolean ok = ModelInstaller.verifierIntegrite(ModelType.QWEN_CODER, fichier, new PrintStream(baos));
+
+            Assert.assertFalse(ok, "Un fichier de taille incorrecte doit etre rejete");
+            Assert.assertContains(baos.toString(), "Taille inattendue", "Cause du rejet explicitee");
+        } finally {
+            Files.deleteIfExists(fichier);
+        }
+    }
+
+    public void testVerifierIntegriteRejetteUneEmpreinteInvalide() throws Exception {
+        Path fichier = Files.createTempFile("modele_corrompu", ".gguf");
+        try {
+            // Taille exacte attendue mais contenu different : seule l'empreinte peut le detecter
+            Files.writeString(fichier, "abc");
+            String empreinteDunAutreContenu = "0000000000000000000000000000000000000000000000000000000000000000";
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+            boolean ok = ModelInstaller.verifierIntegrite(fichier, empreinteDunAutreContenu, 3L, new PrintStream(baos));
+
+            Assert.assertFalse(ok, "Un contenu ne correspondant pas a l'empreinte doit etre rejete");
+            Assert.assertContains(baos.toString(), "EMPREINTE INVALIDE", "Cause du rejet explicitee");
+            Assert.assertNotContains(baos.toString(), "Taille inattendue", "Le rejet vient bien de l'empreinte, pas de la taille");
+        } finally {
+            Files.deleteIfExists(fichier);
+        }
+    }
+
+    public void testVerifierIntegriteAccepteUnFichierConforme() throws Exception {
+        Path fichier = Files.createTempFile("modele_valide", ".gguf");
+        try {
+            Files.writeString(fichier, "abc");
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+            boolean ok = ModelInstaller.verifierIntegrite(fichier,
+                    "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", 3L,
+                    new PrintStream(baos));
+
+            Assert.assertTrue(ok, "Un fichier conforme doit etre accepte");
+            Assert.assertContains(baos.toString(), "Integrite confirmee", "Confirmation affichee");
+        } finally {
+            Files.deleteIfExists(fichier);
+        }
+    }
+
+    // L'empreinte reste verifiee meme si la taille de reference est inconnue (0)
+    public void testVerifierIntegriteSansTailleDeReference() throws Exception {
+        Path fichier = Files.createTempFile("modele_sans_taille", ".gguf");
+        try {
+            Files.writeString(fichier, "abc");
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+            boolean ok = ModelInstaller.verifierIntegrite(fichier,
+                    "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", 0L,
+                    new PrintStream(baos));
+
+            Assert.assertTrue(ok, "La taille inconnue ne doit pas bloquer la verification d'empreinte");
+        } finally {
+            Files.deleteIfExists(fichier);
+        }
+    }
+
 }
