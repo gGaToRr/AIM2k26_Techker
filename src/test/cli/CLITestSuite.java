@@ -13,6 +13,7 @@ public class CLITestSuite {
         runner.registerTestClass(CliOutputAndExportTest.class);
         runner.registerTestClass(CliSemanticOverridesTest.class);
         runner.registerTestClass(CliRobustnessAndEdgeCasesTest.class);
+        runner.registerTestClass(CliClipboardCacheTest.class);
 
         boolean success = runner.runAll();
         if (!success) {
