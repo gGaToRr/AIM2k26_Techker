@@ -53,3 +53,33 @@ if (args.isHelp()) {
     System.out.println(CliParser.getHelpBanner());
 }
 ```
+
+---
+
+## 🗂️ Table de Dispatch
+
+`parse` ne contient plus de chaîne de `if/else if`. Chaque option est déclarée une fois dans `construireTableOptions()`, et la boucle de parsing est générique :
+
+```java
+declarerDrapeau(table, "verbose", "-V", "--verbose", (b, v) -> b.verbose(true));
+declarerValeur(table, "agent",   "-a", "--agent",   CliArgs.Builder::agent);
+```
+
+| Déclaration | Effet |
+|:---|:---|
+| `declarerDrapeau` | Option sans valeur : l'alias suffit à l'activer |
+| `declarerValeur` | Option consommant l'argument suivant, **ou** la partie après `=` |
+
+La forme `--option=valeur` est dérivée automatiquement : elle n'a pas à être déclarée. Le découpage sur `=` n'a lieu que si l'argument commence par `-`, afin qu'un argument positionnel comme `x=y+2` reste intact, et seul le **premier** `=` sépare le flag de sa valeur (`--instruction=calcule a=b` passe la valeur entière).
+
+**Ajouter un flag** se résume désormais à une ligne dans la table — au lieu des trois branches court / long / `=` qu'il fallait écrire auparavant pour chacun des 8 flags à valeur.
+
+### Règles conservées
+
+| Situation | Comportement |
+|:---|:---|
+| Flag inconnu (`--inconnu`) | Ignoré en silence, et **non** traité comme argument positionnel |
+| Flag à valeur en fin de ligne (`-t`) | Option ignorée, aucune exception |
+| Flag répété (`-a gpt -a claude`) | La dernière valeur l'emporte |
+| Arguments positionnels | Joints par des espaces et utilisés comme instruction si `-i` est absent |
+| `-f` / `--file` | Alimente à la fois `filePath` et `instruction` (contenu lu) |
