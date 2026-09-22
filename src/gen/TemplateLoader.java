@@ -1,6 +1,7 @@
 package gen;
 
 import nlp.TypeOfPrompt;
+import util.Log;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -89,8 +90,9 @@ public class TemplateLoader {
                 String contenu = Files.readString(cheminFichier.get());
                 CACHE_TEMPLATES.put(cleCache, contenu);
                 return contenu;
-            } catch (IOException ignored) {
+            } catch (IOException e) {
                 // En cas d'erreur de lecture, on bascule sur le fallback
+                Log.exceptionIgnoree("Lecture du template " + cheminFichier.get() + ", bascule sur le fallback", e);
             }
         }
 
@@ -125,7 +127,9 @@ public class TemplateLoader {
                         return Optional.of(Files.readString(file));
                     }
                 }
-            } catch (IOException ignored) {}
+            } catch (IOException e) {
+                Log.exceptionIgnoree("Parcours du dossier de templates " + dir.get(), e);
+            }
         }
 
         return Optional.empty();
@@ -135,7 +139,8 @@ public class TemplateLoader {
         if (chemin.isEmpty()) return Optional.empty();
         try {
             return Optional.of(Files.readString(chemin.get()));
-        } catch (IOException ignored) {
+        } catch (IOException e) {
+            Log.exceptionIgnoree("Lecture du fichier de template " + chemin.get(), e);
             return Optional.empty();
         }
     }

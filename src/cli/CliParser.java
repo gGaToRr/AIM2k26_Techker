@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
+import util.Log;
 
 // Analyseur syntaxique d'arguments CLI et formateur d'aide/verbose
 public class CliParser {
@@ -137,8 +138,9 @@ public class CliParser {
             if (Files.exists(path) && Files.isRegularFile(path)) {
                 return Files.readString(path).trim();
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
             // Pas un chemin de fichier valide, on traite comme un snippet inline
+            Log.exceptionIgnoree("Resolution de -c/--code comme chemin, traite comme snippet inline", e);
         }
         return input.trim();
     }
@@ -151,10 +153,10 @@ public class CliParser {
             if (Files.exists(path) && Files.isRegularFile(path)) {
                 return Files.readString(path).trim();
             } else {
-                System.err.println("Avertissement : Le fichier spécifié n'existe pas : " + chemin);
+                Log.avertir("Le fichier specifie n'existe pas : " + chemin);
             }
         } catch (IOException e) {
-            System.err.println("Erreur de lecture du fichier : " + e.getMessage());
+            Log.erreur("Lecture impossible du fichier " + chemin, e);
         }
         return "";
     }

@@ -1,6 +1,7 @@
 package cli;
 
 import java.nio.charset.StandardCharsets;
+import util.Log;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -45,8 +46,9 @@ public class CliClipboard {
                     return true;
                 }
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
             // Bascule vers le fallback AWT
+            Log.exceptionIgnoree("Copie via l'utilitaire systeme, bascule sur le fallback AWT", e);
         }
 
         // 2. Fallback Java AWT
@@ -54,7 +56,8 @@ public class CliClipboard {
             java.awt.datatransfer.StringSelection selection = new java.awt.datatransfer.StringSelection(texte);
             java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
             return true;
-        } catch (Throwable ignored) {
+        } catch (Throwable t) {
+            Log.exceptionIgnoree("Copie via le presse-papiers AWT (environnement sans affichage ?)", t);
             return false;
         }
     }
@@ -74,6 +77,7 @@ public class CliClipboard {
             Process p = new ProcessBuilder("which", cmd).start();
             return p.waitFor() == 0;
         } catch (Exception e) {
+            Log.exceptionIgnoree("Sondage de la commande " + cmd, e);
             return false;
         }
     }

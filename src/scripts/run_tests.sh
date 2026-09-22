@@ -15,6 +15,7 @@ javac -sourcepath ".:src" -cp ".:src/lib/jmustache-1.16.jar" -d bin \
     src/menu/*.java \
     src/cli/*.java \
     src/nlp/*.java \
+    src/util/*.java \
     src/gen/*.java \
     src/llm/*.java \
     src/test/*.java \
@@ -24,6 +25,7 @@ javac -sourcepath ".:src" -cp ".:src/lib/jmustache-1.16.jar" -d bin \
     src/test/menu/*.java \
     src/test/cli/*.java \
     src/test/llm/*.java \
+    src/test/util/*.java \
     src/test/integration/*.java
 
 echo ""

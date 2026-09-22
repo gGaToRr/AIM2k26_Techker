@@ -11,6 +11,7 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.List;
 import java.util.Scanner;
+import util.Log;
 
 // Gestionnaire d'installation et de téléchargement des modèles légers locaux
 public class ModelInstaller {
@@ -72,7 +73,9 @@ public class ModelInstaller {
             config.setPermissionAccordee(true);
             try {
                 config.sauvegarderParDefaut();
-            } catch (Exception ignored) {}
+            } catch (Exception e) {
+                Log.exceptionIgnoree("Sauvegarde de la configuration LLM apres accord de permission", e);
+            }
             out.println("\n[+] Autorisation accordee. Preparation de " + recommendedModel.getNomAffiche() + "...\n");
             return recommendedModel;
         } else if ("2".equals(saisie)) {
@@ -93,11 +96,15 @@ public class ModelInstaller {
                     config.setModeleParDefaut(choisi.getId());
                     try {
                         config.sauvegarderParDefaut();
-                    } catch (Exception ignored) {}
+                    } catch (Exception e) {
+                        Log.exceptionIgnoree("Sauvegarde de la configuration LLM apres choix du modele", e);
+                    }
                     out.println("\n[+] Modele selectionne : " + choisi.getNomAffiche() + "\n");
                     return choisi;
                 }
-            } catch (NumberFormatException ignored) {}
+            } catch (NumberFormatException e) {
+                Log.exceptionIgnoree("Numero de modele non numerique, retour au modele recommande", e);
+            }
             return recommendedModel;
         } else {
             out.println("\n[-] Telechargement ignore. Generation standard du prompt.\n");

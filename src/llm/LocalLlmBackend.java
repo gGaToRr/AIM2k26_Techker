@@ -1,5 +1,7 @@
 package llm;
 
+import util.Log;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -42,7 +44,9 @@ public class LocalLlmBackend implements LlmBackend {
                     if (line != null && !line.isBlank()) return line.trim();
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            Log.exceptionIgnoree("Detection de llama-cli via which", e);
+        }
         return null;
     }
 

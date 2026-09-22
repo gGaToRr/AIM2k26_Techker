@@ -7,6 +7,7 @@ import menu.Menu;
 import nlp.Lemmatizer;
 import nlp.PromptProfile;
 import nlp.SafetyAdvisor;
+import util.Log;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,6 +17,10 @@ public class Main {
     public static void main(String[] args) {
         // 0. Analyse des arguments de la ligne de commande
         CliArgs cliArgs = CliParser.parse(args);
+
+        // Le niveau de diagnostic suit -V/--verbose. Le journal part sur stderr :
+        // stdout reste reserve au produit, pour ne pas casser les usages en pipe.
+        Log.configurerDepuisVerbose(cliArgs.isVerbose());
 
         // Flag --help / -h
         if (cliArgs.isHelp()) {
