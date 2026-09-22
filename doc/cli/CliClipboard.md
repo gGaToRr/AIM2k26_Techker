@@ -31,3 +31,18 @@ if (succes) {
     System.out.println("Prompt copié dans le presse-papiers !");
 }
 ```
+
+---
+
+## ⚡ Cache de Détection des Utilitaires
+
+`copierTexte` teste jusqu'à quatre utilitaires (`wl-copy`, `xclip`, `xsel`, `pbcopy`) avant d'en retenir un. Chaque test lançait un process `which` : jusqu'à **4 process système par copie**, relancés à l'identique à chaque appel.
+
+Le `PATH` ne change pas pendant la durée du process : une commande absente le reste, une commande présente aussi. Le résultat est donc mémorisé par nom dans un `ConcurrentHashMap`.
+
+| Avant | Après |
+|:---|:---|
+| Jusqu'à 4 `which` par copie | Jusqu'à 4 `which` pour **toute** la durée du process |
+| Résultat négatif re-sondé indéfiniment | Résultat négatif mis en cache au même titre qu'un positif |
+
+`nombreDeSondagesSysteme()` expose le nombre de process réellement lancés — c'est ce compteur que les tests vérifient, plutôt qu'une mesure de durée qui serait instable.
