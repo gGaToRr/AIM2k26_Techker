@@ -55,4 +55,54 @@ public class TemplateLoaderTest {
         Assert.assertContains(fallback, "# RÔLE & EXPERTISE", "Le fallback doit contenir un rôle");
         Assert.assertContains(fallback, "<instruction_principale>", "Le fallback doit contenir l'instruction principale");
     }
+
+    // --- Confinement des chemins de templates (Issue #58) ---
+
+    public void testTemplateHorsPerimetreEstRejete() throws Exception {
+        // Fichier .md bien reel, place hors des racines de templates autorisees
+        java.nio.file.Path secret = java.nio.file.Path.of("secret_hors_perimetre.md");
+        java.nio.file.Files.writeString(secret, "CONTENU CONFIDENTIEL");
+        try {
+            String[] tentatives = {
+                    "../secret_hors_perimetre",
+                    "../../secret_hors_perimetre",
+                    "learning/../../secret_hors_perimetre",
+                    "./../secret_hors_perimetre.md"
+            };
+            for (String tentative : tentatives) {
+                Assert.assertTrue(TemplateLoader.chargerTemplateParNom(tentative).isEmpty(),
+                        "Doit rejeter la remontee de repertoire : " + tentative);
+                Assert.assertTrue(TemplateLoader.resoudreCheminTemplate(tentative + ".md").isEmpty(),
+                        "Resolution refusee hors perimetre : " + tentative);
+            }
+        } finally {
+            java.nio.file.Files.deleteIfExists(secret);
+        }
+    }
+
+    public void testCheminAbsoluEstRejete() {
+        Assert.assertTrue(TemplateLoader.resoudreCheminTemplate("/etc/passwd").isEmpty(),
+                "Un chemin absolu ne doit jamais etre resolu");
+        Assert.assertTrue(TemplateLoader.chargerTemplateParNom("/etc/hosts").isEmpty(),
+                "Un chemin absolu ne doit jamais etre charge");
+    }
+
+    public void testResolutionNominaleInchangee() {
+        // Un nom de template legitime reste resolu normalement
+        Assert.assertTrue(TemplateLoader.resoudreCheminTemplate("learning/guide_debutant.md").isPresent(),
+                "Le chemin relatif legitime doit rester resolu");
+        Assert.assertTrue(TemplateLoader.chargerTemplateParNom("feynman").isPresent(),
+                "La recherche par nom simple doit continuer a fonctionner");
+    }
+
+    public void testResolutionRefuseEntreeVideOuNulle() {
+        Assert.assertTrue(TemplateLoader.resoudreCheminTemplate(null).isEmpty(), "Entree nulle refusee");
+        Assert.assertTrue(TemplateLoader.resoudreCheminTemplate("   ").isEmpty(), "Entree vide refusee");
+        Assert.assertTrue(TemplateLoader.resoudreDossierTemplate("../").isEmpty(), "Dossier hors perimetre refuse");
+    }
+
+    public void testResolutionDossierArchetypeAutorise() {
+        Assert.assertTrue(TemplateLoader.resoudreDossierTemplate("learning").isPresent(),
+                "Le dossier d'archetype legitime doit etre resolu");
+    }
 }

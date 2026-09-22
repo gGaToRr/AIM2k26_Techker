@@ -5,12 +5,66 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 // Charge et met en cache les templates Markdown du dossier genPrompt pour les 7 Archétypes Universels
 public class TemplateLoader {
 
     private static final Map<String, String> CACHE_TEMPLATES = new HashMap<>();
+
+    // Seules racines depuis lesquelles un template peut etre lu. Tout chemin resolu
+    // en dehors de ce perimetre est refuse, quelle que soit la saisie utilisateur.
+    private static final List<String> RACINES_TEMPLATES = List.of("src/genPrompt", "genPrompt");
+
+    private static final String[] DOSSIERS_ARCHETYPES = {
+            "learning", "architecture", "troubleshooting", "creation", "protocol", "comparison", "concept"
+    };
+
+    // Resout un chemin relatif sous l'une des racines autorisees.
+    // Renvoie un Optional vide si le fichier n'existe pas OU si la resolution
+    // sort du perimetre (ex: "../../etc/passwd", chemin absolu).
+    public static Optional<Path> resoudreCheminTemplate(String relatif) {
+        return resoudreSousRacines(relatif, Files::isRegularFile);
+    }
+
+    // Meme garantie de confinement, pour un dossier d'archetype
+    public static Optional<Path> resoudreDossierTemplate(String relatif) {
+        return resoudreSousRacines(relatif, Files::isDirectory);
+    }
+
+    private static Optional<Path> resoudreSousRacines(String relatif, java.util.function.Predicate<Path> accepte) {
+        if (relatif == null || relatif.isBlank()) {
+            return Optional.empty();
+        }
+
+        Path candidat;
+        try {
+            candidat = Path.of(relatif);
+        } catch (Exception invalide) {
+            return Optional.empty();
+        }
+
+        // Un chemin absolu ne peut par definition pas etre contenu dans une racine relative
+        if (candidat.isAbsolute()) {
+            return Optional.empty();
+        }
+
+        for (String racine : RACINES_TEMPLATES) {
+            Path base = Path.of(racine).toAbsolutePath().normalize();
+            Path resolu = base.resolve(candidat).normalize();
+
+            // Confinement : apres normalisation, le chemin doit rester sous la racine
+            if (!resolu.startsWith(base)) {
+                continue;
+            }
+            if (accepte.test(resolu)) {
+                return Optional.of(resolu);
+            }
+        }
+        return Optional.empty();
+    }
 
     // Charge un template à partir de l'Archétype et du sous-type
     public static String chargerTemplate(TypeOfPrompt type, String subType) {
@@ -29,76 +83,61 @@ public class TemplateLoader {
             return CACHE_TEMPLATES.get(cleCache);
         }
 
-        Path cheminFichier = Path.of("src", "genPrompt", dossier, subType + ".md");
-        if (!Files.exists(cheminFichier)) {
-            cheminFichier = Path.of("genPrompt", dossier, subType + ".md");
-        }
-
-        try {
-            if (Files.exists(cheminFichier)) {
-                String contenu = Files.readString(cheminFichier);
+        Optional<Path> cheminFichier = resoudreCheminTemplate(dossier + "/" + subType + ".md");
+        if (cheminFichier.isPresent()) {
+            try {
+                String contenu = Files.readString(cheminFichier.get());
                 CACHE_TEMPLATES.put(cleCache, contenu);
                 return contenu;
+            } catch (IOException ignored) {
+                // En cas d'erreur de lecture, on bascule sur le fallback
             }
-        } catch (IOException ignored) {
-            // En cas d'erreur de lecture, on bascule sur le fallback
         }
 
         return fallbackTemplate(type);
     }
 
     // Charge un template spécifique par son nom ou son chemin (utilisé pour le flag -t/--template)
-    public static java.util.Optional<String> chargerTemplateParNom(String nom) {
-        if (nom == null || nom.isBlank()) return java.util.Optional.empty();
+    public static Optional<String> chargerTemplateParNom(String nom) {
+        if (nom == null || nom.isBlank()) return Optional.empty();
         String clean = nom.trim().replace(".md", "");
+        String avecExtension = nom.trim().endsWith(".md") ? nom.trim() : nom.trim() + ".md";
 
-        // 1. Recherche par chemin direct
-        Path directPath = Path.of(nom.endsWith(".md") ? nom : nom + ".md");
-        if (Files.exists(directPath) && Files.isRegularFile(directPath)) {
-            try {
-                return java.util.Optional.of(Files.readString(directPath));
-            } catch (IOException ignored) {}
-        }
-        Path srcDirectPath = Path.of("src", nom.endsWith(".md") ? nom : nom + ".md");
-        if (Files.exists(srcDirectPath) && Files.isRegularFile(srcDirectPath)) {
-            try {
-                return java.util.Optional.of(Files.readString(srcDirectPath));
-            } catch (IOException ignored) {}
+        // 1. Chemin relatif fourni tel quel, confine sous les racines de templates
+        Optional<String> direct = lire(resoudreCheminTemplate(avecExtension));
+        if (direct.isPresent()) return direct;
+
+        // 2. Recherche du nom exact dans chacun des dossiers d'archetypes
+        for (String dossier : DOSSIERS_ARCHETYPES) {
+            Optional<String> trouve = lire(resoudreCheminTemplate(dossier + "/" + clean + ".md"));
+            if (trouve.isPresent()) return trouve;
         }
 
-        // 2. Recherche dans src/genPrompt/*/<clean>.md ou genPrompt/*/<clean>.md
-        String[] dossiers = {"learning", "architecture", "troubleshooting", "creation", "protocol", "comparison", "concept"};
-        for (String dossier : dossiers) {
-            Path p = Path.of("src", "genPrompt", dossier, clean + ".md");
-            if (!Files.exists(p)) {
-                p = Path.of("genPrompt", dossier, clean + ".md");
-            }
-            if (Files.exists(p)) {
-                try {
-                    return java.util.Optional.of(Files.readString(p));
-                } catch (IOException ignored) {}
-            }
-        }
+        // 3. Correspondance souple (ex: "feynman" -> "feynman_learning.md")
+        for (String dossier : DOSSIERS_ARCHETYPES) {
+            Optional<Path> dir = resoudreDossierTemplate(dossier);
+            if (dir.isEmpty()) continue;
 
-        // 3. Recherche par correspondance souple (ex: "feynman" -> "feynman_learning.md" ou "vulgarisation_feynman.md")
-        for (String dossier : dossiers) {
-            Path dir = Path.of("src", "genPrompt", dossier);
-            if (!Files.isDirectory(dir)) {
-                dir = Path.of("genPrompt", dossier);
-            }
-            if (Files.isDirectory(dir)) {
-                try (var stream = Files.list(dir)) {
-                    for (Path file : stream.toList()) {
-                        String fname = file.getFileName().toString().replace(".md", "");
-                        if (fname.equalsIgnoreCase(clean) || fname.toLowerCase().contains(clean.toLowerCase())) {
-                            return java.util.Optional.of(Files.readString(file));
-                        }
+            try (var stream = Files.list(dir.get())) {
+                for (Path file : stream.toList()) {
+                    String fname = file.getFileName().toString().replace(".md", "");
+                    if (fname.equalsIgnoreCase(clean) || fname.toLowerCase().contains(clean.toLowerCase())) {
+                        return Optional.of(Files.readString(file));
                     }
-                } catch (IOException ignored) {}
-            }
+                }
+            } catch (IOException ignored) {}
         }
 
-        return java.util.Optional.empty();
+        return Optional.empty();
+    }
+
+    private static Optional<String> lire(Optional<Path> chemin) {
+        if (chemin.isEmpty()) return Optional.empty();
+        try {
+            return Optional.of(Files.readString(chemin.get()));
+        } catch (IOException ignored) {
+            return Optional.empty();
+        }
     }
 
     // Template de secours universel au cas où le fichier n'est pas trouvé

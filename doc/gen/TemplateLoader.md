@@ -42,3 +42,27 @@
 String template = TemplateLoader.chargerTemplate(TypeOfPrompt.CONCEPTION_ARCHITECTURE, "code_generation");
 System.out.println("Taille du template : " + template.length() + " caractères");
 ```
+
+---
+
+## 🔒 Confinement des Chemins
+
+Le flag `-t/--template` laisse l'utilisateur désigner un template par son nom. Cette saisie ne doit jamais pouvoir désigner un fichier arbitraire du disque : le contenu lu est injecté dans le prompt final, puis affiché ou exporté.
+
+Toute résolution passe donc par un point unique, `resoudreSousRacines`, qui applique trois règles :
+
+| Règle | Effet |
+|:---|:---|
+| Racines autorisées | Seuls `src/genPrompt` et `genPrompt` servent de base |
+| Rejet des chemins absolus | `/etc/passwd` ne peut pas être contenu dans une racine relative |
+| Confinement après normalisation | Le chemin normalisé doit rester sous la racine — `../` est donc neutralisé |
+
+Un chemin hors périmètre renvoie un `Optional` vide, exactement comme un fichier absent : aucune information sur l'existence du fichier visé n'est divulguée.
+
+```java
+TemplateLoader.resoudreCheminTemplate("learning/guide_debutant.md"); // Optional[/…/src/genPrompt/learning/guide_debutant.md]
+TemplateLoader.resoudreCheminTemplate("../../etc/passwd.md");        // Optional.empty
+TemplateLoader.resoudreCheminTemplate("/etc/passwd");                // Optional.empty
+```
+
+> Ce point de résolution unique remplace les quatre répétitions du motif « essayer `src/genPrompt/<x>` puis `genPrompt/<x>` » qui existaient auparavant dans `chargerTemplate` et `chargerTemplateParNom`.
