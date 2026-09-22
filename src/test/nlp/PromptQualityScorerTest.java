@@ -2,9 +2,11 @@ package test.nlp;
 
 import nlp.PromptQualityScorer;
 import test.framework.Assert;
+import test.framework.Test;
 
 public class PromptQualityScorerTest {
 
+    @Test
     public void testInvariantsDesScoresEtIntervalles() {
         String prompt = "Écris une fonction Java avec gestion des erreurs et tests";
         PromptQualityScorer.Diagnostic diag = PromptQualityScorer.evaluer(prompt, true, true, false);
@@ -16,6 +18,7 @@ public class PromptQualityScorerTest {
         Assert.assertFalse(diag.pointsForts().isEmpty(), "Au moins 1 point fort");
     }
 
+    @Test
     public void testImpactCodeEtContraintesSurLeScore() {
         String promptBasique = "Fais un script";
         PromptQualityScorer.Diagnostic diagBasique = PromptQualityScorer.evaluer(promptBasique, false, false, false);
@@ -27,6 +30,7 @@ public class PromptQualityScorerTest {
         Assert.assertTrue(diagRiche.scoreContexte() >= diagBasique.scoreContexte(), "Score contexte supérieur");
     }
 
+    @Test
     public void testPromptVideScoreNul() {
         PromptQualityScorer.Diagnostic vide = PromptQualityScorer.evaluer("", false, false, false);
         Assert.assertEquals(0, vide.scoreGlobal(), "Score nul pour prompt vide");

@@ -2,10 +2,12 @@ package test.cli;
 
 import cli.CliClipboard;
 import test.framework.Assert;
+import test.framework.Test;
 
 // Tests du cache de detection des utilitaires systeme de presse-papiers (Issue #67)
 public class CliClipboardCacheTest {
 
+    @Test
     public void testCommandeExisteNeSondeQuUneSeuleFoisParNom() {
         CliClipboard.viderCacheCommandes();
 
@@ -21,6 +23,7 @@ public class CliClipboardCacheTest {
                 "Les 20 appels suivants ne relancent aucun process");
     }
 
+    @Test
     public void testCacheDistinctParNomDeCommande() {
         CliClipboard.viderCacheCommandes();
 
@@ -34,6 +37,7 @@ public class CliClipboardCacheTest {
                 "Un sondage par nom distinct, pas un par appel");
     }
 
+    @Test
     public void testCommandeNulleOuVideNeSondeRien() {
         CliClipboard.viderCacheCommandes();
 
@@ -43,6 +47,7 @@ public class CliClipboardCacheTest {
     }
 
     // Une commande absente doit etre mise en cache aussi : sinon chaque copie la resonde
+    @Test
     public void testResultatNegatifEgalementMisEnCache() {
         CliClipboard.viderCacheCommandes();
 

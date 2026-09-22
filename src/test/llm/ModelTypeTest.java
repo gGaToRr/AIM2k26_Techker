@@ -3,12 +3,14 @@ package test.llm;
 import llm.ModelType;
 import nlp.TypeOfPrompt;
 import test.framework.Assert;
+import test.framework.Test;
 
 import java.util.Optional;
 
 // Tests unitaires pour le registre de modèles ModelType
 public class ModelTypeTest {
 
+    @Test
     public void testModelConstantsIntegrity() {
         ModelType qwen = ModelType.QWEN_CODER;
         Assert.assertEquals("qwen-coder", qwen.getId(), "ID de Qwen");
@@ -29,6 +31,7 @@ public class ModelTypeTest {
         Assert.assertEquals("smollm-fast", smol.getId(), "ID de SmolLM");
     }
 
+    @Test
     public void testAliasResolution() {
         Assert.assertEquals(ModelType.QWEN_CODER, ModelType.fromAlias("qwen").orElseThrow(), "Alias qwen");
         Assert.assertEquals(ModelType.QWEN_CODER, ModelType.fromAlias("coder").orElseThrow(), "Alias coder");
@@ -47,12 +50,14 @@ public class ModelTypeTest {
         Assert.assertEquals(ModelType.SMOLLM_FAST, ModelType.fromAlias("rapide").orElseThrow(), "Alias rapide");
     }
 
+    @Test
     public void testUnknownAndNullAliases() {
         Assert.assertTrue(ModelType.fromAlias(null).isEmpty(), "Null alias doit renvoyer empty");
         Assert.assertTrue(ModelType.fromAlias("   ").isEmpty(), "Blank alias doit renvoyer empty");
         Assert.assertTrue(ModelType.fromAlias("modele_inconnu_xyz_123").isEmpty(), "Inconnu doit renvoyer empty");
     }
 
+    @Test
     public void testGetAllAvailable() {
         Assert.assertEquals(4, ModelType.getAllAvailable().size(), "Exactement 4 modèles légers configurés");
     }

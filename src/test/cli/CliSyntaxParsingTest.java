@@ -3,11 +3,13 @@ package test.cli;
 import cli.CliArgs;
 import cli.CliParser;
 import test.framework.Assert;
+import test.framework.Test;
 
 // Tests unitaires exhaustifs pour toutes les syntaxes de parsing d'arguments CLI (Issue #31)
 public class CliSyntaxParsingTest {
 
     // Test de tous les flags booléens en versions courtes et longues
+    @Test
     public void testAllBooleanFlagsShortAndLong() {
         // Aide
         Assert.assertTrue(CliParser.parse(new String[]{"-h"}).isHelp(), "Flag -h");
@@ -35,6 +37,7 @@ public class CliSyntaxParsingTest {
     }
 
     // Test de la syntaxe --flag=valeur pour tous les arguments paramétrés
+    @Test
     public void testFlagsWithLongEqualSignSyntax() {
         String[] args = {
                 "--instruction=Analyse ce bug critique",
@@ -58,6 +61,7 @@ public class CliSyntaxParsingTest {
     }
 
     // Test de la syntaxe -f=valeur (flags courts avec signe égal)
+    @Test
     public void testFlagsWithShortEqualSignSyntax() {
         String[] args = {
                 "-i=Explique le consensus",
@@ -81,6 +85,7 @@ public class CliSyntaxParsingTest {
     }
 
     // Test de l'ordre arbitraire des arguments
+    @Test
     public void testArbitraryArgumentOrder() {
         String[] args = {
                 "-V",
@@ -106,6 +111,7 @@ public class CliSyntaxParsingTest {
     }
 
     // Test de l'extraction des arguments positionnels comme instruction par défaut
+    @Test
     public void testPositionalArgumentsExtraction() {
         String[] args = {"Optimise", "cette", "requête", "SQL", "vers", "PostgreSQL"};
         CliArgs parsed = CliParser.parse(args);

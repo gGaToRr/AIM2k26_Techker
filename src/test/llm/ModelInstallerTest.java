@@ -4,6 +4,7 @@ import llm.LlmConfig;
 import llm.ModelInstaller;
 import llm.ModelType;
 import test.framework.Assert;
+import test.framework.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -15,6 +16,7 @@ import java.util.Scanner;
 // Tests unitaires pour l'onboarding pour débutants et gestionnaire d'installation
 public class ModelInstallerTest {
 
+    @Test
     public void testIsModelInstalledWithTemporaryDirectory() throws Exception {
         Path tempDir = Files.createTempDirectory("test_models_dir");
         try {
@@ -35,6 +37,7 @@ public class ModelInstallerTest {
         }
     }
 
+    @Test
     public void testAfficherMessageOnboardingDebutantsContenu() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(baos);
@@ -52,6 +55,7 @@ public class ModelInstallerTest {
         Assert.assertContains(output, "Voulez-vous autoriser le telechargement", "Demande d'autorisation");
     }
 
+    @Test
     public void testDemanderPermissionUtilisateurAccepteOption1() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(baos);
@@ -64,6 +68,7 @@ public class ModelInstallerTest {
         Assert.assertTrue(config.isPermissionAccordee(), "La permission doit être accordée");
     }
 
+    @Test
     public void testDemanderPermissionUtilisateurChoixOption2() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(baos);
@@ -78,6 +83,7 @@ public class ModelInstallerTest {
         Assert.assertEquals("qwen-coder", config.getModeleParDefaut(), "Modele par défaut mis à jour");
     }
 
+    @Test
     public void testDemanderPermissionUtilisateurRefuseOption3() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(baos);

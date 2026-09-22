@@ -6,11 +6,13 @@ import gen.MetaPromptEngine;
 import nlp.Lemmatizer;
 import nlp.PromptProfile;
 import test.framework.Assert;
+import test.framework.Test;
 
 // Tests d'intégration des surcharges sémantiques (Templates, Domaines, Langues, Agents IA) (Issue #33)
 public class CliSemanticOverridesTest {
 
     // Test du forçage de templates spécifiques sur différents archétypes
+    @Test
     public void testTemplateOverrideAcrossArchetypes() {
         PromptProfile profile = Lemmatizer.analyser("Bonjour");
 
@@ -37,6 +39,7 @@ public class CliSemanticOverridesTest {
     }
 
     // Test du forçage de persona et domaine métier
+    @Test
     public void testDomainOverrideWithKnownAndCustomDomains() {
         PromptProfile profile = Lemmatizer.analyser("Explique les mécanismes");
 
@@ -57,6 +60,7 @@ public class CliSemanticOverridesTest {
     }
 
     // Test de la spécification de langues cibles (FR, EN, ES, DE)
+    @Test
     public void testLanguageOverrideTargetLanguages() {
         PromptProfile profile = Lemmatizer.analyser("Bonjour");
 
@@ -78,6 +82,7 @@ public class CliSemanticOverridesTest {
     }
 
     // Test de l'adaptation du prompt pour l'intégralité des 6 modèles IA cibles
+    @Test
     public void testTargetAgentFormattingAllModels() {
         PromptProfile profile = Lemmatizer.analyser("Rédiger un script de sauvegarde automatique");
 

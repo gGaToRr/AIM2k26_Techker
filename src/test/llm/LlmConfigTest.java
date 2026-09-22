@@ -2,6 +2,7 @@ package test.llm;
 
 import llm.LlmConfig;
 import test.framework.Assert;
+import test.framework.Test;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -10,6 +11,7 @@ import java.nio.file.Path;
 // Tests unitaires pour la gestion de configuration et persistance LlmConfig
 public class LlmConfigTest {
 
+    @Test
     public void testDefaultConfigValues() {
         LlmConfig config = new LlmConfig();
         Assert.assertFalse(config.isPermissionAccordee(), "Permission non accordée par défaut");
@@ -20,6 +22,7 @@ public class LlmConfigTest {
         Assert.assertTrue(config.isStreamingActive(), "Streaming actif par défaut");
     }
 
+    @Test
     public void testJsonSerializationAndDeserialization() {
         LlmConfig original = new LlmConfig(true, "qwen-coder", "custom_models", 0.5, 1024, false);
         String json = original.toJson();
@@ -37,6 +40,7 @@ public class LlmConfigTest {
         Assert.assertFalse(parsed.isStreamingActive(), "Parsé streaming");
     }
 
+    @Test
     public void testSaveAndLoadFromFile() throws Exception {
         Path tempFile = Files.createTempFile("llm_config_test", ".json");
         try {
@@ -56,6 +60,7 @@ public class LlmConfigTest {
         }
     }
 
+    @Test
     public void testCorruptedOrEmptyJsonResilience() {
         LlmConfig empty = LlmConfig.fromJson("");
         Assert.assertNotNull(empty, "JSON vide renvoie une config non nulle");

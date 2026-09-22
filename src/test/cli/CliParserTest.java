@@ -7,6 +7,7 @@ import gen.TemplateLoader;
 import nlp.Lemmatizer;
 import nlp.PromptProfile;
 import test.framework.Assert;
+import test.framework.Test;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -18,6 +19,7 @@ import java.nio.file.Path;
 public class CliParserTest {
 
     // 1. Test du flag d'aide (-h, --help) et validation de la bannière stylisée
+    @Test
     public void testHelpFlagEtBanniereStylisee() {
         CliArgs argsCourt = CliParser.parse(new String[]{"-h"});
         Assert.assertTrue(argsCourt.isHelp(), "Le flag court -h doit activer isHelp");
@@ -53,6 +55,7 @@ public class CliParserTest {
     }
 
     // 2. Test du flag de version (-v, --version)
+    @Test
     public void testVersionFlag() {
         CliArgs argsCourt = CliParser.parse(new String[]{"-v"});
         Assert.assertTrue(argsCourt.isVersion(), "Le flag -v doit activer isVersion");
@@ -68,6 +71,7 @@ public class CliParserTest {
     }
 
     // 3. Test du flag d'instruction (-i, --instruction) et des arguments positionnels
+    @Test
     public void testInstructionFlagEtPositionnels() {
         CliArgs args1 = CliParser.parse(new String[]{"-i", "Créer une API REST avec Spring Boot"});
         Assert.assertTrue(args1.hasInstruction(), "hasInstruction doit être true");
@@ -82,6 +86,7 @@ public class CliParserTest {
     }
 
     // 4. Test de l'injection de code (-c, --code)
+    @Test
     public void testCodeFlagInlineEtFichier() throws IOException {
         String codeSnippet = "public static void main(String[] args) { System.out.println(\"Hello\"); }";
         CliArgs args1 = CliParser.parse(new String[]{"-c", codeSnippet});
@@ -100,6 +105,7 @@ public class CliParserTest {
     }
 
     // 5. Test du mode verbeux (-V, --verbose)
+    @Test
     public void testVerboseFlagEtRapportComplet() {
         CliArgs args = CliParser.parse(new String[]{"-V"});
         Assert.assertTrue(args.isVerbose(), "Le flag -V doit activer isVerbose");
@@ -120,6 +126,7 @@ public class CliParserTest {
     }
 
     // 6. Test du ciblage d'agent / modèle IA (-a, --agent) (Issue #20)
+    @Test
     public void testAgentFlagEtAdaptationPrompt() {
         CliArgs argsClaude = CliParser.parse(new String[]{"-a", "claude"});
         Assert.assertTrue(argsClaude.hasAgent(), "hasAgent doit être true");
@@ -141,6 +148,7 @@ public class CliParserTest {
     }
 
     // 7. Test du formatage et de l'export de sortie (-o, --output) (Issue #21)
+    @Test
     public void testOutputFlagJsonEtExportFichier() throws IOException {
         CliArgs argsJson = CliParser.parse(new String[]{"-o", "json"});
         Assert.assertTrue(argsJson.hasOutput(), "hasOutput doit être true");
@@ -162,6 +170,7 @@ public class CliParserTest {
     }
 
     // 8. Test du forçage de template (-t, --template) (Issue #22)
+    @Test
     public void testTemplateOverrideFlag() {
         CliArgs args = CliParser.parse(new String[]{"-t", "recette_culinaire"});
         Assert.assertTrue(args.hasTemplate(), "hasTemplate doit être true");
@@ -175,6 +184,7 @@ public class CliParserTest {
     }
 
     // 9. Test du forçage de domaine (-d, --domain) (Issue #23)
+    @Test
     public void testDomainOverrideFlag() {
         CliArgs args = CliParser.parse(new String[]{"-d", "Cybersecurity & Pentesting"});
         Assert.assertTrue(args.hasDomain(), "hasDomain doit être true");
@@ -186,6 +196,7 @@ public class CliParserTest {
     }
 
     // 10. Test de la spécification de langue (-l, --language) (Issue #24)
+    @Test
     public void testLanguageOverrideFlag() {
         CliArgs args = CliParser.parse(new String[]{"-l", "en"});
         Assert.assertTrue(args.hasLanguage(), "hasLanguage doit être true");
@@ -197,6 +208,7 @@ public class CliParserTest {
     }
 
     // 11. Test du mode sortie brute (-r, --raw) (Issue #25)
+    @Test
     public void testRawModeFlag() {
         CliArgs args = CliParser.parse(new String[]{"-r"});
         Assert.assertTrue(args.isRaw(), "isRaw doit être true avec le flag -r");
@@ -206,6 +218,7 @@ public class CliParserTest {
     }
 
     // 12. Test du chargement de prompt depuis un fichier (-f, --file) (Issue #26)
+    @Test
     public void testFileLoadingFlag() throws IOException {
         File promptFile = File.createTempFile("input_prompt_", ".txt");
         promptFile.deleteOnExit();
@@ -218,6 +231,7 @@ public class CliParserTest {
     }
 
     // 13. Test du mode analyse seule (-n, --dry-run) (Issue #27)
+    @Test
     public void testDryRunFlag() {
         CliArgs argsCourt = CliParser.parse(new String[]{"-n"});
         Assert.assertTrue(argsCourt.isDryRun(), "isDryRun doit être true avec -n");
@@ -227,6 +241,7 @@ public class CliParserTest {
     }
 
     // 14. Test de la copie presse-papiers (-C, --clipboard) (Issue #28)
+    @Test
     public void testClipboardFlag() {
         CliArgs argsCourt = CliParser.parse(new String[]{"-C"});
         Assert.assertTrue(argsCourt.isClipboard(), "isClipboard doit être true avec -C");

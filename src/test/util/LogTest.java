@@ -1,6 +1,7 @@
 package test.util;
 
 import test.framework.Assert;
+import test.framework.Test;
 import util.Log;
 
 import java.io.ByteArrayOutputStream;
@@ -25,23 +26,27 @@ public class LogTest {
         }
     }
 
+    @Test
     public void testAvertissementEmisAuNiveauParDefaut() {
         String sortie = capturer(Log.Niveau.AVERTISSEMENT, () -> Log.avertir("fichier absent"));
         Assert.assertContains(sortie, "AVERTISSEMENT", "Niveau etiquete");
         Assert.assertContains(sortie, "fichier absent", "Message present");
     }
 
+    @Test
     public void testDebugMuetTantQueLeModeVerbeuxEstInactif() {
         String sortie = capturer(Log.Niveau.AVERTISSEMENT, () -> Log.debug("detail interne"));
         Assert.assertNotContains(sortie, "detail interne", "Le debug ne doit pas polluer la sortie par defaut");
     }
 
+    @Test
     public void testDebugVisibleEnModeVerbeux() {
         String sortie = capturer(Log.Niveau.DEBUG, () -> Log.debug("detail interne"));
         Assert.assertContains(sortie, "detail interne", "Le mode verbeux libere le debug");
     }
 
     // Coeur de l'issue #63 : une exception non propagee doit laisser une trace exploitable
+    @Test
     public void testExceptionIgnoreeTraceTypeEtMessage() {
         String sortie = capturer(Log.Niveau.DEBUG,
                 () -> Log.exceptionIgnoree("Lecture du template", new java.io.IOException("disque plein")));
@@ -51,6 +56,7 @@ public class LogTest {
         Assert.assertContains(sortie, "disque plein", "Le message de l'exception");
     }
 
+    @Test
     public void testExceptionIgnoreeResteMuetteHorsModeVerbeux() {
         String sortie = capturer(Log.Niveau.AVERTISSEMENT,
                 () -> Log.exceptionIgnoree("Lecture du template", new java.io.IOException("disque plein")));
@@ -59,6 +65,7 @@ public class LogTest {
                 "Le diagnostic detaille ne s'affiche qu'en mode verbeux");
     }
 
+    @Test
     public void testErreurJointLaCause() {
         String sortie = capturer(Log.Niveau.ERREUR,
                 () -> Log.erreur("Lecture impossible", new IllegalStateException("etat invalide")));
@@ -68,6 +75,7 @@ public class LogTest {
         Assert.assertContains(sortie, "etat invalide", "Cause jointe");
     }
 
+    @Test
     public void testNiveauSilencieuxCoupeTout() {
         String sortie = capturer(Log.Niveau.SILENCIEUX, () -> {
             Log.erreur("grave", new RuntimeException("boum"));
@@ -77,6 +85,7 @@ public class LogTest {
         Assert.assertEquals("", sortie, "Le niveau SILENCIEUX n'emet rien");
     }
 
+    @Test
     public void testConfigurationDepuisLeFlagVerbose() {
         Log.Niveau precedent = Log.niveau();
         try {

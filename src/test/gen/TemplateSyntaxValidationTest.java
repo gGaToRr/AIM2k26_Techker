@@ -1,6 +1,7 @@
 package test.gen;
 
 import test.framework.Assert;
+import test.framework.Test;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,6 +24,7 @@ public class TemplateSyntaxValidationTest {
             "concept"
     );
 
+    @Test
     public void testIntegriteEtSyntaxeTousLesTemplatesMarkdown() throws IOException {
         Path rootGenPrompt = Path.of("src", "genPrompt");
         if (!Files.exists(rootGenPrompt)) {

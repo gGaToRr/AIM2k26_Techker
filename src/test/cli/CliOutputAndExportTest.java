@@ -7,6 +7,7 @@ import gen.MetaPromptEngine;
 import nlp.Lemmatizer;
 import nlp.PromptProfile;
 import test.framework.Assert;
+import test.framework.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,6 +17,7 @@ import java.nio.file.Files;
 public class CliOutputAndExportTest {
 
     // Test de la structure et des champs obligatoires du JSON
+    @Test
     public void testJsonOutputStructureAndFields() {
         PromptProfile profile = Lemmatizer.analyser("Créer une application React avec Tailwind CSS et TypeScript");
         CliArgs options = CliParser.parse(new String[]{"-o", "json"});
@@ -36,6 +38,7 @@ public class CliOutputAndExportTest {
     }
 
     // Test de l'échappement des caractères spéciaux dans le JSON (guillemets, retours à la ligne)
+    @Test
     public void testJsonSpecialCharactersEscaping() {
         PromptProfile profile = Lemmatizer.analyser("Corrige ce code: if (x == \"test\") { alert('error'); }");
         CliArgs options = CliParser.parse(new String[]{"-o", "json"});
@@ -48,6 +51,7 @@ public class CliOutputAndExportTest {
     }
 
     // Test d'export vers un fichier Markdown (.md)
+    @Test
     public void testExportToFileMarkdown() throws IOException {
         File tempMd = File.createTempFile("export_test_", ".md");
         tempMd.deleteOnExit();
@@ -65,6 +69,7 @@ public class CliOutputAndExportTest {
     }
 
     // Test d'export vers un fichier JSON (.json)
+    @Test
     public void testExportToFileJson() throws IOException {
         File tempJson = File.createTempFile("export_test_", ".json");
         tempJson.deleteOnExit();
@@ -82,6 +87,7 @@ public class CliOutputAndExportTest {
     }
 
     // Test de robustesse de la copie presse-papiers
+    @Test
     public void testClipboardCopyMethod() {
         // La méthode ne doit jamais lever d'exception non gérée
         boolean resultNull = CliClipboard.copierTexte(null);

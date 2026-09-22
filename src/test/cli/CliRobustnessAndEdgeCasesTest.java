@@ -6,11 +6,13 @@ import gen.MetaPromptEngine;
 import nlp.Lemmatizer;
 import nlp.PromptProfile;
 import test.framework.Assert;
+import test.framework.Test;
 
 // Tests de robustesse, tolérance aux fautes et cas limites pour les arguments CLI (Issue #34)
 public class CliRobustnessAndEdgeCasesTest {
 
     // Test de gestion d'un fichier source inexistant pour le flag -f/--file
+    @Test
     public void testNonExistentSourceFileHandling() {
         CliArgs args = CliParser.parse(new String[]{"-f", "dossier_inexistant/fichier_inexistant_123.txt"});
         Assert.assertEquals("dossier_inexistant/fichier_inexistant_123.txt", args.filePath(), "Le chemin doit être enregistré");
@@ -18,6 +20,7 @@ public class CliRobustnessAndEdgeCasesTest {
     }
 
     // Test de gestion d'un code snippet qui ressemble à un chemin mais n'existe pas
+    @Test
     public void testNonExistentCodeFileTreatedAsInlineString() {
         String codeInput = "path/to/virtual/class.java { void run() {} }";
         CliArgs args = CliParser.parse(new String[]{"-c", codeInput});
@@ -26,6 +29,7 @@ public class CliRobustnessAndEdgeCasesTest {
     }
 
     // Test de flags avec valeurs manquantes en fin de tableau d'arguments (pas de ArrayIndexOutOfBoundsException)
+    @Test
     public void testMissingArgumentValuesAtEndOfArgs() {
         // Flag -i sans valeur
         CliArgs args1 = CliParser.parse(new String[]{"-i"});
@@ -49,6 +53,7 @@ public class CliRobustnessAndEdgeCasesTest {
     }
 
     // Test de la préservation intégrale du code avec caractères spéciaux et balises XML
+    @Test
     public void testSpecialCharactersAndCodeBlockIntegrity() {
         String complexCode = """
                 <dependency>
@@ -75,6 +80,7 @@ public class CliRobustnessAndEdgeCasesTest {
     }
 
     // Test d'arguments contenant des espaces multiples et tabulations
+    @Test
     public void testMultipleWhitespacesInArguments() {
         CliArgs args = CliParser.parse(new String[]{
                 "  -i  ", "   Instruction   avec   espaces   multiples   ",
@@ -88,6 +94,7 @@ public class CliRobustnessAndEdgeCasesTest {
 
     // --- Table de dispatch : cas limites (Issue #62) ---
 
+    @Test
     public void testFlagInconnuEstIgnoreSansCasser() {
         CliArgs args = CliParser.parse(new String[]{"--inconnu", "-z", "-i", "Analyse ce texte"});
 
@@ -96,11 +103,13 @@ public class CliRobustnessAndEdgeCasesTest {
     }
 
     // Un flag inconnu ne doit pas non plus etre capte comme argument positionnel
+    @Test
     public void testFlagInconnuNestPasUnArgumentPositionnel() {
         CliArgs args = CliParser.parse(new String[]{"--inconnu"});
         Assert.assertFalse(args.hasInstruction(), "Un flag inconnu ne devient pas l'instruction");
     }
 
+    @Test
     public void testOrdreDesFlagsSansImportance() {
         CliArgs ordre1 = CliParser.parse(new String[]{"-V", "-a", "claude", "-l", "fr", "-i", "Explique X"});
         CliArgs ordre2 = CliParser.parse(new String[]{"-i", "Explique X", "-l", "fr", "-a", "claude", "-V"});
@@ -112,6 +121,7 @@ public class CliRobustnessAndEdgeCasesTest {
     }
 
     // Les formes courte, longue et attachee doivent produire exactement le meme resultat
+    @Test
     public void testFormesCourteLongueEtAttacheeEquivalentes() {
         CliArgs courte = CliParser.parse(new String[]{"-a", "claude"});
         CliArgs longue = CliParser.parse(new String[]{"--agent", "claude"});
@@ -125,12 +135,14 @@ public class CliRobustnessAndEdgeCasesTest {
     }
 
     // Un argument positionnel contenant "=" ne doit pas etre decoupe comme un flag
+    @Test
     public void testArgumentPositionnelContenantUnEgalResteIntact() {
         CliArgs args = CliParser.parse(new String[]{"resous", "x=y+2"});
         Assert.assertEquals("resous x=y+2", args.instruction(), "Le signe egal d'un positionnel doit etre preserve");
     }
 
     // Une valeur contenant "=" doit etre transmise entierement
+    @Test
     public void testValeurContenantUnEgalEstPreservee() {
         CliArgs args = CliParser.parse(new String[]{"-i", "calcule a=b"});
         Assert.assertEquals("calcule a=b", args.instruction(), "La valeur suivante n'est jamais decoupee");
@@ -140,12 +152,14 @@ public class CliRobustnessAndEdgeCasesTest {
     }
 
     // La derniere occurrence d'un flag repete l'emporte
+    @Test
     public void testFlagRepeteDerniereValeurGagne() {
         CliArgs args = CliParser.parse(new String[]{"-a", "gpt", "-a", "claude"});
         Assert.assertEquals("claude", args.agent(), "La derniere valeur ecrase la precedente");
     }
 
     // -f alimente a la fois le chemin et l'instruction : le dispatch ne doit pas casser ce couplage
+    @Test
     public void testFileAlimenteCheminEtInstruction() {
         CliArgs args = CliParser.parse(new String[]{"-f=dossier_inexistant/absent_987.md"});
         Assert.assertEquals("dossier_inexistant/absent_987.md", args.filePath(), "Chemin enregistre via la forme attachee");

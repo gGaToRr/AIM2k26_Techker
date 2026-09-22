@@ -40,6 +40,7 @@ public class AllTestSuite {
         runner.registerTestClass(test.cli.CliRobustnessAndEdgeCasesTest.class);
         runner.registerTestClass(test.cli.CliClipboardCacheTest.class);
         runner.registerTestClass(test.util.LogTest.class);
+        runner.registerTestClass(test.framework.TestRunnerTest.class);
 
         // 4. Tests Inférence Locale & Routage LLM
         runner.registerTestClass(ModelTypeTest.class);

@@ -4,6 +4,7 @@ import llm.*;
 import nlp.Lemmatizer;
 import nlp.PromptProfile;
 import test.framework.Assert;
+import test.framework.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -15,6 +16,7 @@ import java.util.Scanner;
 // Tests unitaires pour le moteur d'exécution LlmEngine et LocalLlmBackend
 public class LlmEngineTest {
 
+    @Test
     public void testLocalBackendEmbeddedInference() throws Exception {
         LocalLlmBackend backend = new LocalLlmBackend();
         LlmConfig config = new LlmConfig();
@@ -35,6 +37,7 @@ public class LlmEngineTest {
         Assert.assertContains(result.fullText(), "Qwen 2.5 Coder", "Contenu retourné");
     }
 
+    @Test
     public void testLlmEngineExecutionWithGrantedPermission() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(baos);
@@ -56,6 +59,7 @@ public class LlmEngineTest {
         Assert.assertContains(output, "Statistiques", "Statistiques de performance");
     }
 
+    @Test
     public void testLlmEngineWithModelOverride() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(baos);
@@ -73,6 +77,7 @@ public class LlmEngineTest {
         Assert.assertEquals(ModelType.DEEPSEEK_REASONING, result.modelUsed(), "Modèle forcé DeepSeek");
     }
 
+    @Test
     public void testLlmEngineDeclinedPermission() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(baos);

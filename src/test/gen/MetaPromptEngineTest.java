@@ -4,9 +4,11 @@ import gen.MetaPromptEngine;
 import nlp.Lemmatizer;
 import nlp.PromptProfile;
 import test.framework.Assert;
+import test.framework.Test;
 
 public class MetaPromptEngineTest {
 
+    @Test
     public void testResolutionCompleteVariablesMustacheSansResidu() {
         String[] testPrompts = {
                 "Crée une API REST en Spring Boot avec Java 21",
@@ -35,6 +37,7 @@ public class MetaPromptEngineTest {
         }
     }
 
+    @Test
     public void testInjectionDynamiquePersonaDomaineEtSousObjectifs() {
         String prompt = "Je veux apprendre la guitare puis faire des exercices de solfège";
         PromptProfile profile = Lemmatizer.analyser(prompt);
@@ -49,6 +52,7 @@ public class MetaPromptEngineTest {
         Assert.assertContains(output, "exercices", "Objectif 2 mentionné");
     }
 
+    @Test
     public void testPreservationStrictesCaracteresSpeciauxEtCode() {
         String codePrompt = "Écris une interface TypeScript: interface User<T> { id: number; data: T & { isValid: boolean }; }";
         PromptProfile profile = Lemmatizer.analyser(codePrompt);
@@ -62,6 +66,7 @@ public class MetaPromptEngineTest {
         Assert.assertFalse(output.contains("&amp;"), "Pas de conversion HTML &amp;");
     }
 
+    @Test
     public void testTraductionAvecLangueCibleExplicite() {
         String prompt = "Traduis cette page d'aide en espagnol";
         PromptProfile profile = Lemmatizer.analyser(prompt);

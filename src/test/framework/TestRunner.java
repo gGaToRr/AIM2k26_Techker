@@ -2,6 +2,7 @@ package test.framework;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 // Exécuteur de tests unitaire TDD avec affichage ANSI et rapport détaillé
@@ -32,28 +33,43 @@ public class TestRunner {
 
         for (Class<?> testClass : testClasses) {
             System.out.println("\n" + ANSI_BOLD + "Classe de Test : " + testClass.getSimpleName() + ANSI_RESET);
-            Object testInstance;
-            try {
-                testInstance = testClass.getDeclaredConstructor().newInstance();
-            } catch (Exception e) {
-                System.out.println(ANSI_RED + "  Impossible d'instancier " + testClass.getName() + " : " + e.getMessage() + ANSI_RESET);
-                failedTests++;
-                continue;
-            }
 
-            for (Method method : testClass.getDeclaredMethods()) {
-                if (method.getName().startsWith("test") && method.getParameterCount() == 0) {
-                    totalTests++;
-                    String testName = method.getName();
+            List<Method> casDeTest = collecterCasDeTest(testClass);
+            Method avantChaque = trouverHook(testClass, BeforeEach.class, "setUp");
+            Method apresChaque = trouverHook(testClass, AfterEach.class, "tearDown");
+
+            for (Method method : casDeTest) {
+                totalTests++;
+                String testName = method.getName();
+
+                // Une instance neuve par cas de test : l'etat d'un test ne fuit pas dans le suivant
+                Object testInstance;
+                try {
+                    testInstance = testClass.getDeclaredConstructor().newInstance();
+                } catch (Exception e) {
+                    failedTests++;
+                    System.out.println("  " + ANSI_RED + "✘ [FAIL]" + ANSI_RESET + " " + testName);
+                    System.out.println("     " + ANSI_YELLOW + "Raison : instanciation impossible - " + e.getMessage() + ANSI_RESET);
+                    continue;
+                }
+
+                try {
+                    invoquer(avantChaque, testInstance);
+                    method.invoke(testInstance);
+                    passedTests++;
+                    System.out.println("  " + ANSI_GREEN + "✔ [PASS]" + ANSI_RESET + " " + testName);
+                } catch (Throwable t) {
+                    failedTests++;
+                    Throwable cause = t.getCause() != null ? t.getCause() : t;
+                    System.out.println("  " + ANSI_RED + "✘ [FAIL]" + ANSI_RESET + " " + testName);
+                    System.out.println("     " + ANSI_YELLOW + "Raison : " + cause.getMessage() + ANSI_RESET);
+                } finally {
+                    // Le nettoyage doit avoir lieu meme si le test a echoue
                     try {
-                        method.invoke(testInstance);
-                        passedTests++;
-                        System.out.println("  " + ANSI_GREEN + "✔ [PASS]" + ANSI_RESET + " " + testName);
+                        invoquer(apresChaque, testInstance);
                     } catch (Throwable t) {
-                        failedTests++;
                         Throwable cause = t.getCause() != null ? t.getCause() : t;
-                        System.out.println("  " + ANSI_RED + "✘ [FAIL]" + ANSI_RESET + " " + testName);
-                        System.out.println("     " + ANSI_YELLOW + "Raison : " + cause.getMessage() + ANSI_RESET);
+                        System.out.println("     " + ANSI_YELLOW + "tearDown en echec : " + cause.getMessage() + ANSI_RESET);
                     }
                 }
             }
@@ -73,5 +89,57 @@ public class TestRunner {
         System.out.println(ANSI_BOLD + ANSI_CYAN + "==========================================================" + ANSI_RESET);
 
         return failedTests == 0;
+    }
+
+    // Selectionne les cas de test d'une classe.
+    //
+    // L'annotation @Test fait autorite des qu'elle est presente quelque part dans la classe.
+    // A defaut, on retombe sur l'ancienne convention de prefixe, pour qu'une classe de test
+    // non encore migree continue de s'executer.
+    static List<Method> collecterCasDeTest(Class<?> testClass) {
+        List<Method> annotees = new ArrayList<>();
+        List<Method> parConvention = new ArrayList<>();
+
+        for (Method method : testClass.getDeclaredMethods()) {
+            if (method.getParameterCount() != 0) {
+                continue;
+            }
+            if (method.isAnnotationPresent(Test.class)) {
+                annotees.add(method);
+            } else if (method.getName().startsWith("test")) {
+                parConvention.add(method);
+            }
+        }
+
+        List<Method> retenus = annotees.isEmpty() ? parConvention : annotees;
+
+        // getDeclaredMethods ne garantit aucun ordre : on trie pour que deux executions
+        // successives produisent exactement le meme rapport.
+        retenus.sort(Comparator.comparing(Method::getName));
+        return retenus;
+    }
+
+    // Cherche un hook par annotation, puis par nom conventionnel
+    private static Method trouverHook(Class<?> testClass, Class<? extends java.lang.annotation.Annotation> annotation,
+                                      String nomConventionnel) {
+        for (Method method : testClass.getDeclaredMethods()) {
+            if (method.getParameterCount() == 0 && method.isAnnotationPresent(annotation)) {
+                method.setAccessible(true);
+                return method;
+            }
+        }
+        for (Method method : testClass.getDeclaredMethods()) {
+            if (method.getParameterCount() == 0 && method.getName().equals(nomConventionnel)) {
+                method.setAccessible(true);
+                return method;
+            }
+        }
+        return null;
+    }
+
+    private static void invoquer(Method hook, Object instance) throws Exception {
+        if (hook != null) {
+            hook.invoke(instance);
+        }
     }
 }

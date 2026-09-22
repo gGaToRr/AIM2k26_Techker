@@ -2,9 +2,11 @@ package test.nlp;
 
 import nlp.QuestionDecomposer;
 import test.framework.Assert;
+import test.framework.Test;
 
 public class QuestionDecomposerTest {
 
+    @Test
     public void testDecompositionFluxAvecConnecteurPuis() {
         String prompt = "Je veux créer une API puis la sécuriser avec un token JWT";
         QuestionDecomposer.DecompositionResult result = QuestionDecomposer.decomposer(prompt);
@@ -13,6 +15,7 @@ public class QuestionDecomposerTest {
         Assert.assertContains(result.xmlFormattedList(), "<objectifs_specifiques>", "La sortie XML doit être structurée");
     }
 
+    @Test
     public void testDecompositionFluxAvecConnecteurEnsuiteEtAussi() {
         String prompt = "Fais la pâte à pizza ensuite prépare la sauce tomate et aussi ajoute les champignons";
         QuestionDecomposer.DecompositionResult result = QuestionDecomposer.decomposer(prompt);
@@ -20,6 +23,7 @@ public class QuestionDecomposerTest {
         Assert.assertTrue(result.objectives().size() >= 2, "Il doit y avoir au moins 2 sous-objectifs");
     }
 
+    @Test
     public void testPromptSimpleSansDecomposition() {
         String prompt = "Donne-moi la capitale de la France";
         QuestionDecomposer.DecompositionResult result = QuestionDecomposer.decomposer(prompt);
@@ -27,6 +31,7 @@ public class QuestionDecomposerTest {
         Assert.assertEquals(1, result.objectives().size(), "Un prompt simple compte 1 seul objectif");
     }
 
+    @Test
     public void testEntreeVide() {
         QuestionDecomposer.DecompositionResult result = QuestionDecomposer.decomposer("");
         Assert.assertFalse(result.hasMultipleObjectives(), "Une chaîne vide n'a pas d'objectifs multiples");

@@ -2,12 +2,14 @@ package test.nlp;
 
 import nlp.TechStackDetector;
 import test.framework.Assert;
+import test.framework.Test;
 
 import java.util.List;
 import java.util.Optional;
 
 public class TechStackDetectorTest {
 
+    @Test
     public void testDetectionToutesFamillesTechnologiques() {
         // C++ et C#
         List<String> cpp = TechStackDetector.detecterTechnologies("Implémente un algorithme en C++ avec CMake");
@@ -49,6 +51,7 @@ public class TechStackDetectorTest {
         Assert.assertContainsElement(gamedev, "Unity / Game Dev", "Game Dev détecté");
     }
 
+    @Test
     public void testDetectionLanguesCiblesMultiples() {
         // Anglais
         Optional<String> en = TechStackDetector.detecterLangueCibleTraduction("Traduis ce document en anglais");
@@ -75,6 +78,7 @@ public class TechStackDetectorTest {
         Assert.assertFalse(none.isPresent(), "Pas de langue de traduction pour un prompt culinaire");
     }
 
+    @Test
     public void testDetectionContextesSpeciauxEcolesEtRecherche() {
         Optional<String> epitech = TechStackDetector.detecterContexteSpecial("Projet epitech en C");
         Assert.assertTrue(epitech.isPresent(), "Epitech présent");
@@ -89,6 +93,7 @@ public class TechStackDetectorTest {
         Assert.assertContains(these.get(), "Thèse", "Contexte Thèse");
     }
 
+    @Test
     public void testEntreesVidesEtSansTechnologies() {
         Assert.assertTrue(TechStackDetector.detecterTechnologies("").isEmpty(), "Vide -> liste vide");
         Assert.assertTrue(TechStackDetector.detecterTechnologies(null).isEmpty(), "Null -> liste vide");

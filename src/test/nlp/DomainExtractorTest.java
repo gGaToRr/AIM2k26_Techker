@@ -2,9 +2,11 @@ package test.nlp;
 
 import nlp.DomainExtractor;
 import test.framework.Assert;
+import test.framework.Test;
 
 public class DomainExtractorTest {
 
+    @Test
     public void testExtractionToutesLes10FamillesDeDomaines() {
         // 1. Musique
         DomainExtractor.DomainInfo musique = DomainExtractor.analyser("Comment accorder une guitare et jouer du piano ?");
@@ -58,18 +60,21 @@ public class DomainExtractorTest {
         Assert.assertContains(medecine.expertPersona(), "Médecin", "Persona Médecin");
     }
 
+    @Test
     public void testExtractionSujetPivotDynamique() {
         DomainExtractor.DomainInfo info = DomainExtractor.analyser("Explique le fonctionnement de la blockchain");
         Assert.assertNotNull(info.extractedTopic(), "Sujet pivot non null");
         Assert.assertFalse(info.extractedTopic().isEmpty(), "Sujet pivot non vide");
     }
 
+    @Test
     public void testPersonaFallbackSurPromptSansDomaine() {
         DomainExtractor.DomainInfo info = DomainExtractor.analyser("Fais un tri");
         Assert.assertNotNull(info, "Info non null");
         Assert.assertFalse(info.expertPersona().isEmpty(), "Persona fallback non vide");
     }
 
+    @Test
     public void testEntreeVideEtNull() {
         DomainExtractor.DomainInfo vide = DomainExtractor.analyser("");
         Assert.assertFalse(vide.isDomainIdentified(), "Vide non identifié");

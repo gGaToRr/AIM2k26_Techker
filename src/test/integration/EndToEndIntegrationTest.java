@@ -5,9 +5,11 @@ import nlp.Lemmatizer;
 import nlp.PromptProfile;
 import nlp.TypeOfPrompt;
 import test.framework.Assert;
+import test.framework.Test;
 
 public class EndToEndIntegrationTest {
 
+    @Test
     public void testScenario1IngenierieLogicielle() {
         String input = "Crée une API REST sécurisée en Spring Boot avec authentification JWT et rôles utilisateurs";
         PromptProfile profile = Lemmatizer.analyser(input);
@@ -22,6 +24,7 @@ public class EndToEndIntegrationTest {
         Assert.assertFalse(outputPrompt.contains("{{"), "Zéro tag résiduel");
     }
 
+    @Test
     public void testScenario2GastronomieRecette() {
         String input = "Donne-moi la recette de la tarte au citron meringuée étape par étape";
         PromptProfile profile = Lemmatizer.analyser(input);
@@ -35,6 +38,7 @@ public class EndToEndIntegrationTest {
         Assert.assertFalse(outputPrompt.contains("{{"), "Zéro tag résiduel");
     }
 
+    @Test
     public void testScenario3VulgarisationFeynman() {
         String input = "Explique-moi la relativité générale avec des analogies simples";
         PromptProfile profile = Lemmatizer.analyser(input);
@@ -47,6 +51,7 @@ public class EndToEndIntegrationTest {
         Assert.assertFalse(outputPrompt.contains("{{"), "Zéro tag résiduel");
     }
 
+    @Test
     public void testScenario4DiagnosticDebug() {
         String input = "Debug cette NullPointerException dans la méthode UserService.login()";
         PromptProfile profile = Lemmatizer.analyser(input);
@@ -59,6 +64,7 @@ public class EndToEndIntegrationTest {
         Assert.assertFalse(outputPrompt.contains("{{"), "Zéro tag résiduel");
     }
 
+    @Test
     public void testScenario5ApprentissageMusique() {
         String input = "Je veux apprendre la guitare et comprendre les accords puis faire des exercices pour debutant";
         PromptProfile profile = Lemmatizer.analyser(input);
@@ -72,6 +78,7 @@ public class EndToEndIntegrationTest {
         Assert.assertFalse(outputPrompt.contains("{{"), "Zéro tag résiduel");
     }
 
+    @Test
     public void testScenario6ComparaisonDecisionDatabase() {
         String input = "Comparatif entre PostgreSQL et MongoDB : lequel choisir pour une application bancaire ?";
         PromptProfile profile = Lemmatizer.analyser(input);
@@ -84,6 +91,7 @@ public class EndToEndIntegrationTest {
         Assert.assertFalse(outputPrompt.contains("{{"), "Zéro tag résiduel");
     }
 
+    @Test
     public void testScenario7TraductionTechnique() {
         String input = "Traduis cette documentation technique en anglais";
         PromptProfile profile = Lemmatizer.analyser(input);
