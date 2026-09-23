@@ -89,7 +89,7 @@ Avant d'écrire le code, effectue une brève analyse (2-3 phrases) :
 
 ## # Installation & Utilisation
 
-**Prérequis** : Java 17+ (`java -version`). La bibliothèque JMustache est incluse dans `src/lib/`.
+**Prérequis** : Java 21+ (`java -version`). Maven est optionnel — sans lui, la bibliothèque JMustache reste disponible dans `src/lib/`.
 
 <br />
 
@@ -98,10 +98,14 @@ Avant d'écrire le code, effectue une brève analyse (2-3 phrases) :
 git clone https://github.com/gGaToRr/AIM2k26_Techker.git
 cd AIM2k26_Techker
 
-# Compiler le projet
-javac -sourcepath ".:src" -cp ".:src/lib/*" -d bin Main.java src/menu/*.java src/cli/*.java src/nlp/*.java src/gen/*.java src/llm/*.java
+# Option Maven (recommandée) : compile, teste et produit un JAR exécutable
+mvn package
+java -jar target/aim2k26-techker-*.jar -i "Explique le tri fusion en Java"
 
-# Lancer la suite complète de 129 tests TDD
+# Option javac directe, sans Maven
+javac -sourcepath ".:src" -cp ".:src/lib/*" -d bin Main.java src/menu/*.java src/cli/*.java src/nlp/*.java src/util/*.java src/gen/*.java src/llm/*.java
+
+# Lancer la suite complète de tests TDD
 ./src/scripts/run_tests.sh
 
 # Lancer en mode interactif
@@ -119,7 +123,7 @@ git clone https://github.com/gGaToRr/AIM2k26_Techker.git
 cd AIM2k26_Techker
 
 # Compiler le projet (séparateur ;)
-javac -sourcepath ".;src" -cp ".;src/lib/*" -d bin Main.java src/menu/*.java src/cli/*.java src/nlp/*.java src/gen/*.java src/llm/*.java
+javac -sourcepath ".;src" -cp ".;src/lib/*" -d bin Main.java src/menu/*.java src/cli/*.java src/nlp/*.java src/util/*.java src/gen/*.java src/llm/*.java
 
 # Lancer en mode interactif
 java -cp "bin;src/lib/*" Main

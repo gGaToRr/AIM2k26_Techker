@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, premain, dev ]
+  pull_request:
+    branches: [ main, premain, dev ]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Maven et suite TDD
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Recuperation du code
+        uses: actions/checkout@v4
+
+      - name: Installation d'OpenJDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Compilation et suite de tests
+        run: mvn -B --no-transfer-progress test
+
+      - name: Construction du JAR executable
+        run: mvn -B --no-transfer-progress package -DskipTests
+
+      - name: Verification que le JAR demarre
+        run: java -jar target/aim2k26-techker-*.jar --version
+
+      - name: Publication du JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: aim2k26-techker-jar
+          path: |
+            target/*.jar
+            target/lib/*.jar
+          retention-days: 7
+
+  compilation-sans-maven:
+    name: Compilation javac documentee
+    runs-on: ubuntu-latest
+
+    # Le README documente une compilation javac directe, sans Maven.
+    # Si ce chemin casse, l'instruction d'installation devient fausse.
+    steps:
+      - name: Recuperation du code
+        uses: actions/checkout@v4
+
+      - name: Installation d'OpenJDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Execution du script de tests
+        run: |
+          chmod +x src/scripts/run_tests.sh
+          ./src/scripts/run_tests.sh
