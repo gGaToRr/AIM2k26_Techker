@@ -34,6 +34,19 @@ public class TestRunner {
         for (Class<?> testClass : testClasses) {
             System.out.println("\n" + ANSI_BOLD + "Classe de Test : " + testClass.getSimpleName() + ANSI_RESET);
 
+            // Une classe partiellement migree perdrait ses cas non annotes en silence :
+            // un test qui existe sans jamais s'executer est pire qu'un test rouge.
+            List<String> orphelins = detecterCasOrphelins(testClass);
+            for (String orphelin : orphelins) {
+                totalTests++;
+                failedTests++;
+                System.out.println("  " + ANSI_RED + "✘ [FAIL]" + ANSI_RESET + " " + orphelin);
+                System.out.println("     " + ANSI_YELLOW
+                        + "Raison : methode nommee comme un test mais non annotee @Test, dans une classe "
+                        + "qui en utilise. Ajoutez @Test, ou renommez-la si ce n'est pas un test."
+                        + ANSI_RESET);
+            }
+
             List<Method> casDeTest = collecterCasDeTest(testClass);
             Method avantChaque = trouverHook(testClass, BeforeEach.class, "setUp");
             Method apresChaque = trouverHook(testClass, AfterEach.class, "tearDown");
@@ -117,6 +130,31 @@ public class TestRunner {
         // successives produisent exactement le meme rapport.
         retenus.sort(Comparator.comparing(Method::getName));
         return retenus;
+    }
+
+    // Methodes qui ressemblent a des tests mais ne s'executeraient pas, faute
+    // d'annotation, dans une classe qui utilise deja @Test.
+    static List<String> detecterCasOrphelins(Class<?> testClass) {
+        boolean classeAnnotee = false;
+        List<String> suspects = new ArrayList<>();
+
+        for (Method method : testClass.getDeclaredMethods()) {
+            if (method.getParameterCount() != 0) {
+                continue;
+            }
+            if (method.isAnnotationPresent(Test.class)) {
+                classeAnnotee = true;
+            } else if (method.getName().startsWith("test")
+                    && java.lang.reflect.Modifier.isPublic(method.getModifiers())) {
+                suspects.add(method.getName());
+            }
+        }
+
+        if (!classeAnnotee) {
+            return List.of();
+        }
+        suspects.sort(Comparator.naturalOrder());
+        return suspects;
     }
 
     // Cherche un hook par annotation, puis par nom conventionnel

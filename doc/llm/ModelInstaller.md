@@ -51,3 +51,26 @@ Dans les deux cas le fichier `.part` est supprimé et `telechargerModele` renvoi
 Une empreinte figée n'a de sens que face à un contenu figé. Les URL de `ModelType` pointent donc sur une **révision précise** du dépôt Hugging Face (`/resolve/<commit-sha>/…`) et non sur `main`, qui peut être republié à tout moment. Les valeurs de référence proviennent de l'en-tête `X-Linked-ETag` renvoyé par Hugging Face pour cette révision.
 
 > Mettre à jour un modèle impose donc de mettre à jour ensemble la révision, l'empreinte et la taille.
+
+---
+
+## 🗂️ Cycle de vie complet des modèles
+
+`ModelInstaller` couvre le téléchargement (Create) et la détection (Read). La suppression (Delete) vit dans **`ModelManager`**, pilotée en ligne de commande par `ModelsCommand`.
+
+| Commande | Effet |
+|:---|:---|
+| `-ml`, `--models-list` | Tableau : statut, taille réelle sur disque, date d'installation, espace total |
+| `-mi`, `--models-info <nom>` | Fiche technique : spécialité, RAM conseillée, empreinte, chemin local |
+| `-md`, `--models-delete <nom>` | Supprime un modèle, après confirmation |
+| `-mp`, `--models-purge` | Supprime tous les modèles et réinitialise l'autorisation |
+
+Les alias du registre fonctionnent comme pour `-m/--model` : `qwen`, `code`, `r1`…
+
+### Trois garde-fous
+
+**Aucune suppression sans accord explicite.** La confirmation est en `[o/N]` : une réponse vide vaut refus. On parle de plusieurs Go à retélécharger.
+
+**Le `.part` est nettoyé avec le modèle.** Un téléchargement interrompu laisse un fichier partiel à côté du `.gguf`. Le supprimer seul ne libérerait pas réellement l'espace annoncé.
+
+**La purge réinitialise `permissionAccordee`.** Cette permission avait été accordée pour un téléchargement précis. La reconduire tacitement après une purge relancerait un téléchargement de plusieurs Go que l'utilisateur vient justement d'annuler — il la redonne, ou non.

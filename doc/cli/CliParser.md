@@ -18,6 +18,7 @@
    - `-t` / `--template` : Forçage de template.
    - `-d` / `--domain` : Forçage de domaine métier.
    - `-l` / `--language` : Langue cible.
+   - `-ml` / `--models-list`, `-mi` / `--models-info`, `-md` / `--models-delete`, `-mp` / `--models-purge` : gestion du cycle de vie des modèles locaux (voir [`ModelInstaller`](../llm/ModelInstaller.md)). Ces commandes court-circuitent le pipeline de génération et rendent directement un code de sortie.
    - `-r` / `--raw` : Sortie brute sans bannière.
    - `-f` / `--file` : Fichier contenant le prompt.
    - `-n` / `--dry-run` : Analyse seule.

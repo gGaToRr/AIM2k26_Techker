@@ -2,7 +2,9 @@ import cli.CliArgs;
 import cli.CliClipboard;
 import cli.CliParser;
 import gen.MetaPromptEngine;
+import llm.LlmConfig;
 import llm.LlmEngine;
+import llm.ModelsCommand;
 import menu.Menu;
 import nlp.Lemmatizer;
 import nlp.PromptProfile;
@@ -32,6 +34,13 @@ public class Main {
         if (cliArgs.isVersion()) {
             System.out.println(CliParser.getVersionInfo());
             return;
+        }
+
+        // Commandes de gestion des modeles locaux : elles court-circuitent le pipeline
+        // de generation, aucune instruction n'est requise.
+        if (cliArgs.isCommandeModeles()) {
+            System.exit(ModelsCommand.executer(cliArgs, LlmConfig.chargerParDefaut(),
+                    System.out, new java.util.Scanner(System.in)));
         }
 
         // Récupération de l'instruction (via CLI ou mode interactif)

@@ -47,6 +47,12 @@ public class CliParser {
         declarerValeur(table, "domain", "-d", "--domain", CliArgs.Builder::domain);
         declarerValeur(table, "language", "-l", "--language", CliArgs.Builder::language);
 
+        // Gestion du cycle de vie des modeles locaux (Issue #45)
+        declarerDrapeau(table, "models-list", "-ml", "--models-list", (b, v) -> b.modelsList(true));
+        declarerDrapeau(table, "models-purge", "-mp", "--models-purge", (b, v) -> b.modelsPurge(true));
+        declarerValeur(table, "models-delete", "-md", "--models-delete", CliArgs.Builder::modelsDelete);
+        declarerValeur(table, "models-info", "-mi", "--models-info", CliArgs.Builder::modelsInfo);
+
         declarerValeur(table, "code", "-c", "--code", (b, v) -> b.code(resoudreContenuCode(v)));
 
         // -f alimente deux champs : le chemin conserve, et l'instruction lue depuis le fichier
@@ -183,6 +189,12 @@ public class CliParser {
                 Inférence Locale & LLMs Embarqués (100% Hors-ligne) :
                   -e, --exec                     Exécuter directement le prompt optimisé avec le LLM local expert.
                   -m, --model <nom>              Forcer un modèle local (auto, qwen, gemma, deepseek, smollm).
+
+                Gestion des modèles locaux :
+                  -ml, --models-list             Lister les modèles, leur statut, taille et date d'installation.
+                  -mi, --models-info <nom>       Fiche technique détaillée d'un modèle.
+                  -md, --models-delete <nom>     Supprimer un modèle installé, après confirmation.
+                  -mp, --models-purge            Supprimer tous les modèles et réinitialiser l'autorisation.
 
                 Options avancées & personnalisation :
                   -a, --agent <nom>              Adapter le format pour un LLM (claude, gpt, deepseek, gemini, llama).

@@ -17,7 +17,11 @@ public record CliArgs(
         String domain,
         String language,
         String filePath,
-        String model
+        String model,
+        boolean isModelsList,
+        boolean isModelsPurge,
+        String modelsDelete,
+        String modelsInfo
 ) {
     public boolean hasInstruction() {
         return instruction != null && !instruction.isBlank();
@@ -49,6 +53,20 @@ public record CliArgs(
 
     public boolean hasFilePath() {
         return filePath != null && !filePath.isBlank();
+    }
+
+    public boolean hasModelsDelete() {
+        return modelsDelete != null && !modelsDelete.isBlank();
+    }
+
+    public boolean hasModelsInfo() {
+        return modelsInfo != null && !modelsInfo.isBlank();
+    }
+
+    // Vrai des qu'une commande de gestion des modeles est demandee : ces commandes
+    // court-circuitent le pipeline de generation.
+    public boolean isCommandeModeles() {
+        return isModelsList || isModelsPurge || hasModelsDelete() || hasModelsInfo();
     }
 
     public boolean hasModel() {
@@ -92,6 +110,10 @@ public record CliArgs(
         private String language = null;
         private String filePath = null;
         private String model = null;
+        private boolean isModelsList = false;
+        private boolean isModelsPurge = false;
+        private String modelsDelete = null;
+        private String modelsInfo = null;
 
         public Builder help(boolean isHelp) { this.isHelp = isHelp; return this; }
         public Builder version(boolean isVersion) { this.isVersion = isVersion; return this; }
@@ -109,11 +131,16 @@ public record CliArgs(
         public Builder language(String language) { this.language = language; return this; }
         public Builder filePath(String filePath) { this.filePath = filePath; return this; }
         public Builder model(String model) { this.model = model; return this; }
+        public Builder modelsList(boolean isModelsList) { this.isModelsList = isModelsList; return this; }
+        public Builder modelsPurge(boolean isModelsPurge) { this.isModelsPurge = isModelsPurge; return this; }
+        public Builder modelsDelete(String modelsDelete) { this.modelsDelete = modelsDelete; return this; }
+        public Builder modelsInfo(String modelsInfo) { this.modelsInfo = modelsInfo; return this; }
 
         public CliArgs build() {
             return new CliArgs(
                     isHelp, isVersion, isVerbose, isRaw, isDryRun, isClipboard, isExec,
-                    instruction, code, agent, output, template, domain, language, filePath, model
+                    instruction, code, agent, output, template, domain, language, filePath, model,
+                    isModelsList, isModelsPurge, modelsDelete, modelsInfo
             );
         }
     }

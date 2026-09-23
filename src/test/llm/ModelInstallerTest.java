@@ -98,6 +98,7 @@ public class ModelInstallerTest {
 
     // --- Verification d'integrite des modeles telecharges (Issue #59) ---
 
+    @Test
     public void testCalculerSha256SurVecteurConnu() throws Exception {
         Path fichier = Files.createTempFile("sha_test", ".bin");
         try {
@@ -112,6 +113,7 @@ public class ModelInstallerTest {
         }
     }
 
+    @Test
     public void testCalculerSha256SurFichierVide() throws Exception {
         Path fichier = Files.createTempFile("sha_vide", ".bin");
         try {
@@ -124,6 +126,7 @@ public class ModelInstallerTest {
         }
     }
 
+    @Test
     public void testChaqueModeleDuRegistrePossedeUneEmpreinteDeReference() {
         for (ModelType model : ModelType.getAllAvailable()) {
             Assert.assertNotNull(model.getSha256(), "Empreinte declaree pour " + model.getId());
@@ -135,6 +138,7 @@ public class ModelInstallerTest {
 
     // L'URL doit etre epinglee sur une revision precise : une reference mobile ("main")
     // invaliderait l'empreinte des que le depot amont republie le fichier.
+    @Test
     public void testUrlDeTelechargementEpingleeSurUneRevision() {
         for (ModelType model : ModelType.getAllAvailable()) {
             Assert.assertNotContains(model.getUrlTelechargement(), "/resolve/main/",
@@ -144,6 +148,7 @@ public class ModelInstallerTest {
         }
     }
 
+    @Test
     public void testVerifierIntegriteRejetteUnFichierDeTailleIncorrecte() throws Exception {
         Path fichier = Files.createTempFile("modele_tronque", ".gguf");
         try {
@@ -159,6 +164,7 @@ public class ModelInstallerTest {
         }
     }
 
+    @Test
     public void testVerifierIntegriteRejetteUneEmpreinteInvalide() throws Exception {
         Path fichier = Files.createTempFile("modele_corrompu", ".gguf");
         try {
@@ -177,6 +183,7 @@ public class ModelInstallerTest {
         }
     }
 
+    @Test
     public void testVerifierIntegriteAccepteUnFichierConforme() throws Exception {
         Path fichier = Files.createTempFile("modele_valide", ".gguf");
         try {
@@ -195,6 +202,7 @@ public class ModelInstallerTest {
     }
 
     // L'empreinte reste verifiee meme si la taille de reference est inconnue (0)
+    @Test
     public void testVerifierIntegriteSansTailleDeReference() throws Exception {
         Path fichier = Files.createTempFile("modele_sans_taille", ".gguf");
         try {
