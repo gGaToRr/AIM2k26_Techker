@@ -8,6 +8,7 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
 import java.time.Duration;
 import java.util.List;
 import java.util.Scanner;
@@ -179,6 +180,13 @@ public class ModelInstaller {
                 }
             }
 
+            // Verification d'integrite avant de considerer le fichier comme installe :
+            // un binaire corrompu ou substitue ne doit jamais atteindre llama-cli.
+            if (!verifierIntegrite(model, tempFile, out)) {
+                supprimerSilencieusement(tempFile);
+                return false;
+            }
+
             // Renommage atomique du fichier temporaire
             Files.move(tempFile, targetFile);
             out.println("\n[+] Telechargement termine avec succes.");
@@ -186,8 +194,73 @@ public class ModelInstaller {
 
         } catch (Exception e) {
             out.println("\n[!] Echec du telechargement : " + e.getMessage());
+            supprimerSilencieusement(Paths.get(targetFile.toString() + ".part"));
             return false;
         }
+    }
+
+    // Compare la taille puis l'empreinte SHA-256 du fichier telecharge a la reference du registre
+    public static boolean verifierIntegrite(ModelType model, Path fichier, PrintStream out) {
+        if (model.getSha256() == null || model.getSha256().isBlank()) {
+            out.println("\n[!] Aucune empreinte de reference connue pour " + model.getNomAffiche() + ", verification ignoree.");
+            return true;
+        }
+        return verifierIntegrite(fichier, model.getSha256(), model.getTailleOctets(), out);
+    }
+
+    // Surcharge sur valeurs explicites : permet de couvrir chaque branche en TDD
+    // sans manipuler un fichier de plusieurs Go.
+    public static boolean verifierIntegrite(Path fichier, String attendu, long tailleAttendue, PrintStream out) {
+        try {
+            long tailleReelle = Files.size(fichier);
+            if (tailleAttendue > 0 && tailleReelle != tailleAttendue) {
+                out.println("\n[!] Taille inattendue : " + tailleReelle + " octets recus, " + tailleAttendue + " attendus.");
+                out.println("    Le fichier est incomplet ou ne correspond pas au modele annonce.");
+                return false;
+            }
+
+            out.println("\n[v] Verification de l'integrite (SHA-256)...");
+            String obtenu = calculerSha256(fichier);
+
+            if (!attendu.equalsIgnoreCase(obtenu)) {
+                out.println("[!] EMPREINTE INVALIDE : le fichier telecharge ne correspond pas a la reference.");
+                out.println("    Attendu : " + attendu);
+                out.println("    Obtenu  : " + obtenu);
+                out.println("    Le fichier a ete supprime. Relancez le telechargement.");
+                return false;
+            }
+
+            out.println("[+] Integrite confirmee.");
+            return true;
+
+        } catch (Exception e) {
+            out.println("\n[!] Verification d'integrite impossible : " + e.getMessage());
+            return false;
+        }
+    }
+
+    // Calcule l'empreinte SHA-256 d'un fichier en flux, sans le charger en memoire
+    public static String calculerSha256(Path fichier) throws Exception {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        try (InputStream in = new BufferedInputStream(Files.newInputStream(fichier))) {
+            byte[] buffer = new byte[65536];
+            int read;
+            while ((read = in.read(buffer)) != -1) {
+                digest.update(buffer, 0, read);
+            }
+        }
+        StringBuilder sb = new StringBuilder(64);
+        for (byte b : digest.digest()) {
+            sb.append(Character.forDigit((b >> 4) & 0xF, 16));
+            sb.append(Character.forDigit(b & 0xF, 16));
+        }
+        return sb.toString();
+    }
+
+    private static void supprimerSilencieusement(Path fichier) {
+        try {
+            Files.deleteIfExists(fichier);
+        } catch (Exception ignored) {}
     }
 
     private static void afficherBarreProgression(PrintStream out, long bytesRead, long totalBytes, double speedMBs) {
