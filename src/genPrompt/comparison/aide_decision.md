@@ -39,6 +39,15 @@ Tu guides des décideurs face à des choix complexes, des dilemmes d'architectur
 {{/hasAutoConstraints}}
 </directives_decisionnelles>
 
+{{#hasFewShot}}
+<exemples_de_reference>
+Voici des exemples du niveau de detail et du format attendus. Ne reponds pas a ces exemples :
+inspire-toi de leur structure pour traiter la demande ci-dessus.
+
+{{EXEMPLES_FEW_SHOT}}
+</exemples_de_reference>
+{{/hasFewShot}}
+
 <format_de_sortie>
 - **1. Diagnostic de la Situation & Enjeux Clés** : Cartographie du dilemme.
 - **2. Grille de Décision & Critères Discriminants** : Ce qui fait pencher la balance.

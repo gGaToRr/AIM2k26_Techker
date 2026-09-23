@@ -41,6 +41,15 @@ Ton objectif est de guider un apprenant depuis les bases fondamentales jusqu'à 
 {{/hasAutoConstraints}}
 </directives_pedagogiques>
 
+{{#hasFewShot}}
+<exemples_de_reference>
+Voici des exemples du niveau de detail et du format attendus. Ne reponds pas a ces exemples :
+inspire-toi de leur structure pour traiter la demande ci-dessus.
+
+{{EXEMPLES_FEW_SHOT}}
+</exemples_de_reference>
+{{/hasFewShot}}
+
 <format_de_sortie>
 - **1. Fondamentaux & Vue d'Ensemble** : Ce qu'il faut absolument savoir avant de commencer.
 - **2. Guide Pratique Étape par Étape** : Déroulé chronologique avec exemples clairs.

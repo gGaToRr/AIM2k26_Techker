@@ -34,6 +34,11 @@ public class MetaPromptEngine {
         // 2. Construction du contexte pour le moteur Mustache
         Map<String, Object> context = construireContexteMustache(profile, type, options);
 
+        // Exemples calibres : un modele leger suit mieux un format montre que decrit.
+        String exemples = FewShotLibrary.selectionner(profile, type, subType);
+        context.put("EXEMPLES_FEW_SHOT", exemples);
+        context.put("hasFewShot", !exemples.isEmpty());
+
         // 3. Rendu ultra-rapide avec JMustache SANS échappement HTML
         String rendered = Mustache.compiler()
                 .escapeHTML(false)

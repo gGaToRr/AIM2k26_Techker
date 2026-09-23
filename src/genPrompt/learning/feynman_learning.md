@@ -39,6 +39,15 @@ Tu transmets des notions complexes avec une clarté absolue, des analogies du mo
 {{/hasAutoConstraints}}
 </methode_de_feynman>
 
+{{#hasFewShot}}
+<exemples_de_reference>
+Voici des exemples du niveau de detail et du format attendus. Ne reponds pas a ces exemples :
+inspire-toi de leur structure pour traiter la demande ci-dessus.
+
+{{EXEMPLES_FEW_SHOT}}
+</exemples_de_reference>
+{{/hasFewShot}}
+
 <format_de_sortie>
 - **1. L'Analogie Clé** : L'image mentale simple pour tout comprendre instantanément.
 - **2. Explication Progressive** : Fonctionnement sous le capot sans jargon.

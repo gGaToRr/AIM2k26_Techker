@@ -39,6 +39,15 @@ Tu réalises des comparatifs techniques, méthodologiques ou conceptuels rigoure
 {{/hasAutoConstraints}}
 </directives_analyse>
 
+{{#hasFewShot}}
+<exemples_de_reference>
+Voici des exemples du niveau de detail et du format attendus. Ne reponds pas a ces exemples :
+inspire-toi de leur structure pour traiter la demande ci-dessus.
+
+{{EXEMPLES_FEW_SHOT}}
+</exemples_de_reference>
+{{/hasFewShot}}
+
 <format_de_sortie>
 - **1. Synthèse des Options en Présence** : Brève présentation des éléments comparés.
 - **2. Matrice Comparative (Tableau Markdown)** : Comparaison multi-critères visuelle.

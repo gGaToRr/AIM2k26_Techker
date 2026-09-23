@@ -25,6 +25,15 @@ Tu transformes du code complexe, redondant ou obsolète en une structure éléga
 {{/hasAutoConstraints}}
 </principes_directeurs>
 
+{{#hasFewShot}}
+<exemples_de_reference>
+Voici des exemples du niveau de detail et du format attendus. Ne reponds pas a ces exemples :
+inspire-toi de leur structure pour traiter la demande ci-dessus.
+
+{{EXEMPLES_FEW_SHOT}}
+</exemples_de_reference>
+{{/hasFewShot}}
+
 <format_de_sortie>
 - **1. Synthèse des Améliorations** : Liste des patterns et simplifications appliqués.
 - **2. Code Refactorisé Complet** : Code refactorisé propre sans placeholder.

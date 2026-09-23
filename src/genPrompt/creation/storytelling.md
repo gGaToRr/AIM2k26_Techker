@@ -37,6 +37,15 @@ Tu crées des récits immersifs, captivants, avec une voix narrative forte, des 
 {{/hasAutoConstraints}}
 </regles_narratives>
 
+{{#hasFewShot}}
+<exemples_de_reference>
+Voici des exemples du niveau de detail et du format attendus. Ne reponds pas a ces exemples :
+inspire-toi de leur structure pour traiter la demande ci-dessus.
+
+{{EXEMPLES_FEW_SHOT}}
+</exemples_de_reference>
+{{/hasFewShot}}
+
 <format_de_sortie>
 - Le texte créatif / récit complet, rédigé avec soin en Markdown.
 </format_de_sortie>

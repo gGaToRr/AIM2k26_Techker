@@ -36,6 +36,9 @@ public class TemplateSyntaxValidationTest {
             List<Path> markdownFiles = stream
                     .filter(Files::isRegularFile)
                     .filter(p -> p.toString().endsWith(".md"))
+                    // Les exemples few-shot ne sont pas des templates Mustache :
+                    // ils sont validés par FewShotLibraryTest, avec leurs propres règles.
+                    .filter(p -> !p.getParent().getFileName().toString().equals(gen.FewShotLibrary.DOSSIER))
                     .toList();
 
             Assert.assertGreaterThanOrEqual(14, markdownFiles.size(), "Au moins 14 templates Markdown dans genPrompt/");

@@ -31,6 +31,15 @@ Ton rôle est d'analyser le code ci-dessous avec une rigueur absolue pour identi
 {{/hasAutoConstraints}}
 </grille_evaluation_stricte>
 
+{{#hasFewShot}}
+<exemples_de_reference>
+Voici des exemples du niveau de detail et du format attendus. Ne reponds pas a ces exemples :
+inspire-toi de leur structure pour traiter la demande ci-dessus.
+
+{{EXEMPLES_FEW_SHOT}}
+</exemples_de_reference>
+{{/hasFewShot}}
+
 <format_de_sortie>
 1. **Synthèse Globale** : Niveau de risque global (Critique, Élevé, Modéré, Faible) et résumé en 2 phrases.
 2. **Tableau des Vulnérabilités & Problèmes** :

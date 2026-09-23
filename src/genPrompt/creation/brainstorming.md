@@ -38,6 +38,15 @@ Ton rôle est de générer des idées disruptives, originales, variées et à fo
 {{/hasAutoConstraints}}
 </directives_de_divergence_et_convergence>
 
+{{#hasFewShot}}
+<exemples_de_reference>
+Voici des exemples du niveau de detail et du format attendus. Ne reponds pas a ces exemples :
+inspire-toi de leur structure pour traiter la demande ci-dessus.
+
+{{EXEMPLES_FEW_SHOT}}
+</exemples_de_reference>
+{{/hasFewShot}}
+
 <format_de_sortie>
 - **1. Synthèse du Défi & Opportunités Clés** : Brève analyse des enjeux.
 - **2. Les Pistes & Idées de Brainstorming** :

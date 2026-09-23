@@ -25,6 +25,15 @@ Ton objectif est de diagnostiquer la cause racine exacte (Root Cause) du problè
 {{/hasAutoConstraints}}
 </directives_de_diagnostic>
 
+{{#hasFewShot}}
+<exemples_de_reference>
+Voici des exemples du niveau de detail et du format attendus. Ne reponds pas a ces exemples :
+inspire-toi de leur structure pour traiter la demande ci-dessus.
+
+{{EXEMPLES_FEW_SHOT}}
+</exemples_de_reference>
+{{/hasFewShot}}
+
 <format_de_sortie>
 - **1. Diagnostic & Cause Racine** : Explication claire de l'origine du bug.
 - **2. Correctif Chirurgical** : Code complet corrigé avec mise en évidence des lignes modifiées.
