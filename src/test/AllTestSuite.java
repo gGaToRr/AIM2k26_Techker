@@ -42,6 +42,7 @@ public class AllTestSuite {
         runner.registerTestClass(test.util.LogTest.class);
         runner.registerTestClass(test.framework.TestRunnerTest.class);
         runner.registerTestClass(test.llm.LocalLlmBackendTest.class);
+        runner.registerTestClass(test.gen.AdapterPourAgentTest.class);
 
         // 4. Tests Inférence Locale & Routage LLM
         runner.registerTestClass(ModelTypeTest.class);
