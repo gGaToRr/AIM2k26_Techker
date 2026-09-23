@@ -10,6 +10,7 @@ public class GenPromptTestSuite {
         runner.registerTestClass(TemplateLoaderTest.class);
         runner.registerTestClass(MetaPromptEngineTest.class);
         runner.registerTestClass(AdapterPourAgentTest.class);
+        runner.registerTestClass(SubTypeRulesTest.class);
         runner.registerTestClass(TemplateSyntaxValidationTest.class);
 
         boolean success = runner.runAll();

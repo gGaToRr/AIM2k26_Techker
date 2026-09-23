@@ -126,63 +126,9 @@ public class MetaPromptEngine {
     }
 
     // Détermine le sous-template le plus adapté à l'intention fine parmi les 7 Archétypes
+    // Delegue la selection du sous-type aux regles externalisees (voir SubTypeRules)
     private static String determinerSousType(PromptProfile profile, TypeOfPrompt type) {
-        String lower = profile.rawText().toLowerCase();
-        int nbMots = profile.rawText().trim().split("\\s+").length;
-
-        return switch (type) {
-            case APPRENTISSAGE_TUTORIEL -> {
-                if (lower.contains("debutant") || lower.contains("initiation") || lower.contains("premier") || lower.contains("bases") || lower.contains("cours")) {
-                    yield "guide_debutant";
-                }
-                yield "feynman_learning";
-            }
-            case CONCEPTION_ARCHITECTURE -> {
-                boolean isWebUI = lower.contains("site") || lower.contains("css") || lower.contains("html") || lower.contains("tailwind") || lower.contains("frontend") || lower.contains("web") || lower.contains("responsive");
-                if (isWebUI && (lower.contains("design") || lower.contains("bouton") || lower.contains("carte") || lower.contains("ombre") || lower.contains("layout"))) {
-                    yield "frontend_ui";
-                } else if (lower.contains("architecture") || lower.contains("arborescence") || lower.contains("structure de dossier") || lower.contains("structure des dossier") || lower.contains("organisation")) {
-                    yield "architecture_systeme";
-                }
-                yield "code_generation";
-            }
-            case DEPANNAGE_DIAGNOSTIC -> {
-                if (lower.contains("review") || lower.contains("audit") || lower.contains("securite") || lower.contains("conformite")) {
-                    yield "audit_review";
-                } else if (lower.contains("refactor") || lower.contains("clean") || lower.contains("amelior") || lower.contains("optimis")) {
-                    yield "refactor_clean";
-                }
-                yield "root_cause_debug";
-            }
-            case CREATION_REDACTION -> {
-                if (profile.targetTranslationLanguage().isPresent() || lower.contains("tradui") || lower.contains("translate")) {
-                    yield "technical_translation";
-                } else if (lower.contains("corrig") || lower.contains("orthographe") || lower.contains("grammaire") || lower.contains("relectur")) {
-                    yield "proofreading";
-                } else if (lower.contains("brainstorm") || lower.contains("idee") || lower.contains("concept")) {
-                    yield "brainstorming";
-                }
-                yield "storytelling";
-            }
-            case PROTOCOLE_RECETTE -> {
-                if (lower.contains("recette") || lower.contains("cuisin") || lower.contains("cuisson") || lower.contains("gateau") || lower.contains("tarte") || lower.contains("plat") || lower.contains("ingredient")) {
-                    yield "recette_culinaire";
-                }
-                yield "protocole_technique";
-            }
-            case COMPARAISON_DECISION -> {
-                if (lower.contains("choisir") || lower.contains("choix") || lower.contains("arbitrage") || lower.contains("decision") || lower.contains("lequel")) {
-                    yield "aide_decision";
-                }
-                yield "matrice_comparative";
-            }
-            case CONCEPT_VULGARISATION -> {
-                if (nbMots <= 3 && !profile.rawText().contains("?")) {
-                    yield "concept_encyclopedique";
-                }
-                yield "vulgarisation_feynman";
-            }
-        };
+        return SubTypeRules.resoudre(type, profile);
     }
 
     // Prépare les variables injectées (application des 5 règles d'optimisation)

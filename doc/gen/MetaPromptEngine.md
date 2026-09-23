@@ -39,3 +39,45 @@ CliArgs options = CliParser.parse(new String[]{"-a", "claude"});
 String superPrompt = MetaPromptEngine.genererPromptOptimise(profile, options);
 System.out.println(superPrompt);
 ```
+
+---
+
+## 🗄️ Règles de sous-type externalisées
+
+`determinerSousType` reposait sur ~60 lignes de `contains(...)` en dur. Ajuster un synonyme imposait une recompilation, et la couverture réelle de chaque sous-type était invisible.
+
+Les règles vivent désormais dans **`src/genPrompt/regles_sous_types.properties`** et sont chargées par `SubTypeRules`.
+
+```properties
+DEPANNAGE_DIAGNOSTIC.ordre  = audit_review, refactor_clean
+DEPANNAGE_DIAGNOSTIC.defaut = root_cause_debug
+DEPANNAGE_DIAGNOSTIC.audit_review.motsCles   = review, audit, securite, conformite
+DEPANNAGE_DIAGNOSTIC.refactor_clean.motsCles = refactor, clean, amelior, optimis
+```
+
+| Clé | Rôle |
+|:---|:---|
+| `.ordre` | Sous-types évalués dans l'ordre — **la première règle satisfaite l'emporte** |
+| `.defaut` | Retenu si aucune règle ne correspond |
+| `.motsCles` | Déclencheurs. Ce sont des **fragments** : `amelior` capture `amelioration` |
+| `.contexteRequis` | Exigence **supplémentaire**, pas une alternative |
+| `.condition` | Prédicat intégré, pour ce qui n'est pas exprimable en mots-clés |
+
+### `contexteRequis` : une conjonction
+
+Le cas `frontend_ui` illustre pourquoi une simple liste de mots-clés ne suffisait pas. Il faut **un déclencheur** (`design`, `bouton`, `layout`…) **et** un indice que l'on parle de web (`site`, `css`, `tailwind`…).
+
+> « Dessine le design du bouton de la machine à café » contient un déclencheur, mais n'est pas du frontend.
+
+### `condition` : les deux cas non lexicaux
+
+| Condition | Signification |
+|:---|:---|
+| `traductionDetectee` | Le profil NLP a identifié une langue cible de traduction |
+| `expressionCourteSansQuestion` | 3 mots ou moins, sans `?` — une entrée encyclopédique |
+
+Une condition inconnue est signalée dans le journal et traitée comme non satisfaite, plutôt que de faire échouer la génération.
+
+### Repli intégré
+
+Si le fichier est absent ou illisible, `SubTypeRules` retombe sur une copie intégrée et le signale. Un test vérifie que **cette copie produit exactement les mêmes règles que le fichier livré** — sans quoi la disparition du fichier changerait silencieusement le comportement du produit.
