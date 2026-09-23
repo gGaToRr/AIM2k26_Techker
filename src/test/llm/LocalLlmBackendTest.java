@@ -96,7 +96,7 @@ public class LocalLlmBackendTest {
         List<String> commande = LocalLlmBackend.construireCommande("/opt/llama-cli", modele, prompt, new LlmConfig());
 
         Assert.assertTrue(commande.contains(prompt), "Le prompt entier forme un seul argument");
-        Assert.assertEquals(10, commande.size(), "Aucun argument supplementaire cree par les sauts de ligne");
+        Assert.assertEquals(14, commande.size(), "Aucun argument supplementaire cree par les sauts de ligne");
     }
 
     // --- Parsing du flux de sortie ---

@@ -12,6 +12,7 @@ import java.security.MessageDigest;
 import java.time.Duration;
 import java.util.List;
 import java.util.Scanner;
+import util.Ecran;
 import util.Log;
 
 // Gestionnaire d'installation et de téléchargement des modèles légers locaux
@@ -33,13 +34,13 @@ public class ModelInstaller {
         return Paths.get(dir, model.getNomFichier());
     }
 
-    // Message sobre et clair aligné avec le style de Menu.java
     public static void afficherMessageOnboardingDebutants(PrintStream out, ModelType recommendedModel) {
-        out.println("*------------------------------------------*");
-        out.println("*  Prompting tool 4 a better work from AI  *");
-        out.println("*------------------------------------------*");
-        out.println("*      INSTALLATION DES MODELES LOCAUX     *");
-        out.println("*------------------------------------------*\n");
+        afficherMessageOnboardingDebutants(out, recommendedModel, false);
+    }
+
+    // Au demarrage, aucune requete n'a encore ete saisie : le texte s'adapte
+    public static void afficherMessageOnboardingDebutants(PrintStream out, ModelType recommendedModel, boolean auDemarrage) {
+        Ecran.etape(out, "INSTALLATION DES MODELES LOCAUX (optionnel)");
         out.println("   Ce module optionnel permet d'executer vos");
         out.println("   prompts directement sur votre machine,");
         out.println("   sans aucune connexion Internet ni API.");
@@ -49,7 +50,7 @@ public class ModelInstaller {
         out.println("   - Espace disque requis : ~1.1 a 1.6 Go par modele");
         out.println();
         if (recommendedModel != null) {
-            out.println("Modele recommande pour votre requete :");
+            out.println(auDemarrage ? "Modele recommande :" : "Modele recommande pour votre requete :");
             out.println("   * Nom        : " + recommendedModel.getNomAffiche());
             out.println("   * Specialite : " + recommendedModel.getSpecialite());
             out.println("   * Taille     : " + recommendedModel.getTailleDisque());
@@ -58,15 +59,38 @@ public class ModelInstaller {
         out.println("Voulez-vous autoriser le telechargement du modele ?");
         out.println("   [1] Oui, telecharger le modele recommande (Recommande)");
         out.println("   [2] Choisir un autre modele dans la liste");
-        out.println("   [3] Non, generer uniquement le prompt sans execution");
+        out.println(auDemarrage
+                ? "   [3] Non, passer directement au prompt"
+                : "   [3] Non, generer uniquement le prompt sans execution");
         out.println("--------------------------------------------");
         out.print("Votre choix (1, 2 ou 3) : ");
         out.flush();
     }
 
+    // Au lancement du menu : tant qu'aucun modele n'est sur le disque, on propose l'installation.
+    // Un refus n'est pas memorise : la question revient au prochain lancement.
+    public static void proposerInstallationAuDemarrage(Scanner scanner, PrintStream out, LlmConfig config) {
+        String repertoire = config.getRepertoireModeles();
+        boolean aucunModele = ModelManager.inventaire(repertoire).stream()
+                .noneMatch(ModelManager.ModelStatus::installe);
+        if (!aucunModele) {
+            return;
+        }
+        ModelType recommande = ModelType.fromAlias(config.getModeleParDefaut()).orElse(ModelType.QWEN_CODER);
+        ModelType choisi = demanderPermissionUtilisateur(scanner, out, recommande, config, true);
+        if (choisi != null) {
+            telechargerModele(choisi, repertoire, out, null);
+        }
+    }
+
     // Demande interactivement la permission à l'utilisateur
     public static ModelType demanderPermissionUtilisateur(Scanner scanner, PrintStream out, ModelType recommendedModel, LlmConfig config) {
-        afficherMessageOnboardingDebutants(out, recommendedModel);
+        return demanderPermissionUtilisateur(scanner, out, recommendedModel, config, false);
+    }
+
+    public static ModelType demanderPermissionUtilisateur(Scanner scanner, PrintStream out, ModelType recommendedModel,
+                                                          LlmConfig config, boolean auDemarrage) {
+        afficherMessageOnboardingDebutants(out, recommendedModel, auDemarrage);
 
         String saisie = scanner.hasNextLine() ? scanner.nextLine().trim() : "3";
 
@@ -108,7 +132,7 @@ public class ModelInstaller {
             }
             return recommendedModel;
         } else {
-            out.println("\n[-] Telechargement ignore. Generation standard du prompt.\n");
+            out.println("\n[-] Telechargement ignore.");
             return null;
         }
     }

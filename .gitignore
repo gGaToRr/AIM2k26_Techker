@@ -43,6 +43,7 @@ output_prompt.md
 bin/
 src/bin/
 models/
+llama/
 src/models/
 *.gguf
 *.part

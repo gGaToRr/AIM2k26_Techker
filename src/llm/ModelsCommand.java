@@ -1,6 +1,7 @@
 package llm;
 
 import cli.CliArgs;
+import util.Log;
 
 import java.io.PrintStream;
 import java.util.Optional;
@@ -32,6 +33,26 @@ public final class ModelsCommand {
                 return modeleInconnu(options.modelsInfo(), out);
             }
             out.print(ModelManager.formaterFiche(modele.get(), repertoire));
+            return SUCCES;
+        }
+
+        if (options.hasModelsInstall()) {
+            Optional<ModelType> modele = ModelType.fromAlias(options.modelsInstall());
+            if (modele.isEmpty()) {
+                return modeleInconnu(options.modelsInstall(), out);
+            }
+            if (!ModelInstaller.telechargerModele(modele.get(), repertoire, out, null)) {
+                return ECHEC;
+            }
+            // Installer explicitement un modele vaut accord pour l'execution locale
+            if (config != null && !config.isPermissionAccordee()) {
+                config.setPermissionAccordee(true);
+                try {
+                    config.sauvegarderParDefaut();
+                } catch (Exception e) {
+                    Log.exceptionIgnoree("Sauvegarde de la configuration LLM apres installation", e);
+                }
+            }
             return SUCCES;
         }
 

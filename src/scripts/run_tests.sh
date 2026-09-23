@@ -30,5 +30,5 @@ javac -sourcepath ".:src" -cp ".:src/lib/jmustache-1.16.jar" -d bin \
 
 echo ""
 echo "🚀 Lancement de la suite globale AllTestSuite..."
-java -cp "bin:src/lib/jmustache-1.16.jar" test.AllTestSuite
+java -Daim.llama.desactive=true -cp "bin:src/lib/jmustache-1.16.jar" test.AllTestSuite
 

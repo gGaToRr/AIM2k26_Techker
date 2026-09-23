@@ -52,6 +52,7 @@ public class CliParser {
         declarerDrapeau(table, "models-purge", "-mp", "--models-purge", (b, v) -> b.modelsPurge(true));
         declarerValeur(table, "models-delete", "-md", "--models-delete", CliArgs.Builder::modelsDelete);
         declarerValeur(table, "models-info", "-mi", "--models-info", CliArgs.Builder::modelsInfo);
+        declarerValeur(table, "models-install", "-mt", "--models-install", CliArgs.Builder::modelsInstall);
 
         declarerValeur(table, "code", "-c", "--code", (b, v) -> b.code(resoudreContenuCode(v)));
 
@@ -193,6 +194,7 @@ public class CliParser {
                 Gestion des modèles locaux :
                   -ml, --models-list             Lister les modèles, leur statut, taille et date d'installation.
                   -mi, --models-info <nom>       Fiche technique détaillée d'un modèle.
+                  -mt, --models-install <nom>    Télécharger et installer un modèle (ex: qwen-coder).
                   -md, --models-delete <nom>     Supprimer un modèle installé, après confirmation.
                   -mp, --models-purge            Supprimer tous les modèles et réinitialiser l'autorisation.
 

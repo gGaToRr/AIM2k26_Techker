@@ -21,7 +21,8 @@ public record CliArgs(
         boolean isModelsList,
         boolean isModelsPurge,
         String modelsDelete,
-        String modelsInfo
+        String modelsInfo,
+        String modelsInstall
 ) {
     public boolean hasInstruction() {
         return instruction != null && !instruction.isBlank();
@@ -63,10 +64,14 @@ public record CliArgs(
         return modelsInfo != null && !modelsInfo.isBlank();
     }
 
+    public boolean hasModelsInstall() {
+        return modelsInstall != null && !modelsInstall.isBlank();
+    }
+
     // Vrai des qu'une commande de gestion des modeles est demandee : ces commandes
     // court-circuitent le pipeline de generation.
     public boolean isCommandeModeles() {
-        return isModelsList || isModelsPurge || hasModelsDelete() || hasModelsInfo();
+        return isModelsList || isModelsPurge || hasModelsDelete() || hasModelsInfo() || hasModelsInstall();
     }
 
     public boolean hasModel() {
@@ -114,6 +119,7 @@ public record CliArgs(
         private boolean isModelsPurge = false;
         private String modelsDelete = null;
         private String modelsInfo = null;
+        private String modelsInstall = null;
 
         public Builder help(boolean isHelp) { this.isHelp = isHelp; return this; }
         public Builder version(boolean isVersion) { this.isVersion = isVersion; return this; }
@@ -135,12 +141,13 @@ public record CliArgs(
         public Builder modelsPurge(boolean isModelsPurge) { this.isModelsPurge = isModelsPurge; return this; }
         public Builder modelsDelete(String modelsDelete) { this.modelsDelete = modelsDelete; return this; }
         public Builder modelsInfo(String modelsInfo) { this.modelsInfo = modelsInfo; return this; }
+        public Builder modelsInstall(String modelsInstall) { this.modelsInstall = modelsInstall; return this; }
 
         public CliArgs build() {
             return new CliArgs(
                     isHelp, isVersion, isVerbose, isRaw, isDryRun, isClipboard, isExec,
                     instruction, code, agent, output, template, domain, language, filePath, model,
-                    isModelsList, isModelsPurge, modelsDelete, modelsInfo
+                    isModelsList, isModelsPurge, modelsDelete, modelsInfo, modelsInstall
             );
         }
     }

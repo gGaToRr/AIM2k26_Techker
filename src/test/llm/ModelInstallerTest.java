@@ -3,7 +3,9 @@ package test.llm;
 import llm.LlmConfig;
 import llm.ModelInstaller;
 import llm.ModelType;
+import test.framework.AfterEach;
 import test.framework.Assert;
+import test.framework.BeforeEach;
 import test.framework.Test;
 
 import java.io.ByteArrayInputStream;
@@ -15,6 +17,26 @@ import java.util.Scanner;
 
 // Tests unitaires pour l'onboarding pour débutants et gestionnaire d'installation
 public class ModelInstallerTest {
+
+    // Accepter la permission sauvegarde la config sous user.dir : on le redirige
+    // pour ne pas ecrire dans le .llm_config/ reel du projet.
+    private String userDirOriginal;
+    private Path repertoireIsole;
+
+    @BeforeEach
+    public void isolerRepertoireCourant() throws Exception {
+        userDirOriginal = System.getProperty("user.dir");
+        repertoireIsole = Files.createTempDirectory("installer_test_");
+        System.setProperty("user.dir", repertoireIsole.toString());
+    }
+
+    @AfterEach
+    public void restaurerRepertoireCourant() throws Exception {
+        System.setProperty("user.dir", userDirOriginal);
+        try (var chemins = Files.walk(repertoireIsole)) {
+            chemins.sorted(java.util.Comparator.reverseOrder()).forEach(p -> p.toFile().delete());
+        }
+    }
 
     @Test
     public void testIsModelInstalledWithTemporaryDirectory() throws Exception {
@@ -45,9 +67,9 @@ public class ModelInstallerTest {
         ModelInstaller.afficherMessageOnboardingDebutants(ps, ModelType.QWEN_CODER);
         String output = baos.toString();
 
-        Assert.assertContains(output, "*------------------------------------------*", "Bordure supérieure de style Menu");
-        Assert.assertContains(output, "*  Prompting tool 4 a better work from AI  *", "Titre exact de Menu.java");
-        Assert.assertContains(output, "*      INSTALLATION DES MODELES LOCAUX     *", "Titre de section");
+        Assert.assertContains(output, "INSTALLATION DES MODELES LOCAUX", "Titre de section");
+        Assert.assertFalse(output.contains("Prompting tool 4 a better work from AI"),
+                "Pas de second bandeau de bienvenue : il est deja affiche par le menu");
         Assert.assertContains(output, "100% Hors-ligne & Prive", "Mention confidentialité");
         Assert.assertContains(output, "100% Gratuit", "Mention gratuité");
         Assert.assertContains(output, "Espace disque requis", "Mention espace disque");

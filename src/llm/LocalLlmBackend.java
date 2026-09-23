@@ -16,7 +16,19 @@ import java.util.concurrent.TimeUnit;
 // Moteur d'exécution local utilisant le runtime natif (llama-cli / GGUF) ou fallback autonome
 public class LocalLlmBackend implements LlmBackend {
 
+    // Consigne systeme : le modele local reecrit le prompt, il n'y repond jamais
+    public static final String CONSIGNE_AMELIORATION =
+            "Tu es un expert en prompt engineering. On te donne un prompt brut ecrit par un utilisateur. "
+            + "Tu ne dois JAMAIS y repondre ni executer la tache demandee. "
+            + "Tu le reecris en un prompt ameliore, precis et structure, avec ces sections : "
+            + "Role, Contexte, Tache, Contraintes, Format de sortie attendu. "
+            + "Garde l'intention exacte de l'utilisateur, n'invente pas de besoin. "
+            + "Reponds uniquement avec le prompt ameliore, dans la langue du prompt brut.";
+
+    // llama-completion (llama.cpp recent) fait une generation unique et non interactive :
+    // il passe avant llama-cli, qui ouvre une session de chat.
     private static final String[] RUNNER_CANDIDATES = {
+            "llama-completion",
             "llama-cli",
             "bin/llama-cli",
             "./llama-cli",
@@ -30,6 +42,21 @@ public class LocalLlmBackend implements LlmBackend {
     }
 
     public static String detectRunnerBinary() {
+        // La suite de tests doit rester deterministe, que llama.cpp soit installe ou non
+        if (Boolean.getBoolean("aim.llama.desactive")) {
+            return null;
+        }
+        // Binaire precompile depose dans llama/<version>/ a la racine du projet
+        File[] versions = new File("llama").listFiles(File::isDirectory);
+        if (versions != null) {
+            java.util.Arrays.sort(versions);
+            for (int i = versions.length - 1; i >= 0; i--) {
+                File f = new File(versions[i], "llama-completion");
+                if (f.exists() && f.canExecute()) {
+                    return f.getAbsolutePath();
+                }
+            }
+        }
         for (String candidate : RUNNER_CANDIDATES) {
             File f = new File(candidate);
             if (f.exists() && f.canExecute()) {
@@ -85,6 +112,12 @@ public class LocalLlmBackend implements LlmBackend {
         command.add("--temp");
         command.add(String.valueOf(config.getTemperature()));
         command.add("--no-display-prompt");
+        // Un seul tour de conversation : le modele de chat du GGUF est applique,
+        // puis le processus rend la main apres la reponse.
+        command.add("-sys");
+        command.add(CONSIGNE_AMELIORATION);
+        command.add("-cnv");
+        command.add("-st");
         return command;
     }
 
@@ -96,7 +129,17 @@ public class LocalLlmBackend implements LlmBackend {
         List<String> command = construireCommande(runnerPath, modelPath, prompt, config);
 
         ProcessBuilder pb = new ProcessBuilder(command);
-        pb.redirectErrorStream(true);
+        // Les journaux de chargement de llama.cpp partent sur stderr : seule la reponse est gardee
+        pb.redirectError(ProcessBuilder.Redirect.DISCARD);
+        // Sans entree, le mode conversation ne peut pas attendre une saisie
+        pb.redirectInput(ProcessBuilder.Redirect.from(new File("/dev/null")));
+        // Les bibliotheques partagees (.so) sont livrees a cote du binaire precompile
+        File dossierRunner = new File(runnerPath).getAbsoluteFile().getParentFile();
+        if (dossierRunner != null) {
+            String existant = System.getenv("LD_LIBRARY_PATH");
+            pb.environment().put("LD_LIBRARY_PATH",
+                    dossierRunner + (existant == null || existant.isBlank() ? "" : File.pathSeparator + existant));
+        }
         Process process = pb.start();
 
         // Le blocage reel ne se produit pas sur waitFor mais sur la lecture du flux :
@@ -125,6 +168,8 @@ public class LocalLlmBackend implements LlmBackend {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
             int ch;
             StringBuilder wordBuffer = new StringBuilder();
+            // llama.cpp termine par le marqueur "[end of text]" : rien n'est diffuse a partir de lui
+            boolean finDeTexte = false;
             while ((ch = reader.read()) != -1) {
                 char c = (char) ch;
                 fullOutput.append(c);
@@ -132,7 +177,8 @@ public class LocalLlmBackend implements LlmBackend {
 
                 if (Character.isWhitespace(c) || c == '.' || c == '\n') {
                     String chunk = wordBuffer.toString();
-                    if (tokenConsumer != null) {
+                    finDeTexte = finDeTexte || chunk.trim().equals("[end");
+                    if (tokenConsumer != null && !finDeTexte) {
                         tokenConsumer.accept(chunk);
                     }
                     tokenCount++;
@@ -140,7 +186,7 @@ public class LocalLlmBackend implements LlmBackend {
                 }
             }
             if (wordBuffer.length() > 0) {
-                if (tokenConsumer != null) {
+                if (tokenConsumer != null && !finDeTexte) {
                     tokenConsumer.accept(wordBuffer.toString());
                 }
                 tokenCount++;
@@ -168,7 +214,8 @@ public class LocalLlmBackend implements LlmBackend {
         long elapsed = Math.max(1, System.currentTimeMillis() - startTime);
         double tps = (tokenCount * 1000.0) / elapsed;
 
-        return new GenerationResult(fullOutput.toString().trim(), tokenCount, elapsed, tps, model);
+        String texte = fullOutput.toString().replace("[end of text]", "").trim();
+        return new GenerationResult(texte, tokenCount, elapsed, tps, model);
     }
 
     // Reduit la sortie du process a un extrait exploitable dans un message d'erreur
@@ -183,7 +230,8 @@ public class LocalLlmBackend implements LlmBackend {
     private GenerationResult runEmbeddedInference(ModelType model, String prompt, LlmConfig config,
                                                   TokenConsumer tokenConsumer, long startTime) {
         // Réponse structurée générée localement par le moteur selon le modèle
-        String prefix = "🤖 [Réponse générée localement par " + model.getNomAffiche() + "]\n\n";
+        String prefix = "🤖 [Simulation " + model.getNomAffiche()
+                + " : moteur llama.cpp introuvable, placez-le dans llama/<version>/]\n\n";
         String body = switch (model) {
             case QWEN_CODER -> "Voici l'analyse et la solution technique optimisée :\n```java\n// Solution générée par Qwen 2.5 Coder\npublic class Solution {\n    // Code propre, modulaire et performant\n}\n```";
             case DEEPSEEK_REASONING -> "<think>\nAnalyse pas-à-pas des contraintes et des cas limites...\n</think>\n\nConclusion et recommandations étayées :";

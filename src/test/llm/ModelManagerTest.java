@@ -27,16 +27,22 @@ public class ModelManagerTest {
     private Path repertoire;
     private ByteArrayOutputStream tampon;
     private PrintStream sortie;
+    // La purge sauvegarde la config sous user.dir : on le redirige vers le
+    // repertoire temporaire pour ne pas ecraser le .llm_config/ reel du projet.
+    private String userDirOriginal;
 
     @BeforeEach
     public void preparer() throws Exception {
         repertoire = Files.createTempDirectory("modeles_crud");
+        userDirOriginal = System.getProperty("user.dir");
+        System.setProperty("user.dir", repertoire.toString());
         tampon = new ByteArrayOutputStream();
         sortie = new PrintStream(tampon);
     }
 
     @AfterEach
     public void nettoyer() throws Exception {
+        System.setProperty("user.dir", userDirOriginal);
         if (repertoire != null && Files.exists(repertoire)) {
             try (var flux = Files.walk(repertoire)) {
                 flux.sorted(Comparator.reverseOrder()).forEach(f -> f.toFile().delete());
@@ -249,6 +255,41 @@ public class ModelManagerTest {
                     config(), new PrintStream(local), reponse(""));
             Assert.assertEquals(ModelsCommand.SUCCES, code, "Alias accepte : " + alias);
         }
+    }
+
+    // --- Installation (-mt / --models-install) ---
+
+    @Test
+    public void testParserReconnaitModelsInstall() {
+        CliArgs args = cli.CliParser.parse(new String[]{"-mt", "qwen"});
+        Assert.assertEquals("qwen", args.modelsInstall(), "Valeur de -mt");
+        Assert.assertTrue(args.isCommandeModeles(), "Commande de gestion des modeles");
+
+        CliArgs longue = cli.CliParser.parse(new String[]{"--models-install", "deepseek"});
+        Assert.assertEquals("deepseek", longue.modelsInstall(), "Valeur de --models-install");
+    }
+
+    @Test
+    public void testInstallerUnModeleInconnuEchoue() {
+        int code = ModelsCommand.executer(CliArgs.builder().modelsInstall("modele_imaginaire").build(),
+                config(), sortie, reponse(""));
+
+        Assert.assertEquals(ModelsCommand.ECHEC, code, "Code de sortie non nul");
+        Assert.assertContains(tampon.toString(), "qwen-coder", "Les identifiants valides sont rappeles");
+    }
+
+    // Un modele deja present ne doit declencher aucun telechargement
+    @Test
+    public void testInstallerUnModeleDejaPresentNeTelechargeRien() throws Exception {
+        installerFaux(ModelType.QWEN_CODER, 1000);
+        LlmConfig config = config();
+        config.setPermissionAccordee(true); // evite la sauvegarde dans le .llm_config/ reel
+
+        int code = ModelsCommand.executer(CliArgs.builder().modelsInstall("qwen").build(),
+                config, sortie, reponse(""));
+
+        Assert.assertEquals(ModelsCommand.SUCCES, code, "Succes");
+        Assert.assertContains(tampon.toString(), "deja installe", "Signale le modele deja present");
     }
 
     @Test

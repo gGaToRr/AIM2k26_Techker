@@ -23,6 +23,26 @@ public class LlmEngine {
         this.in = in != null ? in : new Scanner(System.in);
     }
 
+    // Message envoyé au modèle local : le prompt brut et les indices de l'analyse NLP.
+    // Le méta-prompt complet est trop long pour un modèle de 1.5B.
+    public static String construireDemandeAmelioration(PromptProfile profil) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Prompt brut a ameliorer :\n").append(profil.rawText().trim()).append("\n\n");
+        sb.append("Indications de l'analyse automatique :\n");
+        sb.append("- Type de demande : ").append(profil.classification().primaryType()).append('\n');
+        sb.append("- Langue : ").append(profil.language()).append('\n');
+        if (!profil.detectedTechnologies().isEmpty()) {
+            sb.append("- Technologies : ").append(String.join(", ", profil.detectedTechnologies())).append('\n');
+        }
+        if (profil.domainInfo() != null && profil.domainInfo().isDomainIdentified()) {
+            sb.append("- Domaine : ").append(profil.domainInfo().domainName()).append('\n');
+        }
+        // Rappel en fin de message : un petit modele suit surtout la derniere consigne lue
+        sb.append("\nRAPPEL : ne realise PAS la tache. Aucun code, aucune solution, aucune explication. "
+                + "Ecris uniquement le prompt ameliore, puis arrete-toi.");
+        return sb.toString();
+    }
+
     public LlmBackend.GenerationResult execute(String metaPrompt, PromptProfile profile, String modelOverride, boolean interactive) {
         // 1. Routage intelligent vers le modèle expert
         ModelRouter.RoutingDecision routing = ModelRouter.resolve(modelOverride, profile);
@@ -36,6 +56,21 @@ public class LlmEngine {
         // 2. Vérification de l'installation et onboarding si premier lancement
         boolean isInstalled = ModelInstaller.isModelInstalled(targetModel, config.getRepertoireModeles());
 
+        // Sans modèle forcé, un modèle déjà installé vaut mieux qu'un téléchargement
+        // silencieux de plus d'1 Go pour le spécialiste du routage.
+        boolean modeleForce = modelOverride != null && !modelOverride.isBlank() && !"auto".equalsIgnoreCase(modelOverride);
+        if (!isInstalled && !modeleForce) {
+            for (ModelType candidat : ModelType.getAllAvailable()) {
+                if (ModelInstaller.isModelInstalled(candidat, config.getRepertoireModeles())) {
+                    out.println("[*] " + targetModel.getNomAffiche() + " n'est pas installe : utilisation de "
+                            + candidat.getNomAffiche() + ".");
+                    targetModel = candidat;
+                    isInstalled = true;
+                    break;
+                }
+            }
+        }
+
         if (!isInstalled && !config.isPermissionAccordee()) {
             if (interactive) {
                 ModelType accepted = ModelInstaller.demanderPermissionUtilisateur(in, out, targetModel, config);
@@ -46,7 +81,7 @@ public class LlmEngine {
                 isInstalled = ModelInstaller.isModelInstalled(targetModel, config.getRepertoireModeles());
             } else {
                 out.println("[!] Avertissement : Le modele " + targetModel.getNomAffiche() + " n'est pas encore installe localement.");
-                out.println("    Lancez l'outil sans argument pour le telecharger via l'assistant.");
+                out.println("    Installez-le avec : --models-install " + targetModel.getId() + "  (ou lancez l'outil sans argument)");
                 return null;
             }
         }
@@ -61,7 +96,7 @@ public class LlmEngine {
         }
 
         // 3. Exécution de l'inférence locale
-        out.println("\n--- [REPONSE DU MODELE LOCAL (" + targetModel.getNomAffiche() + ")] ---\n");
+        out.println("\n--- [PROMPT AMELIORE PAR LE MODELE LOCAL (" + targetModel.getNomAffiche() + ")] ---\n");
 
         try {
             LlmBackend.GenerationResult result = backend.generate(targetModel, metaPrompt, config, token -> {

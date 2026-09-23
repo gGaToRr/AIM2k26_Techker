@@ -1,5 +1,7 @@
 package menu;
 
+import util.Ecran;
+
 import java.io.IOException;
 import java.util.Scanner;
 
@@ -30,12 +32,12 @@ public class Menu {
         System.out.println("   to send your prompt in the tool and      ");
         System.out.println("   drop the output in your model (All       ");
         System.out.println("   models are working). - Thanks 4 using    \n");
-        System.out.println("          Pierre Untersinger - **\n");
-        System.out.println("\n--------------------------------------------\n");
+        System.out.println("          Pierre Untersinger - **");
     }
 
     // Méthode pour demander un prompt au user (support multiligne, copier-coller et redirection de flux)
     public String demanderPrompt() {
+        Ecran.etape(System.out, "VOTRE PROMPT");
         System.out.println("Entrez votre prompt (collez votre texte/code, puis validez avec ':done' ou une ligne vide) :");
 
         StringBuilder promptBuilder = new StringBuilder();
@@ -69,6 +71,24 @@ public class Menu {
         }
 
         return promptBuilder.toString().trim();
+    }
+
+    // Propose de faire réécrire le prompt par le modèle local (non par défaut)
+    public boolean proposerExecutionLocale() {
+        Ecran.etape(System.out, "AMELIORATION PAR LE MODELE LOCAL (optionnel)");
+        System.out.print("Faire améliorer ce prompt par le modèle local ? [o/N] : ");
+        System.out.flush();
+        if (!scanner.hasNextLine()) {
+            return false;
+        }
+        String saisie = scanner.nextLine().trim();
+        return saisie.equalsIgnoreCase("o") || saisie.equalsIgnoreCase("oui")
+                || saisie.equalsIgnoreCase("y") || saisie.equalsIgnoreCase("yes");
+    }
+
+    // Scanner partagé : un second Scanner sur System.in avalerait les saisies bufferisées par celui-ci
+    public Scanner getScanner() {
+        return scanner;
     }
 
     // Affiche un résultat ou un message

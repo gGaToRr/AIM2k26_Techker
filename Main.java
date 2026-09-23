@@ -4,6 +4,7 @@ import cli.CliParser;
 import gen.MetaPromptEngine;
 import llm.LlmConfig;
 import llm.LlmEngine;
+import llm.ModelInstaller;
 import llm.ModelsCommand;
 import menu.Menu;
 import nlp.Lemmatizer;
@@ -52,6 +53,7 @@ public class Main {
         } else {
             menu = new Menu();
             menu.afficherBienvenue();
+            ModelInstaller.proposerInstallationAuDemarrage(menu.getScanner(), System.out, LlmConfig.chargerParDefaut());
             userPrompt = menu.demanderPrompt();
         }
 
@@ -167,11 +169,13 @@ public class Main {
             System.out.println("\n----------------------------------------");
         }
 
-        // 7. Exécution locale par LLM si demandée (-e / --exec)
-        if (cliArgs.isExec()) {
-            LlmEngine engine = new LlmEngine();
-            boolean isInteractive = (menu != null);
-            engine.execute(promptOptimise, profil, cliArgs.model(), isInteractive);
+        // 7. Amélioration du prompt par le LLM local si demandée (-e / --exec), ou proposée en mode interactif
+        boolean isInteractive = (menu != null);
+        if (cliArgs.isExec() || (isInteractive && menu.proposerExecutionLocale())) {
+            LlmEngine engine = isInteractive
+                    ? new LlmEngine(null, LlmConfig.chargerParDefaut(), System.out, menu.getScanner())
+                    : new LlmEngine();
+            engine.execute(LlmEngine.construireDemandeAmelioration(profil), profil, cliArgs.model(), isInteractive);
         }
 
         // Fermeture du scanner si ouvert
