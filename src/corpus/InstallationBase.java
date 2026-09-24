@@ -21,8 +21,8 @@ public final class InstallationBase {
     public static final String URL = "https://github.com/gGaToRr/AIM2k26_Techker/releases/download/"
             + VERSION + "/" + ARCHIVE;
     // Reference de l'archive publiee : a mettre a jour a chaque nouvelle version de la base
-    public static final String SHA256 = "88539ec49c448b2bd02410c2a13523e9d403d1903de63ae0e9c1bcfe0486b7ee";
-    public static final long TAILLE = 138_230_631L;
+    public static final String SHA256 = "5a75e8c913593b4c585613a97da61d9528aae4b8e8e4508d53221c1c24dbc15e";
+    public static final long TAILLE = 138_231_227L;
 
     // Couture de test : le telechargement reel passe par ModelInstaller.telechargerFichier
     @FunctionalInterface
