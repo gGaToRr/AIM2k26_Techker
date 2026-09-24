@@ -8,7 +8,7 @@ Vous en avez marre des réponses vagues ou incomplètes des LLMs ? Le moteur **[
 
 ![Status](https://img.shields.io/badge/status-Working-green?style=flat-square)
 ![Type](https://img.shields.io/badge/type-open%20source-purple?style=flat-square)
-![Java](https://img.shields.io/badge/Java-17%2B-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
+![Java](https://img.shields.io/badge/Java-21%2B-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
 ![Offline](https://img.shields.io/badge/100%25-Offline-blue?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)
 
@@ -89,14 +89,20 @@ Avant d'écrire le code, effectue une brève analyse (2-3 phrases) :
 
 ## # Installation & Utilisation
 
-**Prérequis** : Java 21+ (`java -version`). Maven est optionnel — sans lui, la bibliothèque JMustache reste disponible dans `src/lib/`.
+**Prérequis** : un JDK 21+ (`javac -version`). Maven est optionnel — sans lui, la bibliothèque JMustache reste disponible dans `src/lib/`.
+
+Clonez la dernière version publiée (`--branch v1.0.1`) : la branche par défaut du dépôt est une branche de développement.
 
 <br />
 
 ### Option A — Linux / macOS 🐧🍎
 ```bash
-git clone https://github.com/gGaToRr/AIM2k26_Techker.git
+git clone --branch v1.0.1 https://github.com/gGaToRr/AIM2k26_Techker.git
 cd AIM2k26_Techker
+
+# Le plus simple : compile puis lance (mode interactif, ou arguments transmis tels quels)
+./lancer.sh
+./lancer.sh -i "Explique le tri fusion en Java"
 
 # Option Maven (recommandée) : compile, teste et produit un JAR exécutable
 mvn package
@@ -119,7 +125,7 @@ java -cp "bin:src/lib/*" Main -i "Crée une fonction de tri en Java" -e
 
 ### Option B — Windows (PowerShell / CMD 🪟)
 ```powershell
-git clone https://github.com/gGaToRr/AIM2k26_Techker.git
+git clone --branch v1.0.1 https://github.com/gGaToRr/AIM2k26_Techker.git
 cd AIM2k26_Techker
 
 # Compiler le projet (séparateur ;)
@@ -143,7 +149,11 @@ L'extension améliore vos prompts directement sur ChatGPT, Claude, Gemini, Mistr
 <br />
 
 ### 1. Charger l'extension
-1. Clonez le dépôt (voir ci-dessus). Gardez-le à cet emplacement : le connecteur y est rattaché.
+1. Clonez le dépôt (voir ci-dessus) :
+   ```bash
+   git clone --branch v1.0.1 https://github.com/gGaToRr/AIM2k26_Techker.git
+   ```
+   Gardez-le à cet emplacement : le connecteur y est rattaché. Si vous le déplacez, relancez l'installateur du connecteur (étape 2).
 2. Ouvrez `chrome://extensions` et activez le **Mode développeur** (en haut à droite).
 3. Cliquez sur **Charger l'extension non empaquetée** et choisissez le dossier `extension/` du projet.
 
