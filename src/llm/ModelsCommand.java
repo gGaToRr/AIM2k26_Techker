@@ -118,10 +118,10 @@ public final class ModelsCommand {
                     ? telechargerEnJson(out, (sortie, listener) ->
                             ModelInstaller.telechargerModele(choisi, repertoire, sortie, listener)
                                     && installerMoteurSiAbsent(moteur, sortie, listener)
-                                    && installerMoteurSiAbsent(base, sortie, listener))
+                                    && installerBaseSiAbsente(base, sortie, listener))
                     : ModelInstaller.telechargerModele(choisi, repertoire, out, null)
                             && installerMoteurSiAbsent(moteur, out, null)
-                            && installerMoteurSiAbsent(base, out, null);
+                            && installerBaseSiAbsente(base, out, null);
             if (!reussi) {
                 return ECHEC;
             }
@@ -186,6 +186,17 @@ public final class ModelsCommand {
     private static boolean installerMoteurSiAbsent(Moteur moteur, PrintStream out,
                                                    ModelInstaller.DownloadProgressListener listener) {
         return moteur.present() || moteur.installer(out, listener);
+    }
+
+    // La base de prompts est facultative : sans elle, l'amelioration se fait sans prompt de
+    // reference. Son echec (reseau, archive indisponible) ne fait jamais echouer un modele.
+    private static boolean installerBaseSiAbsente(Moteur base, PrintStream out,
+                                                  ModelInstaller.DownloadProgressListener listener) {
+        if (!base.present() && !base.installer(out, listener)) {
+            out.println("[*] Base de prompts non installee : amelioration sans prompt de reference. "
+                    + "Nouvel essai : --corpus-install");
+        }
+        return true;
     }
 
     @FunctionalInterface

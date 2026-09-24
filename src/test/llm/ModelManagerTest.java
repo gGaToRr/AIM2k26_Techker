@@ -358,6 +358,22 @@ public class ModelManagerTest {
         Assert.assertEquals(1, base.installations, "Base installee avec le modele");
     }
 
+    // Base indisponible (archive non publiee, pas de reseau) : le modele reste installe
+    @Test
+    public void testEchecDeLaBaseNeBloquePasLeModele() throws Exception {
+        installerFaux(ModelType.QWEN_CODER, 1000);
+        LlmConfig config = config();
+        config.setPermissionAccordee(true);
+        MoteurEspion base = new MoteurEspion(false);
+        base.reussit = false;
+
+        int code = ModelsCommand.executer(CliArgs.builder().modelsInstall("qwen").output("json").build(),
+                config, sortie, reponse(""), new MoteurEspion(true), base);
+
+        Assert.assertEquals(ModelsCommand.SUCCES, code, "Modele installe malgre la base");
+        Assert.assertContains(tampon.toString(), "\"type\":\"fin\",\"ok\":true", "Fin en succes pour l'extension");
+    }
+
     @Test
     public void testParserReconnaitCorpusInstall() {
         Assert.assertTrue(cli.CliParser.parse(new String[]{"-ci"}).isCorpusInstall(), "Drapeau -ci");
