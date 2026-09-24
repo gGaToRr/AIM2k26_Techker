@@ -89,11 +89,25 @@ public class LocalLlmBackend implements LlmBackend {
         String runner = detectRunnerBinary();
 
         if (doitUtiliserLeRuntimeNatif(runner, modelPath)) {
-            return runNativeInference(runner, modelPath, model, prompt, config, tokenConsumer, startTime);
+            return runNativeInference(runner, modelPath, model, prompt, configPour(model, config), tokenConsumer,
+                    startTime);
         } else {
             // Mode autonome / simulation contrôlée pour environnement de test ou sans binaire externe
             return runEmbeddedInference(model, prompt, config, tokenConsumer, startTime);
         }
+    }
+
+    // Tokens accordes a la reflexion d'un modele de raisonnement, en plus de la reponse
+    public static final int MARGE_RAISONNEMENT = 1536;
+
+    // La limite de tokens (test de sante : 16, reglage "Longueur" de l'extension) vaut pour
+    // la reponse. Un modele de raisonnement reflechit d'abord : sans marge, il serait coupe
+    // en pleine reflexion et ne produirait aucune reponse.
+    public static LlmConfig configPour(ModelType model, LlmConfig config) {
+        if (!model.raisonne()) return config;
+        return new LlmConfig(config.isPermissionAccordee(), config.getModeleParDefaut(),
+                config.getRepertoireModeles(), config.getTemperature(),
+                config.getMaxTokens() + MARGE_RAISONNEMENT, config.isStreamingActive());
     }
 
     // L'inference reelle exige les deux : le moteur ET les poids. Il manque l'un des

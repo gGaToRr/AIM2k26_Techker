@@ -228,4 +228,21 @@ public class LocalLlmBackendTest {
         Assert.assertEquals("Role : expert", LocalLlmBackend.retirerRaisonnement("Role : expert"), "Modele sans raisonnement");
         Assert.assertEquals("", LocalLlmBackend.retirerRaisonnement(null), "Nul");
     }
+
+    // Test de sante (16 tokens) : DeepSeek R1 etait coupe en pleine reflexion et ne
+    // produisait aucune reponse. La limite vaut pour la reponse, la reflexion a sa marge.
+    @Test
+    public void testMargeDeReflexionPourLesModelesDeRaisonnement() {
+        LlmConfig config = new LlmConfig(true, "auto", "models", 0.0, 16, false);
+
+        LlmConfig raisonnement = LocalLlmBackend.configPour(ModelType.DEEPSEEK_REASONING, config);
+        Assert.assertEquals(16 + LocalLlmBackend.MARGE_RAISONNEMENT, raisonnement.getMaxTokens(), "Marge ajoutee");
+        Assert.assertEquals(0.0, raisonnement.getTemperature(), "Temperature inchangee");
+        Assert.assertEquals(16, config.getMaxTokens(), "Configuration d'origine intacte");
+
+        Assert.assertTrue(LocalLlmBackend.configPour(ModelType.QWEN_CODER, config) == config,
+                "Modele sans raisonnement : aucune marge");
+        Assert.assertTrue(ModelType.DEEPSEEK_REASONING.raisonne(), "DeepSeek R1 raisonne");
+        Assert.assertFalse(ModelType.SMOLLM_FAST.raisonne(), "SmolLM2 ne raisonne pas");
+    }
 }

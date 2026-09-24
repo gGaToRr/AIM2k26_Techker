@@ -95,6 +95,11 @@ public enum ModelType {
         this.archetypesCibles = archetypesCibles;
     }
 
+    // Modele de raisonnement : reflechit dans un bloc <think> avant de repondre
+    public boolean raisonne() {
+        return this == DEEPSEEK_REASONING;
+    }
+
     public String getId() {
         return id;
     }
