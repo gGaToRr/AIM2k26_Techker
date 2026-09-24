@@ -214,8 +214,19 @@ public class LocalLlmBackend implements LlmBackend {
         long elapsed = Math.max(1, System.currentTimeMillis() - startTime);
         double tps = (tokenCount * 1000.0) / elapsed;
 
-        String texte = fullOutput.toString().replace("[end of text]", "").trim();
+        String texte = retirerRaisonnement(fullOutput.toString().replace("[end of text]", "")).trim();
         return new GenerationResult(texte, tokenCount, elapsed, tps, model);
+    }
+
+    // Les modeles de raisonnement (DeepSeek-R1) reflechissent a voix haute dans un bloc
+    // <think>...</think> avant de repondre : seule la reponse qui suit est le resultat.
+    // Un bloc jamais ferme (limite de tokens atteinte en pleine reflexion) ne contient
+    // aucune reponse : le resultat est vide, et l'appelant se replie sur le NLP.
+    public static String retirerRaisonnement(String sortie) {
+        if (sortie == null) return "";
+        int fin = sortie.lastIndexOf("</think>");
+        if (fin >= 0) return sortie.substring(fin + "</think>".length());
+        return sortie.stripLeading().startsWith("<think>") ? "" : sortie;
     }
 
     // Reduit la sortie du process a un extrait exploitable dans un message d'erreur

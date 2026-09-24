@@ -134,6 +134,70 @@ java -cp "bin;src/lib/*" Main -i "Crée une fonction de tri en Java" -e
 
 <br />
 
+## # Extension Chrome (AIM2K26_Prompting)
+
+L'extension améliore vos prompts directement sur ChatGPT, Claude, Gemini, Mistral, DeepSeek, Grok, Copilot, Perplexity, etc. Quand vous envoyez un prompt, elle le fait réécrire par l'outil Java et un modèle installé sur votre machine, puis le remet dans la zone de saisie : il ne reste plus qu'à l'envoyer. Rien ne quitte votre machine avant cet envoi.
+
+**Prérequis** : Google Chrome ou Chromium, et un JDK 21+ (`javac -version`). L'outil Java est compilé automatiquement au premier usage de l'extension.
+
+<br />
+
+### 1. Charger l'extension
+1. Clonez le dépôt (voir ci-dessus). Gardez-le à cet emplacement : le connecteur y est rattaché.
+2. Ouvrez `chrome://extensions` et activez le **Mode développeur** (en haut à droite).
+3. Cliquez sur **Charger l'extension non empaquetée** et choisissez le dossier `extension/` du projet.
+
+L'extension **AIM2K26_Prompting** apparaît avec l'identifiant `hgikcaghkempfkljikcopdfncnhjkanl` (fixe, le connecteur en dépend).
+
+<br />
+
+### 2. Installer le connecteur local
+Chrome interdit à une extension de lancer un programme : le connecteur fait le lien entre l'extension et l'outil Java.
+
+```bash
+# Linux / macOS
+./connecteur/installer.sh
+```
+
+```powershell
+# Windows : double-cliquez sur connecteur\installer.bat, ou
+connecteur\installer.bat
+```
+
+Puis rechargez l'extension avec la flèche ↻ dans `chrome://extensions`.
+
+<br />
+
+### 3. Vérifier et installer un modèle
+1. Cliquez sur l'icône de l'extension : le panneau s'ouvre (sur les pages `chrome://`, c'est une popup classique).
+2. **Tester si Java est installé** : confirme que le connecteur et Java répondent.
+3. **Télécharger les modèles** : choisissez un modèle (plus d'1 Go chacun). En ligne de commande : `java -cp "bin:src/lib/*" Main --models-install qwen-coder`.
+4. Le modèle tourne avec [llama.cpp](https://github.com/ggml-org/llama.cpp/releases) : décompressez une version précompilée dans `llama/<version>/` à la racine du projet (le dossier doit contenir `llama-completion`), ou installez `llama-cli` dans votre `PATH` (ex : `brew install llama.cpp`).
+5. **Tester mes modèles installés** : vérifie l'intégrité des fichiers et fait une génération d'essai.
+
+Sans modèle ou sans llama.cpp, l'extension se rabat sur le moteur NLP seul et vous le signale : le résultat est utile, mais moins fiable.
+
+<br />
+
+### 4. Utilisation
+Écrivez votre prompt sur l'un des sites pris en charge et envoyez-le (Entrée ou bouton d'envoi). L'extension l'intercepte, l'améliore (5 à 10 s) et le remet dans la zone : relisez-le, puis Entrée pour l'envoyer.
+
+Les **Paramètres** (roue dentée du panneau) règlent l'auto-correction (amélioration et envoi sans relecture), le format de sortie, l'IA cible, la langue, le modèle, la créativité, la longueur maximale et la copie automatique.
+
+<br />
+
+### Désinstaller
+Bouton **Supprimer** dans les Paramètres (ou **Supprimer** dans `chrome://extensions`), puis retirez le connecteur :
+
+```bash
+./connecteur/installer.sh --desinstaller          # Linux / macOS
+connecteur\installer.bat -Desinstaller            # Windows
+```
+
+Les modèles restent dans `models/` : supprimez-les depuis la page Modèles de l'extension ou avec `java -cp "bin:src/lib/*" Main --models-purge`.
+
+<br />
+
 ## # État du projet
 
 Le projet est **fonctionnel**, **maintenu** et **100% offline** : tout tourne en mémoire sur votre machine sans aucun appel API payant ni serveur tiers.

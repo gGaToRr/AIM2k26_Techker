@@ -292,6 +292,76 @@ public class ModelManagerTest {
         Assert.assertContains(tampon.toString(), "deja installe", "Signale le modele deja present");
     }
 
+    // --- Verification (-mc / --models-check) ---
+
+    // Backend espion : compte les appels, pour prouver qu'aucune generation n'est lancee a tort
+    private static final class BackendEspion implements llm.LlmBackend {
+        int appels = 0;
+        @Override public boolean isAvailable(ModelType model, String modelsDir) { return true; }
+        @Override public GenerationResult generate(ModelType model, String prompt, LlmConfig config, TokenConsumer consumer) {
+            appels++;
+            return new GenerationResult("ok", 1, 1, 1.0, model);
+        }
+    }
+
+    @Test
+    public void testVerificationSansModeleInstalle() {
+        BackendEspion backend = new BackendEspion();
+        int fonctionnels = ModelManager.verifierModeles(repertoire.toString(), config(), backend, true, sortie);
+
+        Assert.assertEquals(0, fonctionnels, "Aucun modele fonctionnel");
+        Assert.assertContains(tampon.toString(), "Aucun modele installe", "Message explicite");
+        Assert.assertEquals(0, backend.appels, "Aucune generation lancee");
+    }
+
+    // Un fichier tronque ne doit jamais etre soumis au moteur : il planterait llama.cpp
+    @Test
+    public void testFichierDeTailleIncorrecteEstSignaleSansGeneration() throws Exception {
+        installerFaux(ModelType.QWEN_CODER, 1000);
+        BackendEspion backend = new BackendEspion();
+
+        int fonctionnels = ModelManager.verifierModeles(repertoire.toString(), config(), backend, true, sortie);
+
+        Assert.assertEquals(0, fonctionnels, "Modele endommage non fonctionnel");
+        Assert.assertContains(tampon.toString(), "endommage", "Fichier signale endommage");
+        Assert.assertContains(tampon.toString(), "Modeles installes : 1", "Le modele est bien compte comme installe");
+        Assert.assertEquals(0, backend.appels, "Pas de generation sur un fichier endommage");
+    }
+
+    // --- Sorties pour l'extension (-o json, -y) ---
+
+    @Test
+    public void testInventaireJsonDecritChaqueModele() throws Exception {
+        installerFaux(ModelType.QWEN_CODER, 1000);
+        String json = ModelManager.inventaireEnJson(repertoire.toString());
+
+        Assert.assertContains(json, "\"id\":\"qwen-coder\"", "Identifiant present");
+        Assert.assertContains(json, "\"installe\":true,\"tailleOctets\":1000", "Modele installe avec sa taille reelle");
+        Assert.assertContains(json, "\"id\":\"gemma-general\"", "Les modeles absents sont listes aussi");
+        Assert.assertContains(json, "\"installe\":false", "Absent signale");
+    }
+
+    // L'extension confirme dans sa propre fenetre : -y ne doit plus rien demander
+    @Test
+    public void testSuppressionAvecOuiNeDemandePasDeConfirmation() throws Exception {
+        Path qwen = installerFaux(ModelType.QWEN_CODER, 1000);
+        CliArgs options = CliArgs.builder().modelsDelete("qwen").yes(true).output("json").build();
+
+        int code = ModelsCommand.executer(options, config(), sortie, reponse(""));
+
+        Assert.assertEquals(ModelsCommand.SUCCES, code, "Suppression reussie");
+        Assert.assertFalse(Files.exists(qwen), "Fichier supprime sans saisie");
+        Assert.assertContains(tampon.toString(), "\"supprime\":true", "Reponse JSON");
+    }
+
+    @Test
+    public void testParserReconnaitModelsCheck() {
+        CliArgs args = cli.CliParser.parse(new String[]{"--models-check"});
+        Assert.assertTrue(args.isModelsCheck(), "Drapeau long");
+        Assert.assertTrue(args.isCommandeModeles(), "Commande de gestion des modeles");
+        Assert.assertTrue(cli.CliParser.parse(new String[]{"-mc"}).isModelsCheck(), "Drapeau court");
+    }
+
     @Test
     public void testFormatageDesTailles() {
         Assert.assertEquals("0 o", ModelManager.formaterOctets(0), "Zero");

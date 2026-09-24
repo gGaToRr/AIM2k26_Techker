@@ -1,6 +1,7 @@
 import cli.CliArgs;
 import cli.CliClipboard;
 import cli.CliParser;
+import cli.FormatSortie;
 import gen.MetaPromptEngine;
 import llm.LlmConfig;
 import llm.LlmEngine;
@@ -15,6 +16,7 @@ import util.Log;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 
 public class Main {
     public static void main(String[] args) {
@@ -35,6 +37,12 @@ public class Main {
         if (cliArgs.isVersion()) {
             System.out.println(CliParser.getVersionInfo());
             return;
+        }
+
+        // Amelioration pour l'extension : message JSON sur stdin, reponse JSON sur stdout
+        if (cliArgs.isImproveJson()) {
+            System.exit(llm.AmeliorationCommand.executer(System.in, System.out, LlmConfig.chargerParDefaut(),
+                    new llm.LocalLlmBackend(), llm.LocalLlmBackend.detectRunnerBinary() != null));
         }
 
         // Commandes de gestion des modeles locaux : elles court-circuitent le pipeline
@@ -104,23 +112,22 @@ public class Main {
         // 3. Génération du prompt optimisé (Meta-Prompting avec JMustache et options)
         String promptOptimise = MetaPromptEngine.genererPromptOptimise(profil, cliArgs);
 
-        // Détermination du contenu final selon le format demandé (-o json / md / txt)
-        String contenuFinal = promptOptimise;
-        boolean isJson = cliArgs.hasOutput() && (cliArgs.output().equalsIgnoreCase("json") || cliArgs.output().endsWith(".json"));
-        if (isJson) {
-            contenuFinal = MetaPromptEngine.genererExportJson(profil, promptOptimise, cliArgs);
-        }
+        // Mise en forme selon le format demandé (-o txt / md / json, ou extension du fichier cible)
+        FormatSortie format = FormatSortie.depuis(cliArgs);
+        String contenuFinal = format.rendre(profil, promptOptimise, cliArgs);
+        boolean isJson = format == FormatSortie.JSON;
 
-        // 4. Export vers fichier si un chemin a été fourni (-o output.md / -o output.json)
-        if (cliArgs.hasOutput() && !cliArgs.output().equalsIgnoreCase("json") && !cliArgs.output().equalsIgnoreCase("md") && !cliArgs.output().equalsIgnoreCase("txt")) {
+        // 4. Export vers fichier si un chemin a été fourni (-o output.md / -o output.json / -o output.txt)
+        Optional<Path> fichierCible = FormatSortie.fichierCible(cliArgs);
+        if (fichierCible.isPresent()) {
+            Path outputPath = fichierCible.get();
             try {
-                Path outputPath = Path.of(cliArgs.output());
                 Files.writeString(outputPath, contenuFinal);
                 if (!cliArgs.isRaw()) {
                     System.out.println("\n[✓] Résultat exporté avec succès vers : " + outputPath.toAbsolutePath());
                 }
             } catch (IOException e) {
-                System.err.println("Erreur d'export vers le fichier " + cliArgs.output() + " : " + e.getMessage());
+                System.err.println("Erreur d'export vers le fichier " + outputPath + " : " + e.getMessage());
             }
         }
 

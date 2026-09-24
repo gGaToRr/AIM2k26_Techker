@@ -26,6 +26,11 @@ public class LlmEngine {
     // Message envoyé au modèle local : le prompt brut et les indices de l'analyse NLP.
     // Le méta-prompt complet est trop long pour un modèle de 1.5B.
     public static String construireDemandeAmelioration(PromptProfile profil) {
+        return construireDemandeAmelioration(profil, null);
+    }
+
+    // langueCible : langue imposee au prompt ameliore (null = celle du prompt brut)
+    public static String construireDemandeAmelioration(PromptProfile profil, String langueCible) {
         StringBuilder sb = new StringBuilder();
         sb.append("Prompt brut a ameliorer :\n").append(profil.rawText().trim()).append("\n\n");
         sb.append("Indications de l'analyse automatique :\n");
@@ -40,6 +45,11 @@ public class LlmEngine {
         // Rappel en fin de message : un petit modele suit surtout la derniere consigne lue
         sb.append("\nRAPPEL : ne realise PAS la tache. Aucun code, aucune solution, aucune explication. "
                 + "Ecris uniquement le prompt ameliore, puis arrete-toi.");
+        // La consigne systeme demande la langue du prompt brut : la derniere consigne l'emporte
+        if (langueCible != null && !langueCible.isBlank()) {
+            sb.append(" Redige tout le prompt ameliore en ").append(gen.MetaPromptEngine.libelleLangue(langueCible))
+                    .append(", meme si le prompt brut est dans une autre langue.");
+        }
         return sb.toString();
     }
 

@@ -64,7 +64,7 @@ public class CliParserTest {
         Assert.assertTrue(argsLong.isVersion(), "Le flag --version doit activer isVersion");
 
         String versionInfo = CliParser.getVersionInfo();
-        Assert.assertContains(versionInfo, "1.1.0", "Les infos de version doivent contenir la version 1.1.0");
+        Assert.assertContains(versionInfo, "1.0.0", "Les infos de version doivent contenir la version 1.0.0");
         Assert.assertContains(versionInfo, "Pierre Untersinger", "Les infos doivent mentionner l'auteur");
         Assert.assertContains(versionInfo, "@kaets0ner", "Les infos doivent mentionner le compte GitHub");
         Assert.assertNotContains(versionInfo, "@gmail", "Aucune adresse email ne doit figurer dans les métadonnées");

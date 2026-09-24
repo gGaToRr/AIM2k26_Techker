@@ -120,14 +120,19 @@ public class MetaPromptEngine {
     }
 
     private static String echapperJson(String text) {
-        if (text == null) return "";
-        return text.replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\b", "\\b")
-                .replace("\f", "\\f")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r")
-                .replace("\t", "\\t");
+        return util.Json.echapper(text);
+    }
+
+    // Nom de la langue demandee (-l/--language, reglage "Langue du prompt" de l'extension)
+    public static String libelleLangue(String code) {
+        String l = code == null ? "" : code.trim();
+        return switch (l.toLowerCase(Locale.ROOT)) {
+            case "fr", "francais", "français" -> "Français";
+            case "en", "english", "anglais" -> "English";
+            case "es", "espagnol", "spanish" -> "Español";
+            case "de", "allemand", "deutsch", "german" -> "Deutsch";
+            default -> l;
+        };
     }
 
     // Détermine le sous-template le plus adapté à l'intention fine parmi les 7 Archétypes
@@ -150,14 +155,7 @@ public class MetaPromptEngine {
 
         // Langue (avec override si -l/--language)
         if (options != null && options.hasLanguage()) {
-            String l = options.language().trim();
-            String langLabel = switch (l.toLowerCase()) {
-                case "fr", "francais", "français" -> "Français";
-                case "en", "english", "anglais" -> "English";
-                case "es", "espagnol", "spanish" -> "Español";
-                case "de", "allemand", "deutsch", "german" -> "Deutsch";
-                default -> l;
-            };
+            String langLabel = libelleLangue(options.language());
             ctx.put("language", langLabel);
             ctx.put("hasTargetLanguage", true);
             ctx.put("targetLanguage", langLabel);

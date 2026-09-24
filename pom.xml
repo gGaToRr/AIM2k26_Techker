@@ -7,7 +7,7 @@
 
     <groupId>io.github.ggatorr</groupId>
     <artifactId>aim2k26-techker</artifactId>
-    <version>1.1.0</version>
+    <version>1.0.0</version>
     <packaging>jar</packaging>
 
     <name>Prompting tool 4 a better work from AI</name>

@@ -216,4 +216,16 @@ public class LocalLlmBackendTest {
         Assert.assertTrue(backend.isAvailable(ModelType.QWEN_CODER, dossier.toString()),
                 "Present une fois le fichier depose");
     }
+
+    // DeepSeek-R1 : seule la reponse apres </think> est le resultat
+    @Test
+    public void testRaisonnementRetireDeLaReponse() {
+        Assert.assertEquals("\n\nRole : expert", LocalLlmBackend.retirerRaisonnement("<think>\nJe reflechis...\n</think>\n\nRole : expert"),
+                "Bloc de reflexion retire");
+        // Le gabarit de chat peut ouvrir la balise lui-meme : seule la fermeture apparait
+        Assert.assertEquals(" Role", LocalLlmBackend.retirerRaisonnement("Je reflechis...</think> Role"), "Sans balise ouvrante");
+        Assert.assertEquals("", LocalLlmBackend.retirerRaisonnement("<think>\nreflexion coupee par la limite"), "Bloc jamais ferme");
+        Assert.assertEquals("Role : expert", LocalLlmBackend.retirerRaisonnement("Role : expert"), "Modele sans raisonnement");
+        Assert.assertEquals("", LocalLlmBackend.retirerRaisonnement(null), "Nul");
+    }
 }

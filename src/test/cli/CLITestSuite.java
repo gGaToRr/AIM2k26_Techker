@@ -14,6 +14,7 @@ public class CLITestSuite {
         runner.registerTestClass(CliSemanticOverridesTest.class);
         runner.registerTestClass(CliRobustnessAndEdgeCasesTest.class);
         runner.registerTestClass(CliClipboardCacheTest.class);
+        runner.registerTestClass(FormatSortieTest.class);
 
         boolean success = runner.runAll();
         if (!success) {

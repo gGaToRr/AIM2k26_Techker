@@ -1,0 +1,692 @@
+/* Chrome limite un popup a 800x600 px. */
+:root {
+    --fenetre: #ffffff;
+    --bordure: #e2e5ea;
+    --rayon: 16px;
+    --texte: #111827;
+    --accent: #7b1e2b; /* rouge grenat, couleur principale (reprise en dur dans logo.svg) */
+    --accent-survol: #621823;
+    --texte-doux: #6b7280;
+    --fond-champ: #f9fafb;
+    --vert: #16a34a;
+    --vert-survol: #15803d;
+    --rouge: #dc2626;
+    --rouge-survol: #b91c1c;
+    --hauteur-bouton: 28px; /* commune a tous les boutons, texte ou icone */
+    /* Vert de la famille du grenat : meme saturation et luminosite, teinte opposee */
+    --vert-famille-teinte: 150;
+    /* Doit rester celui de l'iframe du panneau (contenu/panneau.js) : sinon fond opaque */
+    color-scheme: light;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    width: 720px;
+    height: 600px; /* maximum autorise par Chrome : aucune page ne doit defiler */
+    padding: 6px;
+    background: var(--fenetre);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Blanc sur blanc : c'est la bordure qui rend l'arrondi visible */
+.fenetre {
+    height: 100%;
+    background: var(--fenetre);
+    border: 1px solid var(--bordure);
+    border-radius: var(--rayon);
+    display: flex;
+    flex-direction: column;
+}
+
+/* Panneau injecte dans le site : seule la carte est dessinee, le site reste visible
+   autour de ses coins ; l'ombre la detache de la page */
+.panneau,
+.panneau body {
+    background: transparent;
+}
+
+.panneau .fenetre {
+    box-shadow: 0 1px 4px rgba(17, 24, 39, 0.14); /* tient dans les 6 px de marge du body */
+}
+
+.entete {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 20px;
+}
+
+.logo {
+    width: 22px;
+    height: 22px;
+}
+
+.titre {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--texte);
+}
+
+/* Deux colonnes : les tests a gauche, leurs resultats a droite */
+.corps {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    gap: 20px;
+    padding: 4px 20px 20px;
+}
+
+.colonne-gauche {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 340px;
+    flex-shrink: 0;
+}
+
+.tests {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ligne-test {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.section {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.description {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--texte-doux);
+}
+
+.insecable {
+    white-space: nowrap;
+}
+
+.separateur {
+    border: none;
+    border-top: 1px solid var(--bordure);
+}
+
+/* L'historique prend la hauteur restante de la colonne et defile */
+.historique {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.titre-section {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--texte-doux);
+}
+
+.liste-historique {
+    list-style: none;
+    overflow: hidden; /* pas de defilement : seuls les prompts les plus recents qui tiennent sont affiches */
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.carte-prompt {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 10px;
+    text-decoration: none;
+    background: var(--fond-champ);
+    border: 1px solid var(--bordure);
+    border-radius: 8px;
+}
+
+/* Les prompts les plus recents sont en vert, de plus en plus pale et transparent.
+   Chaque rang reduit la saturation (intensite) et l'opacite du vert du premier. */
+.liste-historique li:nth-child(1) .carte-prompt {
+    background: hsl(var(--vert-famille-teinte) 50% 30% / 0.11);
+    border-color: hsl(var(--vert-famille-teinte) 50% 30% / 0.60);
+}
+
+.liste-historique li:nth-child(2) .carte-prompt {
+    background: hsl(var(--vert-famille-teinte) 40% 30% / 0.07);
+    border-color: hsl(var(--vert-famille-teinte) 40% 30% / 0.38);
+}
+
+.liste-historique li:nth-child(3) .carte-prompt {
+    background: hsl(var(--vert-famille-teinte) 30% 30% / 0.04);
+    border-color: hsl(var(--vert-famille-teinte) 30% 30% / 0.20);
+}
+
+.carte-prompt:hover {
+    border-color: var(--accent);
+}
+
+.carte-prompt:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+.texte-prompt {
+    font-size: 12px;
+    color: var(--texte);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.meta-prompt {
+    font-size: 11px;
+    color: var(--texte-doux);
+}
+
+.libelle {
+    font-size: 13px;
+    color: var(--texte);
+}
+
+.bouton {
+    flex-shrink: 0;
+    height: var(--hauteur-bouton);
+    padding: 0 14px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: #ffffff;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none; /* le bouton peut etre un lien vers une autre page */
+    display: inline-flex;
+    align-items: center;
+}
+
+.bouton:hover {
+    background: var(--accent-survol);
+}
+
+.bouton:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.resultats {
+    flex: 1;
+    padding: 12px;
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--texte);
+    background: var(--fond-champ);
+    border: 1px solid var(--bordure);
+    border-radius: 10px;
+    resize: none;
+}
+
+.resultats::placeholder {
+    color: var(--texte-doux);
+}
+
+.resultats:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+/* --- Page des modeles --- */
+
+/* Liens icones de l'en-tete : retour, parametres */
+.retour,
+.lien-parametres {
+    display: flex;
+    color: var(--texte-doux);
+    border-radius: 6px;
+}
+
+.retour:hover,
+.lien-parametres:hover {
+    color: var(--texte);
+}
+
+.retour:focus-visible,
+.lien-parametres:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* Pousse la roue crantee a l'extremite droite de l'en-tete */
+.lien-parametres {
+    margin-left: auto;
+}
+
+.retour svg,
+.lien-parametres svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.liste-modeles {
+    list-style: none;
+    overflow: hidden;
+    padding: 4px 20px 20px;
+}
+
+.modele {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--bordure);
+}
+
+.modele:last-child {
+    border-bottom: none;
+}
+
+.bouton-icone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+}
+
+.bouton-icone svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.bouton-icone:focus-visible {
+    outline: 2px solid var(--texte);
+    outline-offset: 2px;
+}
+
+.telecharger {
+    width: 34px;
+    height: var(--hauteur-bouton);
+    border-radius: 8px;
+    background: var(--vert);
+}
+
+.telecharger:hover {
+    background: var(--vert-survol);
+}
+
+.telecharger svg {
+    width: 16px;
+    height: 16px;
+}
+
+.supprimer {
+    width: 26px;
+    height: var(--hauteur-bouton);
+    border-radius: 6px;
+    background: var(--rouge);
+}
+
+.supprimer:hover {
+    background: var(--rouge-survol);
+}
+
+.supprimer svg {
+    width: 14px;
+    height: 14px;
+}
+
+.infos-modele {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-left: 6px;
+}
+
+.nom-modele {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--texte);
+}
+
+.details-modele {
+    font-size: 12px;
+    color: var(--texte-doux);
+}
+
+/* --- Page de detail d'un prompt de l'historique --- */
+
+.detail-prompt {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 4px 20px 20px;
+}
+
+.infos-prompt {
+    display: flex;
+    gap: 24px;
+}
+
+.infos-prompt dt {
+    font-size: 11px;
+    color: var(--texte-doux);
+}
+
+.infos-prompt dd {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--texte);
+}
+
+.bloc-prompt {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+/* Le prompt ameliore prend la place restante et defile s'il est long */
+.bloc-principal {
+    flex: 1;
+    min-height: 0;
+}
+
+.contenu-prompt {
+    padding: 10px 12px;
+    font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--texte);
+    white-space: pre-wrap;
+    background: var(--fond-champ);
+    border: 1px solid var(--bordure);
+    border-radius: 10px;
+}
+
+.bloc-principal .contenu-prompt {
+    flex: 1;
+    overflow-y: auto;
+    border-color: var(--accent);
+}
+
+/* --- Page des parametres --- */
+
+.corps-parametres {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    padding: 0 20px 12px;
+}
+
+.colonne-parametres {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* pas de defilement : le nombre de lignes doit tenir dans la hauteur */
+}
+
+/* Les lignes se partagent toute la hauteur de la colonne, jusqu'en bas */
+.colonne-parametres .ligne-parametre {
+    flex: 1;
+    align-items: center;
+}
+
+/* Trait vertical au milieu, en retrait du haut et du bas de la zone */
+.separateur-vertical {
+    width: 1px;
+    margin: 24px 20px;
+    background: var(--bordure);
+}
+
+/* Ligne de parametre : nom et description a gauche, interrupteur a droite */
+.ligne-parametre {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 8px 0;
+}
+
+.texte-parametre {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.nom-parametre {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--texte);
+}
+
+/* Deux lignes au maximum, la suite est coupee par "..." */
+.texte-parametre .description {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Interrupteur : case a cocher native, habillee en bouton glissant */
+.interrupteur {
+    position: relative;
+    flex-shrink: 0;
+    width: 36px;
+    height: 20px;
+    margin-top: 1px;
+    cursor: pointer;
+}
+
+.interrupteur input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+}
+
+.curseur {
+    position: absolute;
+    inset: 0;
+    background: #d1d5db;
+    border-radius: 999px;
+    transition: background 0.15s;
+}
+
+.curseur::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background: #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.2);
+    transition: transform 0.15s;
+}
+
+.interrupteur input:checked + .curseur {
+    background: var(--accent);
+}
+
+.interrupteur input:checked + .curseur::after {
+    transform: translateX(16px);
+}
+
+.interrupteur input:focus-visible + .curseur {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* Les lignes de parametres consecutives sont separees par un trait fin */
+.ligne-parametre + .ligne-parametre {
+    border-top: 1px solid var(--bordure);
+}
+
+/* Liste deroulante native, a la hauteur des autres boutons */
+.liste-choix {
+    flex-shrink: 0;
+    width: 120px; /* largeur commune : les listes s'alignent d'une ligne a l'autre */
+    height: var(--hauteur-bouton);
+    padding: 0 8px;
+    font: inherit;
+    font-size: 12px;
+    color: var(--texte);
+    background: var(--fond-champ);
+    border: 1px solid var(--bordure);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.liste-choix:hover {
+    border-color: var(--texte-doux);
+}
+
+.liste-choix:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+/* Parametre annonce mais pas encore disponible */
+.ligne-parametre.indisponible {
+    opacity: 0.5;
+}
+
+.indisponible .interrupteur,
+.indisponible .interrupteur input {
+    cursor: not-allowed;
+}
+
+/* Nom + badge : le badge passe proprement a la ligne si le nom est long */
+.nom-parametre:has(.badge) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 6px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 1px 6px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--texte-doux);
+    background: var(--fond-champ);
+    border: 1px solid var(--bordure);
+    border-radius: 999px;
+}
+
+/* Curseur de reglage (temperature), meme largeur que les listes */
+.curseur-reglage {
+    flex-shrink: 0;
+    width: 120px;
+    accent-color: var(--accent);
+    cursor: pointer;
+}
+
+/* Action destructrice : rouge vif, distinct du grenat des actions normales */
+.nom-parametre.danger {
+    color: var(--rouge);
+}
+
+.bouton-danger {
+    background: var(--rouge);
+}
+
+.bouton-danger:hover {
+    background: var(--rouge-survol);
+}
+
+.bouton-danger:focus-visible {
+    outline-color: var(--rouge);
+}
+
+/* --- Page des modeles : etats dynamiques --- */
+
+.message-liste {
+    padding: 12px 0;
+    font-size: 13px;
+    color: var(--texte-doux);
+    white-space: pre-line;
+}
+
+.bouton-icone:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.infos-modele {
+    flex: 1;
+    min-width: 0;
+}
+
+.details-modele {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.details-modele.installe {
+    color: var(--vert-survol);
+    font-weight: 600;
+}
+
+.details-modele.erreur {
+    color: var(--rouge);
+}
+
+.barre-progression {
+    width: 200px;
+    height: 2px;
+    margin-top: 4px;
+    background: var(--bordure);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.barre-progression[hidden] {
+    display: none;
+}
+
+.remplissage {
+    height: 100%;
+    width: 0;
+    background: var(--vert);
+    transition: width 0.3s;
+}
+
+/* Prompt original tres long : borne en hauteur pour laisser la place au prompt ameliore */
+.bloc-prompt:not(.bloc-principal) .contenu-prompt {
+    max-height: 96px;
+    overflow-y: auto;
+}

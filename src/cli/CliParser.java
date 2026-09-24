@@ -16,7 +16,7 @@ import util.Log;
 // Analyseur syntaxique d'arguments CLI et formateur d'aide/verbose
 public class CliParser {
 
-    public static final String VERSION = "1.1.0";
+    public static final String VERSION = "1.0.0";
     public static final String AUTHOR = "Pierre Untersinger (@kaets0ner / gGaToRr)";
     public static final String TOOL_NAME = "Prompting tool 4 a better work from AI (AIM2k26)";
 
@@ -53,6 +53,9 @@ public class CliParser {
         declarerValeur(table, "models-delete", "-md", "--models-delete", CliArgs.Builder::modelsDelete);
         declarerValeur(table, "models-info", "-mi", "--models-info", CliArgs.Builder::modelsInfo);
         declarerValeur(table, "models-install", "-mt", "--models-install", CliArgs.Builder::modelsInstall);
+        declarerDrapeau(table, "models-check", "-mc", "--models-check", (b, v) -> b.modelsCheck(true));
+        declarerDrapeau(table, "yes", "-y", "--yes", (b, v) -> b.yes(true));
+        declarerDrapeau(table, "improve-json", "--improve-json", "--improve-json", (b, v) -> b.improveJson(true));
 
         declarerValeur(table, "code", "-c", "--code", (b, v) -> b.code(resoudreContenuCode(v)));
 
@@ -195,8 +198,11 @@ public class CliParser {
                   -ml, --models-list             Lister les modèles, leur statut, taille et date d'installation.
                   -mi, --models-info <nom>       Fiche technique détaillée d'un modèle.
                   -mt, --models-install <nom>    Télécharger et installer un modèle (ex: qwen-coder).
+                  -mc, --models-check            Vérifier les modèles installés (intégrité + test de génération).
                   -md, --models-delete <nom>     Supprimer un modèle installé, après confirmation.
                   -mp, --models-purge            Supprimer tous les modèles et réinitialiser l'autorisation.
+                  -y,  --yes                     Répondre oui aux confirmations (usage par l'extension).
+                  --improve-json                 Améliorer le prompt JSON lu sur l'entrée standard (usage par l'extension).
 
                 Options avancées & personnalisation :
                   -a, --agent <nom>              Adapter le format pour un LLM (claude, gpt, deepseek, gemini, llama).

@@ -38,6 +38,164 @@ public final class ModelManager {
 
     private ModelManager() {}
 
+    // --- Verification (bouton "Tester mes modeles installes" de l'extension) ---
+
+    // Plafond volontairement bas : il s'agit de prouver que le modele repond, pas de produire un texte
+    static final int TOKENS_TEST_GENERATION = 16;
+
+    public enum EtatFichier { ABSENT, INTACT, ENDOMMAGE, ILLISIBLE }
+
+    public enum EtatGeneration { OK, ECHEC, NON_TESTEE }
+
+    // Resultat de la verification d'un modele du registre, installe ou non
+    public record Verification(ModelStatus statut, EtatFichier fichier, String detailFichier,
+                               EtatGeneration generation, String detailGeneration, double secondes) {
+
+        public boolean fonctionnel() {
+            return fichier == EtatFichier.INTACT && generation == EtatGeneration.OK;
+        }
+
+        Verification avecGeneration(EtatGeneration etat, String detail, double duree) {
+            return new Verification(statut, fichier, detailFichier, etat, detail, duree);
+        }
+
+        Verification avecGenerationTestee(Essai essai) {
+            return avecGeneration(essai.etat(), essai.detail(), essai.secondes());
+        }
+    }
+
+    // Verifie tous les modeles du registre : pour ceux installes, integrite du fichier
+    // (taille puis SHA-256), puis une generation tres courte si le moteur est disponible.
+    public static List<Verification> verifier(String modelsDir, LlmConfig config, LlmBackend backend,
+                                              boolean moteurDisponible) {
+        List<Verification> resultats = new ArrayList<>();
+        for (ModelStatus etat : inventaire(modelsDir)) {
+            if (!etat.installe()) {
+                resultats.add(new Verification(etat, EtatFichier.ABSENT, "", EtatGeneration.NON_TESTEE, "", 0));
+                continue;
+            }
+            ModelType model = etat.model();
+            Verification fichier = verifierFichier(etat, ModelInstaller.getModelPath(model, modelsDir));
+
+            if (fichier.fichier() != EtatFichier.INTACT) {
+                resultats.add(fichier.avecGeneration(EtatGeneration.NON_TESTEE, "fichier endommage", 0));
+            } else if (!moteurDisponible) {
+                resultats.add(fichier.avecGeneration(EtatGeneration.NON_TESTEE, "moteur llama.cpp absent", 0));
+            } else {
+                resultats.add(fichier.avecGenerationTestee(tester(model, modelsDir, config, backend)));
+            }
+        }
+        return resultats;
+    }
+
+    // Rendu texte pour le terminal. Renvoie le nombre de modeles pleinement fonctionnels.
+    public static int verifierModeles(String modelsDir, LlmConfig config, LlmBackend backend,
+                                      boolean moteurDisponible, PrintStream out) {
+        List<Verification> resultats = verifier(modelsDir, config, backend, moteurDisponible);
+        List<Verification> installes = resultats.stream().filter(v -> v.fichier() != EtatFichier.ABSENT).toList();
+        out.println("Modeles installes : " + installes.size() + " / " + resultats.size());
+
+        if (installes.isEmpty()) {
+            out.println("\nAucun modele installe. Utilisez \"Telecharger les modeles\".");
+            return 0;
+        }
+        if (!moteurDisponible) {
+            out.println("[!] Moteur llama.cpp introuvable : la generation ne sera pas testee.");
+        }
+
+        for (Verification v : installes) {
+            out.println();
+            out.println((v.fonctionnel() ? "[OK] " : v.fichier() == EtatFichier.INTACT ? "[?] " : "[X] ")
+                    + v.statut().model().getNomAffiche());
+            out.println("    Fichier    : " + v.fichier().name().toLowerCase()
+                    + " (" + v.statut().tailleLisible() + ", " + v.detailFichier() + ")");
+            out.println("    Generation : " + switch (v.generation()) {
+                case OK -> String.format("OK en %.1f s", v.secondes());
+                case ECHEC -> "echec (" + v.detailGeneration() + ")";
+                case NON_TESTEE -> "non testee (" + v.detailGeneration() + ")";
+            });
+        }
+
+        long fonctionnels = installes.stream().filter(Verification::fonctionnel).count();
+        out.println();
+        out.println("Bilan : " + fonctionnels + " modele(s) fonctionnel(s) sur " + installes.size() + " installe(s).");
+        return (int) fonctionnels;
+    }
+
+    // Inventaire pour la page de telechargement de l'extension
+    public static String inventaireEnJson(String modelsDir) {
+        StringBuilder sb = new StringBuilder("{\"modeles\":[");
+        List<ModelStatus> etats = inventaire(modelsDir);
+        for (int i = 0; i < etats.size(); i++) {
+            ModelStatus etat = etats.get(i);
+            ModelType model = etat.model();
+            if (i > 0) sb.append(',');
+            sb.append("{\"id\":").append(util.Json.chaine(model.getId()))
+              .append(",\"nom\":").append(util.Json.chaine(model.getNomAffiche()))
+              .append(",\"specialite\":").append(util.Json.chaine(model.getSpecialite()))
+              .append(",\"tailleDisque\":").append(util.Json.chaine(model.getTailleDisque()))
+              .append(",\"installe\":").append(etat.installe())
+              .append(",\"tailleOctets\":").append(etat.tailleOctets())
+              .append('}');
+        }
+        return sb.append("]}").toString();
+    }
+
+    // Rendu JSON pour l'extension, qui se charge de la mise en forme
+    public static String verificationEnJson(List<Verification> resultats, boolean moteurDisponible) {
+        StringBuilder sb = new StringBuilder("{\"moteurDisponible\":").append(moteurDisponible).append(",\"modeles\":[");
+        for (int i = 0; i < resultats.size(); i++) {
+            Verification v = resultats.get(i);
+            ModelType model = v.statut().model();
+            if (i > 0) sb.append(',');
+            sb.append("{\"id\":").append(util.Json.chaine(model.getId()))
+              .append(",\"nom\":").append(util.Json.chaine(model.getNomAffiche()))
+              .append(",\"tailleOctets\":").append(v.statut().tailleOctets())
+              .append(",\"fichier\":").append(util.Json.chaine(v.fichier().name()))
+              .append(",\"detailFichier\":").append(util.Json.chaine(v.detailFichier()))
+              .append(",\"generation\":").append(util.Json.chaine(v.generation().name()))
+              .append(",\"detailGeneration\":").append(util.Json.chaine(v.detailGeneration()))
+              .append(",\"secondes\":").append(String.format(java.util.Locale.ROOT, "%.2f", v.secondes()))
+              .append('}');
+        }
+        return sb.append("]}").toString();
+    }
+
+    // Taille d'abord (instantane), puis empreinte SHA-256 (quelques secondes par Go)
+    private static Verification verifierFichier(ModelStatus etat, Path chemin) {
+        ModelType model = etat.model();
+        if (model.getTailleOctets() > 0 && etat.tailleOctets() != model.getTailleOctets()) {
+            return new Verification(etat, EtatFichier.ENDOMMAGE, "taille " + etat.tailleLisible()
+                    + ", attendu " + formaterOctets(model.getTailleOctets()), EtatGeneration.NON_TESTEE, "", 0);
+        }
+        if (model.getSha256() == null || model.getSha256().isBlank()) {
+            return new Verification(etat, EtatFichier.INTACT, "pas d'empreinte de reference", EtatGeneration.NON_TESTEE, "", 0);
+        }
+        try {
+            boolean conforme = model.getSha256().equalsIgnoreCase(ModelInstaller.calculerSha256(chemin));
+            return new Verification(etat, conforme ? EtatFichier.INTACT : EtatFichier.ENDOMMAGE,
+                    conforme ? "SHA-256 conforme" : "SHA-256 different de la reference", EtatGeneration.NON_TESTEE, "", 0);
+        } catch (Exception e) {
+            return new Verification(etat, EtatFichier.ILLISIBLE, e.getMessage(), EtatGeneration.NON_TESTEE, "", 0);
+        }
+    }
+
+    private record Essai(EtatGeneration etat, String detail, double secondes) {}
+
+    private static Essai tester(ModelType model, String modelsDir, LlmConfig config, LlmBackend backend) {
+        long debut = System.currentTimeMillis();
+        try {
+            LlmConfig configTest = new LlmConfig(config.isPermissionAccordee(), config.getModeleParDefaut(),
+                    modelsDir, 0.0, TOKENS_TEST_GENERATION, false);
+            LlmBackend.GenerationResult resultat = backend.generate(model, "Bonjour", configTest, null);
+            double secondes = (System.currentTimeMillis() - debut) / 1000.0;
+            boolean ok = resultat.fullText() != null && !resultat.fullText().isBlank();
+            return new Essai(ok ? EtatGeneration.OK : EtatGeneration.ECHEC, ok ? "" : "reponse vide", secondes);
+        } catch (Exception e) {
+            return new Essai(EtatGeneration.ECHEC, e.getMessage(), (System.currentTimeMillis() - debut) / 1000.0);
+        }
+    }
+
     // --- Lecture ---
 
     public static List<ModelStatus> inventaire(String modelsDir) {

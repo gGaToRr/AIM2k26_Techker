@@ -39,7 +39,10 @@ public class AllTestSuite {
         runner.registerTestClass(test.cli.CliSemanticOverridesTest.class);
         runner.registerTestClass(test.cli.CliRobustnessAndEdgeCasesTest.class);
         runner.registerTestClass(test.cli.CliClipboardCacheTest.class);
+        runner.registerTestClass(test.cli.FormatSortieTest.class);
         runner.registerTestClass(test.util.LogTest.class);
+        runner.registerTestClass(test.util.JsonTest.class);
+        runner.registerTestClass(test.llm.AmeliorationCommandTest.class);
         runner.registerTestClass(test.framework.TestRunnerTest.class);
         runner.registerTestClass(test.llm.LocalLlmBackendTest.class);
         runner.registerTestClass(test.gen.AdapterPourAgentTest.class);

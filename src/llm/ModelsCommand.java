@@ -21,6 +21,13 @@ public final class ModelsCommand {
     // Renvoie le code de sortie du processus
     public static int executer(CliArgs options, LlmConfig config, PrintStream out, Scanner scanner) {
         String repertoire = config != null ? config.getRepertoireModeles() : "models";
+        // -o json : sortie structuree pour l'extension, qui fait sa propre mise en forme
+        boolean json = options.hasOutput() && options.output().equalsIgnoreCase("json");
+
+        if (options.isModelsList() && json) {
+            out.println(ModelManager.inventaireEnJson(repertoire));
+            return SUCCES;
+        }
 
         if (options.isModelsList()) {
             out.print(ModelManager.formaterInventaire(repertoire));
@@ -36,12 +43,27 @@ public final class ModelsCommand {
             return SUCCES;
         }
 
+        if (options.isModelsCheck()) {
+            LlmConfig effective = config != null ? config : new LlmConfig();
+            boolean moteur = LocalLlmBackend.detectRunnerBinary() != null;
+            if (options.hasOutput() && options.output().equalsIgnoreCase("json")) {
+                out.println(ModelManager.verificationEnJson(
+                        ModelManager.verifier(repertoire, effective, new LocalLlmBackend(), moteur), moteur));
+            } else {
+                ModelManager.verifierModeles(repertoire, effective, new LocalLlmBackend(), moteur, out);
+            }
+            return SUCCES;
+        }
+
         if (options.hasModelsInstall()) {
             Optional<ModelType> modele = ModelType.fromAlias(options.modelsInstall());
             if (modele.isEmpty()) {
                 return modeleInconnu(options.modelsInstall(), out);
             }
-            if (!ModelInstaller.telechargerModele(modele.get(), repertoire, out, null)) {
+            boolean reussi = json
+                    ? telechargerEnJson(modele.get(), repertoire, out)
+                    : ModelInstaller.telechargerModele(modele.get(), repertoire, out, null);
+            if (!reussi) {
                 return ECHEC;
             }
             // Installer explicitement un modele vaut accord pour l'execution locale
@@ -66,10 +88,20 @@ public final class ModelsCommand {
                 out.println("[*] " + modele.get().getNomAffiche() + " n'est pas installe, rien a supprimer.");
                 return SUCCES;
             }
-            boolean accord = ModelManager.confirmer(scanner, out,
+            // -y : la confirmation a deja ete donnee ailleurs (fenetre de l'extension)
+            boolean accord = options.isYes() || ModelManager.confirmer(scanner, out,
                     "Supprimer " + modele.get().getNomAffiche() + " (" + etat.tailleLisible() + ") ?");
             if (!accord) {
                 return SUCCES;
+            }
+            if (json) {
+                java.io.ByteArrayOutputStream journal = new java.io.ByteArrayOutputStream();
+                boolean supprime = ModelManager.supprimer(modele.get(), repertoire,
+                        new PrintStream(journal, true, java.nio.charset.StandardCharsets.UTF_8));
+                String message = journal.toString(java.nio.charset.StandardCharsets.UTF_8).trim()
+                        .replaceFirst("^\\[.\\]\\s*", "");
+                out.println("{\"supprime\":" + supprime + ",\"message\":" + util.Json.chaine(message) + "}");
+                return supprime ? SUCCES : ECHEC;
             }
             return ModelManager.supprimer(modele.get(), repertoire, out) ? SUCCES : ECHEC;
         }
@@ -90,6 +122,29 @@ public final class ModelsCommand {
         }
 
         return SUCCES;
+    }
+
+    // Une ligne JSON par evenement : l'extension affiche la progression en direct.
+    // Le texte habituel du telechargement est capture, pour en extraire la cause d'un echec.
+    private static boolean telechargerEnJson(ModelType modele, String repertoire, PrintStream out) {
+        java.io.ByteArrayOutputStream journal = new java.io.ByteArrayOutputStream();
+        PrintStream silencieux = new PrintStream(journal, true, java.nio.charset.StandardCharsets.UTF_8);
+
+        boolean reussi = ModelInstaller.telechargerModele(modele, repertoire, silencieux, (lus, total, vitesse) -> {
+            out.println("{\"type\":\"progression\",\"lus\":" + lus + ",\"total\":" + total
+                    + ",\"vitesse\":" + String.format(java.util.Locale.ROOT, "%.2f", vitesse) + "}");
+            out.flush();
+        });
+
+        String message = "";
+        if (!reussi) {
+            message = journal.toString(java.nio.charset.StandardCharsets.UTF_8).lines()
+                    .filter(l -> l.contains("[!]")).reduce((a, b) -> b)
+                    .map(l -> l.replace("[!]", "").trim()).orElse("echec du telechargement");
+        }
+        out.println("{\"type\":\"fin\",\"ok\":" + reussi + ",\"message\":" + util.Json.chaine(message) + "}");
+        out.flush();
+        return reussi;
     }
 
     private static int modeleInconnu(String saisie, PrintStream out) {

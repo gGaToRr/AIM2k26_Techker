@@ -22,7 +22,10 @@ public record CliArgs(
         boolean isModelsPurge,
         String modelsDelete,
         String modelsInfo,
-        String modelsInstall
+        String modelsInstall,
+        boolean isModelsCheck,
+        boolean isYes,
+        boolean isImproveJson
 ) {
     public boolean hasInstruction() {
         return instruction != null && !instruction.isBlank();
@@ -71,7 +74,7 @@ public record CliArgs(
     // Vrai des qu'une commande de gestion des modeles est demandee : ces commandes
     // court-circuitent le pipeline de generation.
     public boolean isCommandeModeles() {
-        return isModelsList || isModelsPurge || hasModelsDelete() || hasModelsInfo() || hasModelsInstall();
+        return isModelsList || isModelsPurge || hasModelsDelete() || hasModelsInfo() || hasModelsInstall() || isModelsCheck;
     }
 
     public boolean hasModel() {
@@ -120,6 +123,9 @@ public record CliArgs(
         private String modelsDelete = null;
         private String modelsInfo = null;
         private String modelsInstall = null;
+        private boolean isModelsCheck = false;
+        private boolean isYes = false;
+        private boolean isImproveJson = false;
 
         public Builder help(boolean isHelp) { this.isHelp = isHelp; return this; }
         public Builder version(boolean isVersion) { this.isVersion = isVersion; return this; }
@@ -142,12 +148,15 @@ public record CliArgs(
         public Builder modelsDelete(String modelsDelete) { this.modelsDelete = modelsDelete; return this; }
         public Builder modelsInfo(String modelsInfo) { this.modelsInfo = modelsInfo; return this; }
         public Builder modelsInstall(String modelsInstall) { this.modelsInstall = modelsInstall; return this; }
+        public Builder modelsCheck(boolean isModelsCheck) { this.isModelsCheck = isModelsCheck; return this; }
+        public Builder yes(boolean isYes) { this.isYes = isYes; return this; }
+        public Builder improveJson(boolean isImproveJson) { this.isImproveJson = isImproveJson; return this; }
 
         public CliArgs build() {
             return new CliArgs(
                     isHelp, isVersion, isVerbose, isRaw, isDryRun, isClipboard, isExec,
                     instruction, code, agent, output, template, domain, language, filePath, model,
-                    isModelsList, isModelsPurge, modelsDelete, modelsInfo, modelsInstall
+                    isModelsList, isModelsPurge, modelsDelete, modelsInfo, modelsInstall, isModelsCheck, isYes, isImproveJson
             );
         }
     }

@@ -27,8 +27,9 @@
    - Injecte le profil et les options (forçage de template, domaine, langue, agent IA) dans le moteur Mustache.
 
 6. **Formatage & Export** :
-   - Si `-o json` est demandé, convertit le résultat en JSON structuré.
-   - Si `-o <chemin>` est spécifié, écrit le résultat dans le fichier cible.
+   - `cli.FormatSortie` résout le format : `-o txt|md|json`, ou l'extension du fichier (`.json`, `.txt`, sinon Markdown). Sans `-o`, Markdown.
+   - `txt` retire le balisage Markdown (titres, gras, italique, code) ; `json` produit l'export structuré.
+   - Si `-o <chemin>` est spécifié, écrit le résultat mis en forme dans le fichier cible.
    - Si `-C` est activé, copie le résultat dans le presse-papiers système.
    - Affiche le résultat sur la console standard (ou format épuré si `-r`).
 
