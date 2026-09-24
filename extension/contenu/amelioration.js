@@ -291,7 +291,11 @@
                 journaliser(`prompt amélioré inséré dans la zone de saisie (source : ${resultat.source})`);
                 if (copieAuto) await copier(resultat.ameliore);
                 const suite = modeAuto ? "Envoyé automatiquement." : "Entrée pour envoyer.";
-                if (resultat.source === "nlp") {
+                if (resultat.avertissement) {
+                    // Prompt initial trop court : le resultat a du deviner le contexte
+                    const nlp = resultat.source === "nlp" ? " Amélioré par le NLP seul, fiabilité réduite." : "";
+                    toast.changer(`${resultat.avertissement}${nlp} ${suite}`, 6000, "avertissement");
+                } else if (resultat.source === "nlp") {
                     // Repli sans modele : meta-prompt du moteur NLP, utile mais moins fiable
                     toast.changer("Amélioré par le NLP seul, fiabilité réduite : installez un modèle "
                         + `pour de meilleurs résultats. ${suite}`, 6000, "avertissement");

@@ -3,6 +3,7 @@ package llm;
 import cli.CliArgs;
 import cli.FormatSortie;
 import gen.MetaPromptEngine;
+import nlp.AvertissementPrompt;
 import nlp.Lemmatizer;
 import nlp.PromptProfile;
 import util.Json;
@@ -18,7 +19,7 @@ import java.util.Scanner;
 // Lit sur l'entree standard le message JSON de l'extension
 // ({"prompt": "...", "format": "txt|md|json", "cible": "gpt|claude|...", "langue": "fr|en|...",
 //   "modele": "qwen|gemma|deepseek|smollm", "creativite": "0.7", "longueurMax": "2048"}) et ecrit
-// une seule ligne JSON : {"ok":true,"ameliore":"...","source":"modele"|"nlp",...}
+// une seule ligne JSON : {"ok":true,"ameliore":"...","source":"modele"|"nlp","avertissement":...}
 // ou {"ok":false,"message":"..."} (message illisible ou prompt vide).
 // Le prompt transite en JSON et non en argument : il peut contenir n'importe quel caractere.
 // Les reglages absents ou "auto" laissent le comportement par defaut (Markdown, sans
@@ -76,7 +77,18 @@ public final class AmeliorationCommand {
         if (resultat == null || resultat.fullText() == null || resultat.fullText().isBlank()) {
             return repliNlp(out, profil, options, "le modele n'a rien produit", debut);
         }
-        String ameliore = resultat.fullText().trim();
+        // Meme format quel que soit le modele : sections reconnues puis rendues a l'identique.
+        // Une reponse sans structure (mots-cles en vrac, reponse a la tache) ne vaut pas le NLP.
+        java.util.Optional<String> structure = PromptStructure.structurer(resultat.fullText(),
+                langueRendu(profil, options), prompt);
+        if (structure.isEmpty()) {
+            return repliNlp(out, profil, options, "reponse du modele non structuree", debut);
+        }
+        // Un prompt bien presente mais sur un autre sujet serait pire que le repli NLP
+        if (!PromptStructure.resteSurLeSujet(structure.get(), profil.tokens())) {
+            return repliNlp(out, profil, options, "reponse du modele hors sujet", debut);
+        }
+        String ameliore = structure.get();
         if (options.hasAgent()) {
             ameliore = MetaPromptEngine.adapterPourAgent(ameliore, options.agent());
         }
@@ -88,6 +100,11 @@ public final class AmeliorationCommand {
     private static int repliNlp(PrintStream out, PromptProfile profil, CliArgs options, String raison, long debut) {
         String metaPrompt = MetaPromptEngine.genererPromptOptimise(profil, options).trim();
         return reussite(out, profil, mettreEnForme(profil, metaPrompt, options), "nlp", null, raison, debut);
+    }
+
+    // Langue imposee (-l) ou detectee (FR, EN) : les titres des sections la suivent
+    private static String langueRendu(PromptProfile profil, CliArgs options) {
+        return options.hasLanguage() ? options.language() : profil.language();
     }
 
     // Modele choisi dans l'extension, s'il est installe. Un modele impose mais absent serait
@@ -141,6 +158,7 @@ public final class AmeliorationCommand {
                 + ",\"source\":" + Json.chaine(source)
                 + ",\"modele\":" + Json.chaine(modele)
                 + ",\"raison\":" + Json.chaine(raison)
+                + ",\"avertissement\":" + Json.chaine(AvertissementPrompt.verifier(profil.rawText()).orElse(null))
                 + ",\"type\":" + Json.chaine(String.valueOf(profil.classification().primaryType()))
                 + ",\"score\":" + profil.qualityDiagnostic().scoreGlobal()
                 + ",\"secondes\":" + String.format(java.util.Locale.ROOT, "%.1f",

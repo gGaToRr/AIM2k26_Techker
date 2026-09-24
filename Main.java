@@ -7,7 +7,9 @@ import llm.LlmConfig;
 import llm.LlmEngine;
 import llm.ModelInstaller;
 import llm.ModelsCommand;
+import llm.PromptStructure;
 import menu.Menu;
+import nlp.AvertissementPrompt;
 import nlp.Lemmatizer;
 import nlp.PromptProfile;
 import nlp.SafetyAdvisor;
@@ -79,6 +81,12 @@ public class Main {
         SafetyAdvisor.SafetyReport safety = SafetyAdvisor.analyser(userPrompt);
         if (safety.containsSensitiveTerms() && !cliArgs.isRaw()) {
             System.out.println("\n" + safety.warningMessage());
+        }
+
+        // Prompt trop court : l'amélioration devra deviner le contexte (avertissement non bloquant).
+        // Pas en -o json : la sortie standard ne doit contenir que le JSON.
+        if (!cliArgs.isRaw() && FormatSortie.depuis(cliArgs) != FormatSortie.JSON) {
+            AvertissementPrompt.verifier(userPrompt).ifPresent(message -> System.out.println("\n[!] " + message));
         }
 
         // 2. Analyse sémantique complète (NLP)
@@ -182,7 +190,14 @@ public class Main {
             LlmEngine engine = isInteractive
                     ? new LlmEngine(null, LlmConfig.chargerParDefaut(), System.out, menu.getScanner())
                     : new LlmEngine();
-            engine.execute(LlmEngine.construireDemandeAmelioration(profil), profil, cliArgs.model(), isInteractive);
+            // Meme format que dans l'extension, quel que soit le modele (PromptStructure)
+            String langue = cliArgs.hasLanguage() ? cliArgs.language() : profil.language();
+            String promptBrut = userPrompt;
+            engine.execute(LlmEngine.construireDemandeAmelioration(profil, cliArgs.language()), profil,
+                    cliArgs.model(), isInteractive, reponse -> PromptStructure.structurer(reponse, langue, promptBrut)
+                            .filter(structure -> PromptStructure.resteSurLeSujet(structure, profil.tokens()))
+                            .orElse("[!] Reponse du modele inexploitable (non structuree ou hors sujet) : "
+                                    + "utilisez le prompt optimise par le NLP ci-dessus."));
         }
 
         // Fermeture du scanner si ouvert

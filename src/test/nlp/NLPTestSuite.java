@@ -15,6 +15,7 @@ public class NLPTestSuite {
         runner.registerTestClass(TokenCounterTest.class);
         runner.registerTestClass(PromptQualityScorerTest.class);
         runner.registerTestClass(PromptClassifierTest.class);
+        runner.registerTestClass(AvertissementPromptTest.class);
         runner.registerTestClass(SafetyAdvisorTest.class);
 
         boolean success = runner.runAll();

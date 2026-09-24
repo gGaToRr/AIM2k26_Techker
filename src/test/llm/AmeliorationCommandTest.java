@@ -25,6 +25,11 @@ public class AmeliorationCommandTest {
     private ByteArrayOutputStream tampon;
     private PrintStream sortie;
 
+    // Reponse type d'un modele : sections presentees a sa facon (titres sans accents, gras)
+    private static final String REPONSE_STRUCTUREE = "Voici le prompt :\nRole : Tu es un expert Python.\n"
+            + "Contexte : Besoin d'une fonction de tri.\n**Tache :** Ecris une fonction Python de tri.\n"
+            + "Contraintes :\n* Python 3\nFormat de sortie attendu : Le code de la fonction.";
+
     // Backend espion : repond un texte fixe et compte les appels
     private static final class BackendEspion implements LlmBackend {
         int appels = 0;
@@ -33,7 +38,7 @@ public class AmeliorationCommandTest {
         @Override public GenerationResult generate(ModelType model, String prompt, LlmConfig config, TokenConsumer c) {
             appels++;
             promptRecu = prompt;
-            return new GenerationResult("Role : expert\nTache : trier", 5, 10, 1.0, model);
+            return new GenerationResult(REPONSE_STRUCTUREE, 5, 10, 1.0, model);
         }
     }
 
@@ -75,8 +80,9 @@ public class AmeliorationCommandTest {
         Assert.assertContains(backend.promptRecu, "fais une fonction python de tri", "Le prompt brut atteint le modele");
         Assert.assertContains(tampon.toString(StandardCharsets.UTF_8), "\"ok\":true", "Succes signale");
         Assert.assertContains(tampon.toString(StandardCharsets.UTF_8), "\"source\":\"modele\"", "Source modele");
-        Assert.assertContains(tampon.toString(StandardCharsets.UTF_8), "\"ameliore\":\"Role : expert\\nTache : trier\"",
-                "Texte ameliore echappe");
+        Assert.assertContains(tampon.toString(StandardCharsets.UTF_8),
+                "\"ameliore\":\"## Rôle\\nTu es un expert Python.\\n\\n## Contexte\\nBesoin d'une fonction de tri.",
+                "Texte ameliore au format commun, echappe");
     }
 
     // Appelee a chaque envoi : ne doit jamais declencher un telechargement de plus d'1 Go.
@@ -128,8 +134,8 @@ public class AmeliorationCommandTest {
         String json = tampon.toString(StandardCharsets.UTF_8);
 
         Assert.assertContains(json, "<claude_system_prompt>", "Adapte a Claude");
-        Assert.assertContains(json, "Role : expert\\nTache : trier", "Texte du modele conserve");
-        Assert.assertNotContains(backend.promptRecu, "Redige tout le prompt ameliore en", "Langue auto : pas de forcage");
+        Assert.assertContains(json, "Rôle\\nTu es un expert Python.", "Texte du modele conserve, sans balisage");
+        Assert.assertContains(backend.promptRecu, "sections en Français", "Langue auto : celle du prompt brut");
     }
 
     @Test
@@ -139,7 +145,8 @@ public class AmeliorationCommandTest {
 
         executer("{\"prompt\":\"fais une fonction python de tri\",\"langue\":\"es\"}", backend, true);
 
-        Assert.assertContains(backend.promptRecu, "Redige tout le prompt ameliore en Español", "Consigne de langue");
+        Assert.assertContains(backend.promptRecu, "sections en Español", "Consigne de langue");
+        Assert.assertContains(tampon.toString(StandardCharsets.UTF_8), "## Rol\\n", "Titres dans la langue imposee");
     }
 
     @Test
@@ -236,5 +243,60 @@ public class AmeliorationCommandTest {
 
         Assert.assertEquals(0.7, backend.temperature, "Temperature par defaut");
         Assert.assertEquals(2048, backend.maxTokens, "Limite par defaut");
+    }
+
+    // Backend qui repond un texte fixe
+    private static LlmBackend repondant(String texte) {
+        return new LlmBackend() {
+            @Override public boolean isAvailable(ModelType model, String modelsDir) { return true; }
+            @Override public GenerationResult generate(ModelType model, String prompt, LlmConfig config, TokenConsumer c) {
+                return new GenerationResult(texte, 5, 10, 1.0, model);
+            }
+        };
+    }
+
+    // Mots-cles en vrac (SmolLM) : pas un prompt structure, repli NLP
+    @Test
+    public void testReponseNonStructureeRepliNlp() throws Exception {
+        Files.createFile(repertoire.resolve(ModelType.QWEN_CODER.getNomFichier()));
+        AmeliorationCommand.executer(new ByteArrayInputStream(
+                "{\"prompt\":\"fais une fonction python de tri\"}".getBytes(StandardCharsets.UTF_8)),
+                sortie, config(), repondant("Fonction python, tri, liste, rapide."), true);
+        String json = tampon.toString(StandardCharsets.UTF_8);
+
+        Assert.assertContains(json, "\"source\":\"nlp\"", "Repli NLP");
+        Assert.assertContains(json, "reponse du modele non structuree", "Raison du repli");
+    }
+
+    // Prompt bien presente mais sur un autre sujet : pire que le repli NLP
+    @Test
+    public void testReponseHorsSujetRepliNlp() throws Exception {
+        Files.createFile(repertoire.resolve(ModelType.QWEN_CODER.getNomFichier()));
+        String horsSujet = "Rôle :\nTu es un expert en jardinage.\nContexte :\nUn potager au printemps.\n"
+                + "Tâche :\nPlanifie les semis de tomates.\nContraintes :\n- Sol argileux";
+        AmeliorationCommand.executer(new ByteArrayInputStream(("{\"prompt\":\"mon script python qui lit un fichier "
+                + "csv plante avec MemoryError, j'utilise pandas read_csv\"}").getBytes(StandardCharsets.UTF_8)),
+                sortie, config(), repondant(horsSujet), true);
+
+        Assert.assertContains(tampon.toString(StandardCharsets.UTF_8), "reponse du modele hors sujet", "Repli NLP");
+    }
+
+    // Prompt initial de moins de 100 caracteres : avertissement transmis a l'extension
+    @Test
+    public void testAvertissementPromptCourt() throws Exception {
+        Files.createFile(repertoire.resolve(ModelType.QWEN_CODER.getNomFichier()));
+        executer("{\"prompt\":\"fais une fonction python de tri\"}", new BackendEspion(), true);
+
+        Assert.assertContains(tampon.toString(StandardCharsets.UTF_8),
+                "\"avertissement\":\"Attention votre prompt initial contient trop peu d'information.\"", "Avertissement");
+    }
+
+    @Test
+    public void testPasDAvertissementPourUnPromptDetaille() throws Exception {
+        Files.createFile(repertoire.resolve(ModelType.QWEN_CODER.getNomFichier()));
+        executer("{\"prompt\":\"fais une fonction python de tri qui trie une liste de dictionnaires par date "
+                + "puis par nom, sans bibliotheque externe\"}", new BackendEspion(), true);
+
+        Assert.assertContains(tampon.toString(StandardCharsets.UTF_8), "\"avertissement\":null", "Pas d'avertissement");
     }
 }

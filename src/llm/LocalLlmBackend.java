@@ -16,14 +16,47 @@ import java.util.concurrent.TimeUnit;
 // Moteur d'exécution local utilisant le runtime natif (llama-cli / GGUF) ou fallback autonome
 public class LocalLlmBackend implements LlmBackend {
 
-    // Consigne systeme : le modele local reecrit le prompt, il n'y repond jamais
-    public static final String CONSIGNE_AMELIORATION =
-            "Tu es un expert en prompt engineering. On te donne un prompt brut ecrit par un utilisateur. "
-            + "Tu ne dois JAMAIS y repondre ni executer la tache demandee. "
-            + "Tu le reecris en un prompt ameliore, precis et structure, avec ces sections : "
-            + "Role, Contexte, Tache, Contraintes, Format de sortie attendu. "
-            + "Garde l'intention exacte de l'utilisateur, n'invente pas de besoin. "
-            + "Reponds uniquement avec le prompt ameliore, dans la langue du prompt brut.";
+    // Consigne systeme de l'amelioration. Les petits modeles (1,5 a 2B) suivent bien mieux
+    // un exemple complet que des regles abstraites : la structure attendue y est montree.
+    // Les titres de section restent en francais : PromptStructure les reconnait et les
+    // traduit dans la langue du prompt au moment du rendu.
+    public static final String CONSIGNE_AMELIORATION = """
+            Tu es un expert en prompt engineering. Tu reçois le prompt brut d'un utilisateur et une analyse \
+            automatique de ce prompt. Ta mission : le réécrire pour qu'une IA le comprenne parfaitement. \
+            Tu ne réponds JAMAIS au prompt et tu ne réalises pas la tâche demandée.
+            Règles :
+            1. Garde l'intention exacte et toutes les informations du prompt brut. N'invente aucun fait \
+            (nom, chiffre, technologie, public) qui n'y figure pas.
+            2. Quand une information importante manque, écris-la entre crochets pour que l'utilisateur la \
+            complète, par exemple [préciser le public visé].
+            3. Réponds uniquement avec ces 5 sections, dans cet ordre, chaque titre seul sur sa ligne :
+            Rôle :
+            Contexte :
+            Tâche :
+            Contraintes :
+            Format de sortie attendu :
+            4. Le Rôle est UNE phrase qui commence par "Tu es" et décrit l'expert idéal pour la demande.
+            5. La Tâche reformule précisément ce que demande le prompt brut, avec un verbe d'action.
+            6. Les Contraintes sont une liste de tirets, sans doublon. Elles viennent du prompt brut ; \
+            une contrainte absente mais utile s'écrit entre crochets.
+            7. Le Format de sortie attendu décrit le résultat que l'IA doit rendre pour CETTE demande.
+
+            Exemple (sujet différent : n'en recopie pas le contenu, seulement la structure)
+            Prompt brut : aide moi a ecrire un mail pour demander une augmentation
+            Prompt amélioré :
+            Rôle :
+            Tu es un expert en communication professionnelle et en négociation salariale.
+            Contexte :
+            Je souhaite demander une augmentation à mon responsable. Mon poste : [préciser le poste]. \
+            Mon ancienneté : [préciser].
+            Tâche :
+            Rédige un e-mail qui demande une augmentation de salaire de façon claire et convaincante.
+            Contraintes :
+            - Ton professionnel et respectueux
+            - Mettre en avant mes réalisations : [préciser 2 ou 3 réalisations]
+            - 150 mots maximum
+            Format de sortie attendu :
+            Un e-mail avec un objet, une formule d'appel, le corps du message et une formule de politesse.""";
 
     // llama-completion (llama.cpp recent) fait une generation unique et non interactive :
     // il passe avant llama-cli, qui ouvre une session de chat.
