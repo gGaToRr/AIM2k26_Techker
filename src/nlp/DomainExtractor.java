@@ -25,7 +25,7 @@ public class DomainExtractor {
             // 1. Musique, Audio & Lutherie
             new DomainDefinition(
                     "Musique & Lutherie",
-                    List.of("guitare", "piano", "batterie", "violon", "violoncelle", "basse", "trompette", "saxophone", "flute", "solfege", "accord", "gamme", "synthe", "harmonie", "luthier", "lutherie", "partition", "tempo", "mixage", "mastering", "chant", "composition", "ampli", "archet", "instrument"),
+                    List.of("guitare", "piano", "batterie", "violon", "violoncelle", "basse", "trompette", "saxophone", "flute", "solfege", "gamme", "synthe", "harmonie", "luthier", "lutherie", "tempo", "mixage", "mastering", "chant", "ampli", "archet", "instrument"),
                     "Tu es un Maître Musicien, Compositeur et Pédagogue Musical de renommée internationale."
             ),
 
@@ -88,7 +88,7 @@ public class DomainExtractor {
             // 10. Médecine & Neurosciences
             new DomainDefinition(
                     "Médecine & Sciences Biomédicales",
-                    List.of("medecine", "anatomie", "neurone", "cerveau", "symptome", "vaccin", "immunite", "cellule", "adn", "virus", "bacterie", "physiologie", "pathologie", "traitement", "biologie", "cardiologie", "immunologie"),
+                    List.of("medecine", "anatomie", "neurone", "cerveau", "symptome", "vaccin", "immunite", "cellule", "adn", "virus", "bacterie", "physiologie", "pathologie", "biologie", "cardiologie", "immunologie"),
                     "Tu es un Médecin et Chercheur Spécialiste en Physiologie & Sciences Biomédicales."
             )
     );
@@ -115,7 +115,27 @@ public class DomainExtractor {
     );
 
     // Analyse le texte brut pour extraire le domaine, le sujet pivot et le persona
+    // Mots-cles dont le sens anglais est tout autre ("of course", "pain", "four", "train",
+    // "machine learning"...) : comptes seulement pour un prompt en francais. Sur 470 000 vrais
+    // prompts, ils attribuaient des domaines a tort a des milliers de prompts anglais.
+    static final Set<String> MOTS_FRANCAIS_SEULEMENT = Set.of(
+            "course", "action", "pain", "four", "sauce", "chef", "tarte", "train", "machine", "couple",
+            "transmission", "swing", "obligation", "instrument", "tempo", "mastering", "harmonie");
+
+    // Motif de chaque mot-cle, compile une fois : l'analyse passe sur chaque prompt
+    private static final Map<String, Pattern> MOTIFS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static Pattern motif(String motCle) {
+        return MOTIFS.computeIfAbsent(motCle,
+                kw -> Pattern.compile("(?i)(?<![a-zA-Z0-9])" + Pattern.quote(kw) + "(?![a-zA-Z0-9])"));
+    }
+
     public static DomainInfo analyser(String rawText) {
+        return analyser(rawText, Lemmatizer.detecterLangue(rawText, List.of()));
+    }
+
+    // langue : FR, EN, ES, DE (Lemmatizer.detecterLangue)
+    public static DomainInfo analyser(String rawText, String langue) {
         if (rawText == null || rawText.isBlank()) {
             return new DomainInfo("Général", "", "Tu es un Assistant IA Expert de haut niveau.", false);
         }
@@ -133,8 +153,8 @@ public class DomainExtractor {
         for (DomainDefinition def : DOMAIN_REGISTRY) {
             int score = 0;
             for (String kw : def.keywords()) {
-                String regex = "(?i)(?<![a-zA-Z0-9])" + Pattern.quote(kw) + "(?![a-zA-Z0-9])";
-                if (Pattern.compile(regex).matcher(lower).find()) {
+                if (!"FR".equals(langue) && MOTS_FRANCAIS_SEULEMENT.contains(kw)) continue;
+                if (motif(kw).matcher(lower).find()) {
                     score += 2;
                 }
             }

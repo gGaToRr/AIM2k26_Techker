@@ -55,6 +55,7 @@ public class CliParser {
         declarerValeur(table, "models-install", "-mt", "--models-install", CliArgs.Builder::modelsInstall);
         declarerDrapeau(table, "models-check", "-mc", "--models-check", (b, v) -> b.modelsCheck(true));
         declarerDrapeau(table, "runtime-install", "-ri", "--runtime-install", (b, v) -> b.runtimeInstall(true));
+        declarerDrapeau(table, "corpus-install", "-ci", "--corpus-install", (b, v) -> b.corpusInstall(true));
         declarerDrapeau(table, "yes", "-y", "--yes", (b, v) -> b.yes(true));
         declarerDrapeau(table, "improve-json", "--improve-json", "--improve-json", (b, v) -> b.improveJson(true));
 
@@ -201,6 +202,7 @@ public class CliParser {
                   -mt, --models-install <nom>    Télécharger et installer un modèle (ex: qwen-coder).
                   -mc, --models-check            Vérifier les modèles installés (intégrité + test de génération).
                   -ri, --runtime-install         Installer le moteur llama.cpp qui exécute les modèles.
+                  -ci, --corpus-install          Installer la base de prompts (recherche du prompt de référence).
                   -md, --models-delete <nom>     Supprimer un modèle installé, après confirmation.
                   -mp, --models-purge            Supprimer tous les modèles et réinitialiser l'autorisation.
                   -y,  --yes                     Répondre oui aux confirmations (usage par l'extension).
@@ -267,6 +269,10 @@ public class CliParser {
             sb.append("  • Famille domaine  : ").append(profile.domainInfo().domainName()).append(profile.domainInfo().isDomainIdentified() ? "" : " (Non spécifique)").append("\n");
             sb.append("  • Sujet pivot      : ").append(profile.domainInfo().extractedTopic()).append("\n");
             sb.append("  • Persona assigné  : ").append(profile.domainInfo().expertPersona()).append("\n");
+        }
+        if (profile.themes() != null) {
+            sb.append("  • Thèmes           : ").append(String.join(", ",
+                    profile.themes().stream().map(nlp.ThemeClassifier::libelle).toList())).append("\n");
         }
 
         // 5. Décomposition

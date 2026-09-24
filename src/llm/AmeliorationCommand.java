@@ -67,12 +67,17 @@ public final class AmeliorationCommand {
             return repliNlp(out, profil, options, "moteur llama.cpp introuvable", debut);
         }
 
+        // Prompt parfait : le vrai prompt de la base le plus proche, guide par le NLP (themes)
+        // et classe selon la richesse lexicale du prompt ; le modele l'ameliore a partir de lui
+        java.util.Optional<corpus.PromptParfait.Reference> reference = corpus.PromptParfait.trouver(prompt);
+
         // Le moteur ecrit routage et statistiques : sortie ecartee, seul le JSON final compte
         PrintStream silencieux = new PrintStream(new ByteArrayOutputStream(), true, StandardCharsets.UTF_8);
         LlmEngine moteur = new LlmEngine(backend, config, silencieux, new Scanner(InputStream.nullInputStream()));
 
         LlmBackend.GenerationResult resultat =
-                moteur.execute(LlmEngine.construireDemandeAmelioration(profil, options.language()), profil,
+                moteur.execute(LlmEngine.construireDemandeAmelioration(profil, options.language(),
+                                reference.map(corpus.PromptParfait.Reference::texte).orElse(null)), profil,
                         modeleDemande(options, config), false);
         if (resultat == null || resultat.fullText() == null || resultat.fullText().isBlank()) {
             return repliNlp(out, profil, options, "le modele n'a rien produit", debut);
@@ -93,13 +98,13 @@ public final class AmeliorationCommand {
             ameliore = MetaPromptEngine.adapterPourAgent(ameliore, options.agent());
         }
         return reussite(out, profil, mettreEnForme(profil, ameliore, options), "modele",
-                resultat.modelUsed().getNomAffiche(), null, debut);
+                resultat.modelUsed().getNomAffiche(), null, reference.orElse(null), debut);
     }
 
     // Le meta-prompt NLP applique deja langue (-l) et adaptation a l'IA cible (-a)
     private static int repliNlp(PrintStream out, PromptProfile profil, CliArgs options, String raison, long debut) {
         String metaPrompt = MetaPromptEngine.genererPromptOptimise(profil, options).trim();
-        return reussite(out, profil, mettreEnForme(profil, metaPrompt, options), "nlp", null, raison, debut);
+        return reussite(out, profil, mettreEnForme(profil, metaPrompt, options), "nlp", null, raison, null, debut);
     }
 
     // Langue imposee (-l) ou detectee (FR, EN) : les titres des sections la suivent
@@ -151,20 +156,33 @@ public final class AmeliorationCommand {
     }
 
     // source : "modele" (reecrit par le LLM local) ou "nlp" (meta-prompt, repli moins fiable)
+    // reference : prompt parfait de la base dont le modele s'est inspire (null sans base ou sans
+    // prompt assez proche)
     private static int reussite(PrintStream out, PromptProfile profil, String ameliore, String source,
-                                String modele, String raison, long debut) {
+                                String modele, String raison, corpus.PromptParfait.Reference reference, long debut) {
         out.println("{\"ok\":true"
                 + ",\"ameliore\":" + Json.chaine(ameliore)
                 + ",\"source\":" + Json.chaine(source)
                 + ",\"modele\":" + Json.chaine(modele)
                 + ",\"raison\":" + Json.chaine(raison)
                 + ",\"avertissement\":" + Json.chaine(AvertissementPrompt.verifier(profil.rawText()).orElse(null))
+                + ",\"themes\":" + Json.chaine(String.join(",", profil.themes()))
+                + ",\"reference\":" + referenceEnJson(reference)
                 + ",\"type\":" + Json.chaine(String.valueOf(profil.classification().primaryType()))
                 + ",\"score\":" + profil.qualityDiagnostic().scoreGlobal()
                 + ",\"secondes\":" + String.format(java.util.Locale.ROOT, "%.1f",
                         (System.currentTimeMillis() - debut) / 1000.0)
                 + "}");
         return ModelsCommand.SUCCES;
+    }
+
+    private static String referenceEnJson(corpus.PromptParfait.Reference reference) {
+        if (reference == null) return "null";
+        return "{\"id\":" + Json.chaine(reference.entree().prompt().id())
+                + ",\"texte\":" + Json.chaine(reference.texte())
+                + ",\"themes\":" + Json.chaine(String.join(",", reference.themes()))
+                + ",\"richesse\":" + reference.richesse()
+                + ",\"couverture\":" + String.format(java.util.Locale.ROOT, "%.2f", reference.couverture()) + "}";
     }
 
     private static int echec(PrintStream out, String message) {

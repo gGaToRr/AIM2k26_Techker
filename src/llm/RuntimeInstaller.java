@@ -155,7 +155,7 @@ public final class RuntimeInstaller {
     }
 
     // Archives Windows : fichiers a plat. Chaque entree doit rester dans la destination.
-    static void extraireZip(Path archive, Path destination) throws IOException {
+    public static void extraireZip(Path archive, Path destination) throws IOException {
         Path racine = destination.toAbsolutePath().normalize();
         try (InputStream flux = Files.newInputStream(archive); ZipInputStream zip = new ZipInputStream(flux)) {
             ZipEntry entree;

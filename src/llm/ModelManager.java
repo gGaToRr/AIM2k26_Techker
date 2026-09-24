@@ -125,8 +125,15 @@ public final class ModelManager {
     // Inventaire pour la page de telechargement de l'extension
     // moteurPresent : le moteur llama.cpp qui execute les modeles est-il installe ?
     public static String inventaireEnJson(String modelsDir, boolean moteurPresent) {
+        return inventaireEnJson(modelsDir, moteurPresent, false);
+    }
+
+    // basePresente : la base de prompts (corpus/themes) est-elle installee ?
+    public static String inventaireEnJson(String modelsDir, boolean moteurPresent, boolean basePresente) {
         StringBuilder sb = new StringBuilder("{\"moteur\":{\"installe\":").append(moteurPresent)
                 .append(",\"version\":").append(util.Json.chaine(RuntimeInstaller.VERSION))
+                .append("},\"base\":{\"installe\":").append(basePresente)
+                .append(",\"version\":").append(util.Json.chaine(corpus.InstallationBase.VERSION))
                 .append("},\"modeles\":[");
         List<ModelStatus> etats = inventaire(modelsDir);
         for (int i = 0; i < etats.size(); i++) {

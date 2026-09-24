@@ -26,6 +26,8 @@ public class AllTestSuite {
         runner.registerTestClass(SafetyAdvisorTest.class);
         runner.registerTestClass(PromptClassifierTest.class);
         runner.registerTestClass(test.nlp.AvertissementPromptTest.class);
+        runner.registerTestClass(test.nlp.NlpCorpusReelTest.class);
+        runner.registerTestClass(test.nlp.ThemeClassifierTest.class);
 
         // 2. Tests GenPrompt
         runner.registerTestClass(TemplateLoaderTest.class);
@@ -43,6 +45,10 @@ public class AllTestSuite {
         runner.registerTestClass(test.cli.FormatSortieTest.class);
         runner.registerTestClass(test.util.LogTest.class);
         runner.registerTestClass(test.util.JsonTest.class);
+        runner.registerTestClass(test.corpus.RechercheProgressiveTest.class);
+        runner.registerTestClass(test.corpus.RechercheThematiqueTest.class);
+        runner.registerTestClass(test.corpus.PromptParfaitTest.class);
+        runner.registerTestClass(test.corpus.InstallationBaseTest.class);
         runner.registerTestClass(test.llm.AmeliorationCommandTest.class);
         runner.registerTestClass(test.framework.TestRunnerTest.class);
         runner.registerTestClass(test.llm.LocalLlmBackendTest.class);

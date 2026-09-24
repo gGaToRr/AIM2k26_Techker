@@ -31,6 +31,15 @@ public class LlmEngine {
 
     // langueCible : langue imposee au prompt ameliore (null = celle du prompt brut)
     public static String construireDemandeAmelioration(PromptProfile profil, String langueCible) {
+        return construireDemandeAmelioration(profil, langueCible, null);
+    }
+
+    // Longueur maximale de la reference transmise : un petit modele lit mal un long contexte
+    static final int REFERENCE_MAX = 1200;
+
+    // reference : vrai prompt de la base, proche du sujet et bien note (corpus.PromptParfait),
+    // ou null. Le modele s'inspire des precisions qu'il apporte pour enrichir le prompt brut.
+    public static String construireDemandeAmelioration(PromptProfile profil, String langueCible, String reference) {
         StringBuilder sb = new StringBuilder();
         sb.append("Prompt brut à améliorer :\n\"\"\"\n").append(profil.rawText().trim()).append("\n\"\"\"\n\n");
 
@@ -40,6 +49,12 @@ public class LlmEngine {
         nlp.TypeOfPrompt type = profil.classification().primaryType();
         sb.append("- Type de demande : ").append(libelleType(type)).append('\n');
         sb.append("- Un bon prompt de ce type précise : ").append(attendusType(type)).append('\n');
+        java.util.List<String> themes = profil.themes() == null ? java.util.List.of()
+                : profil.themes().stream().filter(t -> !nlp.ThemeClassifier.DIVERS.equals(t)).toList();
+        if (!themes.isEmpty()) {
+            sb.append("- Thème : ").append(String.join(", ", themes.stream().map(nlp.ThemeClassifier::libelle).toList()))
+                    .append('\n');
+        }
         if (!profil.detectedTechnologies().isEmpty()) {
             sb.append("- Technologies mentionnées : ").append(String.join(", ", profil.detectedTechnologies())).append('\n');
         }
@@ -51,6 +66,16 @@ public class LlmEngine {
         if (!manques.isEmpty()) {
             sb.append("- Ce qui manque au prompt brut (à signaler entre crochets) : ")
                     .append(String.join(" ", manques)).append('\n');
+        }
+
+        if (reference != null && !reference.isBlank()) {
+            String extrait = reference.strip();
+            if (extrait.length() > REFERENCE_MAX) extrait = extrait.substring(0, REFERENCE_MAX) + "…";
+            sb.append("\nPrompt de référence (un vrai prompt, proche du même sujet et bien rédigé) :\n\"\"\"\n")
+                    .append(extrait).append("\n\"\"\"\n")
+                    .append("Inspire-toi des précisions que ce prompt de référence apporte (contexte, contraintes, "
+                            + "format attendu) pour enrichir le prompt brut. N'en recopie pas les faits propres (noms, "
+                            + "chiffres, sujet exact) : le sujet reste celui du prompt brut.\n");
         }
 
         String langue = langueCible != null && !langueCible.isBlank() ? langueCible : profil.language();

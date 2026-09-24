@@ -63,6 +63,7 @@
                         <include>src/menu/**/*.java</include>
                         <include>src/nlp/**/*.java</include>
                         <include>src/util/**/*.java</include>
+                        <include>src/corpus/**/*.java</include>
                     </includes>
                     <testIncludes>
                         <testInclude>test/**/*.java</testInclude>
@@ -100,6 +101,18 @@
                             <!-- TestRunner rend un code de sortie non nul en cas d'echec :
                                  le build doit echouer avec lui. -->
                             <stopUnresponsiveDaemonThreads>true</stopUnresponsiveDaemonThreads>
+                            <!-- Memes conditions que src/scripts/run_tests.sh : ni moteur llama.cpp
+                                 ni base de prompts de la machine, resultats reproductibles -->
+                            <systemProperties>
+                                <systemProperty>
+                                    <key>aim.llama.desactive</key>
+                                    <value>true</value>
+                                </systemProperty>
+                                <systemProperty>
+                                    <key>aim.corpus.desactive</key>
+                                    <value>true</value>
+                                </systemProperty>
+                            </systemProperties>
                         </configuration>
                     </execution>
                 </executions>

@@ -33,6 +33,13 @@ function ligneMoteur(moteur) {
     };
 }
 
+// Base de prompts : le prompt de reference de chaque amelioration y est cherche
+const ID_BASE = "base";
+
+function ligneBase(base) {
+    return { id: ID_BASE, nom: "Base de prompts", installe: base.installe, version: base.version, estBase: true };
+}
+
 function afficherMessage(lignesTexte) {
     liste.replaceChildren();
     const element = document.createElement("li");
@@ -63,6 +70,11 @@ function mettreAJourLigne(modele, telechargement) {
     } else if (erreurs.has(modele.id)) {
         details.classList.add("erreur");
         details.textContent = `Échec : ${erreurs.get(modele.id)}`;
+    } else if (modele.estBase) {
+        details.classList.add(modele.installe ? "installe" : "erreur");
+        details.textContent = modele.installe
+            ? `Installée · ${modele.version}`
+            : "470 000 prompts de référence · ~120 Mo";
     } else if (modele.estMoteur) {
         details.classList.add(modele.installe ? "installe" : "erreur");
         details.textContent = modele.installe
@@ -93,7 +105,7 @@ function construireLigne(modele) {
     ligne.boutonSupprimer.addEventListener("click", () => supprimer(modele.id));
     // Le moteur ne se supprime pas d'ici : sans lui, les modeles installes ne servent plus
     // (masque sans liberer sa place : les lignes restent alignees)
-    if (modele.estMoteur) ligne.boutonSupprimer.style.visibility = "hidden";
+    if (modele.estMoteur || modele.estBase) ligne.boutonSupprimer.style.visibility = "hidden";
     lignes.set(modele.id, ligne);
     return element;
 }
@@ -109,8 +121,8 @@ async function chargerListe() {
             return;
         }
         lignes.clear();
-        const { moteur, modeles } = resultat.donnees;
-        liste.replaceChildren(...[ligneMoteur(moteur), ...modeles].map(construireLigne));
+        const { moteur, base, modeles } = resultat.donnees;
+        liste.replaceChildren(...[ligneMoteur(moteur), ligneBase(base), ...modeles].map(construireLigne));
         for (const { modele } of lignes.values()) {
             mettreAJourLigne(modele, telechargements[modele.id]);
         }

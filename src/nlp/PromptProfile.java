@@ -20,7 +20,9 @@ public record PromptProfile(
         QuestionDecomposer.DecompositionResult decomposition,
         TokenCounter.TokenMetrics tokenMetrics,
         PromptQualityScorer.Diagnostic qualityDiagnostic,
-        PromptClassifier.ClassificationResult classification
+        PromptClassifier.ClassificationResult classification,
+        // Themes proches (ThemeClassifier) : "cuisine", "programmation"... ou "divers"
+        List<String> themes
 ) {
     public boolean hasCode() {
         return codeDensity >= 0.15;

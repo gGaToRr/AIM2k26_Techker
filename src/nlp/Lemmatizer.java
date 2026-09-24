@@ -269,7 +269,7 @@ public class Lemmatizer {
     // Méthode principale qui exécute toute la chaîne d'analyse
     public static PromptProfile analyser(String rawPrompt) {
         if (rawPrompt == null || rawPrompt.isBlank()) {
-            return new PromptProfile("", "", List.of(), Map.of(), Map.of(), 0.0, false, false, "UNKNOWN", List.of(), Optional.empty(), new DomainExtractor.DomainInfo("Général", "", "", false), new QuestionDecomposer.DecompositionResult(false, List.of(), ""), TokenCounter.analyser(""), new PromptQualityScorer.Diagnostic(0,0,0,0,List.of(),List.of()), new PromptClassifier.ClassificationResult(TypeOfPrompt.CONCEPT_VULGARISATION, 0, PromptClassifier.ConfidenceLevel.LOW, Map.of(), "Vide"));
+            return new PromptProfile("", "", List.of(), Map.of(), Map.of(), 0.0, false, false, "UNKNOWN", List.of(), Optional.empty(), new DomainExtractor.DomainInfo("Général", "", "", false), new QuestionDecomposer.DecompositionResult(false, List.of(), ""), TokenCounter.analyser(""), new PromptQualityScorer.Diagnostic(0,0,0,0,List.of(),List.of()), new PromptClassifier.ClassificationResult(TypeOfPrompt.CONCEPT_VULGARISATION, 0, PromptClassifier.ConfidenceLevel.LOW, Map.of(), "Vide"), List.of(ThemeClassifier.DIVERS));
         }
 
         // Nettoyage et découpage
@@ -285,12 +285,12 @@ public class Lemmatizer {
         // Détection technique, domaine sémantique, décomposition et métriques
         List<String> techStack = TechStackDetector.detecterTechnologies(rawPrompt);
         Optional<String> langueCible = TechStackDetector.detecterLangueCibleTraduction(rawPrompt);
-        DomainExtractor.DomainInfo domainInfo = DomainExtractor.analyser(rawPrompt);
+        DomainExtractor.DomainInfo domainInfo = DomainExtractor.analyser(rawPrompt, language);
         QuestionDecomposer.DecompositionResult decomposition = QuestionDecomposer.decomposer(rawPrompt);
         TokenCounter.TokenMetrics tokenMetrics = TokenCounter.analyser(rawPrompt);
         PromptQualityScorer.Diagnostic qualityDiag = PromptQualityScorer.evaluer(rawPrompt, codeDensity >= 0.15 || !techStack.isEmpty(), isCommand, isQuestion);
         PromptClassifier.ClassificationResult classification = PromptClassifier.classifier(
-                new PromptProfile(rawPrompt, sanitized, tokens, frequences, weightedScores, codeDensity, isQuestion, isCommand, language, techStack, langueCible, domainInfo, decomposition, tokenMetrics, qualityDiag, null),
+                new PromptProfile(rawPrompt, sanitized, tokens, frequences, weightedScores, codeDensity, isQuestion, isCommand, language, techStack, langueCible, domainInfo, decomposition, tokenMetrics, qualityDiag, null, List.of()),
                 techStack,
                 langueCible
         );
@@ -311,7 +311,8 @@ public class Lemmatizer {
                 decomposition,
                 tokenMetrics,
                 qualityDiag,
-                classification
+                classification,
+                ThemeClassifier.themesProches(rawPrompt, language)
         );
     }
 
@@ -361,18 +362,53 @@ public class Lemmatizer {
         return scores;
     }
 
-    // Détecte si la langue principale est FR ou EN
-    public static String detecterLangue(String rawText, List<String> tokens) {
-        if (rawText.matches(".*[éèêëàâîïôûùç].*")) return "FR";
-        int scoreFR = 0, scoreEN = 0;
-        Set<String> markersFR = Set.of("le", "la", "les", "un", "une", "des", "dans", "avec", "pour", "est", "qui", "que", "je", "tu");
-        Set<String> markersEN = Set.of("the", "and", "with", "for", "from", "this", "that", "how", "what", "why", "code", "file");
+    // Mots outils propres a chaque langue : les mots partages (la, de, que, en, on, du...) ne
+    // departagent rien et sont exclus. Comptes sur le texte brut : les mots vides retires de
+    // la liste de tokens sont justement ceux qui revelent la langue.
+    private static final Map<String, Set<String>> MARQUEURS_LANGUE = Map.of(
+            "FR", Set.of("le", "les", "une", "des", "et", "est", "dans", "pour", "avec", "qui", "je", "il", "nous",
+                    "vous", "sur", "pas", "ce", "cette", "mon", "ma", "mes", "comment", "quoi", "quel", "quelle",
+                    "sont", "fais", "peux", "moi", "au", "aux", "ou", "mais", "tout", "tres", "fait"),
+            "EN", Set.of("the", "and", "is", "are", "of", "to", "in", "for", "with", "that", "this", "what", "how",
+                    "why", "can", "you", "my", "your", "it", "be", "do", "does", "please", "write", "an", "i",
+                    "about", "which", "give", "make", "from", "have", "who", "should", "would", "using"),
+            "ES", Set.of("el", "los", "las", "una", "del", "y", "para", "con", "por", "como", "mi", "yo", "estoy",
+                    "puedes", "hola", "muy", "cual", "donde", "pero", "sobre", "hacer", "quiero", "esto", "este"),
+            "DE", Set.of("der", "die", "das", "und", "ist", "ein", "eine", "zu", "mit", "fur", "den", "dem", "nicht",
+                    "ich", "wie", "bitte", "auf", "sie", "wir", "ihr", "mir", "mich", "kannst", "einen", "auch",
+                    "oder", "werden", "welche", "schreibe"));
 
-        for (String token : tokens) {
-            if (markersFR.contains(token)) scoreFR++;
-            if (markersEN.contains(token)) scoreEN++;
+    private static final Pattern MOTS_LANGUE = Pattern.compile("[\\p{L}]+");
+
+    // Detecte la langue principale : FR, EN, ES ou DE. Sans aucun indice (code seul, mots-cles
+    // techniques), FR : c'est la langue par defaut de l'outil.
+    public static String detecterLangue(String rawText, List<String> tokens) {
+        if (rawText == null || rawText.isBlank()) return "FR";
+        Map<String, Double> scores = new java.util.HashMap<>(Map.of("FR", 0.0, "EN", 0.0, "ES", 0.0, "DE", 0.0));
+        java.util.regex.Matcher mot = MOTS_LANGUE.matcher(Sanitzer.supprimerAccents(rawText.toLowerCase()));
+        while (mot.find()) {
+            String m = mot.group();
+            MARQUEURS_LANGUE.forEach((langue, marqueurs) -> {
+                if (marqueurs.contains(m)) scores.merge(langue, 1.0, Double::sum);
+            });
         }
-        return scoreEN > scoreFR ? "EN" : "FR";
+        // Lettres propres a une langue
+        if (rawText.matches("(?s).*[ñ¿¡].*")) scores.merge("ES", 3.0, Double::sum);
+        if (rawText.matches("(?s).*[äöüß].*")) scores.merge("DE", 3.0, Double::sum);
+        if (rawText.matches("(?s).*[çœèêëàùîôû].*")) scores.merge("FR", 2.0, Double::sum);
+        if (rawText.matches("(?s).*[áíóú].*")) scores.merge("ES", 1.0, Double::sum);
+
+        String meilleure = "FR";
+        double maximum = 0;
+        for (String langue : List.of("FR", "EN", "ES", "DE")) {
+            if (scores.get(langue) > maximum) {
+                maximum = scores.get(langue);
+                meilleure = langue;
+            }
+        }
+        // "é" seul, sans mot outil : francais plutot que rien
+        if (maximum == 0 && rawText.matches("(?s).*[é].*")) return "FR";
+        return meilleure;
     }
 
     // Supprime les accents

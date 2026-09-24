@@ -30,14 +30,33 @@ public final class ModelsCommand {
         }
     };
 
+    // Base de prompts (corpus/themes) : installee avec le premier modele, comme le moteur
+    private static final Moteur BASE_PROMPTS = new Moteur() {
+        @Override public boolean present() { return corpus.InstallationBase.installee(); }
+        @Override public boolean installer(PrintStream out, ModelInstaller.DownloadProgressListener listener) {
+            return corpus.InstallationBase.installer(out, listener);
+        }
+    };
+
+    // Pour les tests qui ne portent pas sur la base : consideree comme presente
+    private static final Moteur BASE_IGNOREE = new Moteur() {
+        @Override public boolean present() { return true; }
+        @Override public boolean installer(PrintStream out, ModelInstaller.DownloadProgressListener listener) { return true; }
+    };
+
     private ModelsCommand() {}
 
     // Renvoie le code de sortie du processus
     public static int executer(CliArgs options, LlmConfig config, PrintStream out, Scanner scanner) {
-        return executer(options, config, out, scanner, MOTEUR_LLAMA);
+        return executer(options, config, out, scanner, MOTEUR_LLAMA, BASE_PROMPTS);
     }
 
     public static int executer(CliArgs options, LlmConfig config, PrintStream out, Scanner scanner, Moteur moteur) {
+        return executer(options, config, out, scanner, moteur, BASE_IGNOREE);
+    }
+
+    public static int executer(CliArgs options, LlmConfig config, PrintStream out, Scanner scanner, Moteur moteur,
+                               Moteur base) {
         String repertoire = config != null ? config.getRepertoireModeles() : "models";
         // -o json : sortie structuree pour l'extension, qui fait sa propre mise en forme
         boolean json = options.hasOutput() && options.output().equalsIgnoreCase("json");
@@ -49,8 +68,15 @@ public final class ModelsCommand {
             return reussi ? SUCCES : ECHEC;
         }
 
+        if (options.isCorpusInstall()) {
+            boolean reussi = json
+                    ? telechargerEnJson(out, (sortie, listener) -> base.installer(sortie, listener))
+                    : base.installer(out, null);
+            return reussi ? SUCCES : ECHEC;
+        }
+
         if (options.isModelsList() && json) {
-            out.println(ModelManager.inventaireEnJson(repertoire, moteur.present()));
+            out.println(ModelManager.inventaireEnJson(repertoire, moteur.present(), base.present()));
             return SUCCES;
         }
 
@@ -91,9 +117,11 @@ public final class ModelsCommand {
             boolean reussi = json
                     ? telechargerEnJson(out, (sortie, listener) ->
                             ModelInstaller.telechargerModele(choisi, repertoire, sortie, listener)
-                                    && installerMoteurSiAbsent(moteur, sortie, listener))
+                                    && installerMoteurSiAbsent(moteur, sortie, listener)
+                                    && installerMoteurSiAbsent(base, sortie, listener))
                     : ModelInstaller.telechargerModele(choisi, repertoire, out, null)
-                            && installerMoteurSiAbsent(moteur, out, null);
+                            && installerMoteurSiAbsent(moteur, out, null)
+                            && installerMoteurSiAbsent(base, out, null);
             if (!reussi) {
                 return ECHEC;
             }

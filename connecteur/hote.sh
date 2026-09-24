@@ -138,9 +138,11 @@ case "$action" in
             ecrire_message "{\"type\":\"fin\",\"ok\":false,\"message\":\"$(echapper_json "$erreur")\"}"
             exit 0
         fi
-        # "moteur" : le moteur llama.cpp qui execute les modeles, telecharge comme eux
+        # "moteur" : le moteur llama.cpp ; "base" : la base de prompts ; telecharges comme les modeles
         if [ "$modele" = "moteur" ]; then
             set -- --runtime-install
+        elif [ "$modele" = "base" ]; then
+            set -- --corpus-install
         else
             set -- --models-install "$modele"
         fi

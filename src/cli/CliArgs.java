@@ -26,7 +26,8 @@ public record CliArgs(
         boolean isModelsCheck,
         boolean isYes,
         boolean isImproveJson,
-        boolean isRuntimeInstall
+        boolean isRuntimeInstall,
+        boolean isCorpusInstall
 ) {
     public boolean hasInstruction() {
         return instruction != null && !instruction.isBlank();
@@ -76,7 +77,7 @@ public record CliArgs(
     // court-circuitent le pipeline de generation.
     public boolean isCommandeModeles() {
         return isModelsList || isModelsPurge || hasModelsDelete() || hasModelsInfo() || hasModelsInstall() || isModelsCheck
-                || isRuntimeInstall;
+                || isRuntimeInstall || isCorpusInstall;
     }
 
     public boolean hasModel() {
@@ -129,6 +130,7 @@ public record CliArgs(
         private boolean isYes = false;
         private boolean isImproveJson = false;
         private boolean isRuntimeInstall = false;
+        private boolean isCorpusInstall = false;
 
         public Builder help(boolean isHelp) { this.isHelp = isHelp; return this; }
         public Builder version(boolean isVersion) { this.isVersion = isVersion; return this; }
@@ -155,13 +157,14 @@ public record CliArgs(
         public Builder yes(boolean isYes) { this.isYes = isYes; return this; }
         public Builder improveJson(boolean isImproveJson) { this.isImproveJson = isImproveJson; return this; }
         public Builder runtimeInstall(boolean isRuntimeInstall) { this.isRuntimeInstall = isRuntimeInstall; return this; }
+        public Builder corpusInstall(boolean isCorpusInstall) { this.isCorpusInstall = isCorpusInstall; return this; }
 
         public CliArgs build() {
             return new CliArgs(
                     isHelp, isVersion, isVerbose, isRaw, isDryRun, isClipboard, isExec,
                     instruction, code, agent, output, template, domain, language, filePath, model,
                     isModelsList, isModelsPurge, modelsDelete, modelsInfo, modelsInstall, isModelsCheck, isYes, isImproveJson,
-                    isRuntimeInstall
+                    isRuntimeInstall, isCorpusInstall
             );
         }
     }

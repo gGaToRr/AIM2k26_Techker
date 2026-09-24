@@ -299,4 +299,17 @@ public class AmeliorationCommandTest {
 
         Assert.assertContains(tampon.toString(StandardCharsets.UTF_8), "\"avertissement\":null", "Pas d'avertissement");
     }
+
+    // Le prompt de reference trouve dans la base est transmis au modele, qui s'en inspire
+    @Test
+    public void testReferenceTransmiseAuModele() {
+        nlp.PromptProfile profil = nlp.Lemmatizer.analyser("recette de lasagnes");
+        String demande = llm.LlmEngine.construireDemandeAmelioration(profil, null,
+                "Donne-moi une recette de lasagnes végétariennes pour 6 personnes");
+        Assert.assertContains(demande, "Prompt de référence", "Section de reference");
+        Assert.assertContains(demande, "lasagnes végétariennes pour 6 personnes", "Texte de la reference");
+        Assert.assertContains(demande, "N'en recopie pas les faits propres", "Consigne d'inspiration");
+        Assert.assertNotContains(llm.LlmEngine.construireDemandeAmelioration(profil, null, null), "Prompt de référence",
+                "Sans base : pas de section");
+    }
 }

@@ -22,6 +22,29 @@ public class TechStackDetector {
             Map.entry("DevOps / Cloud", List.of("docker", "kubernetes", "k8s", "aws", "gcp", "azure", "terraform"))
     );
 
+    // Mots-cles qui sont aussi des mots courants ou d'autres usages : "unreal engine" comme
+    // style d'image (prompts Midjourney), "react" et "express" verbes anglais, "spring"
+    // printemps, "rust" rouille, "vue" en francais... Comptes seulement dans un contexte de
+    // developpement. Sur 470 000 vrais prompts, "unreal" seul classait 10 % d'entre eux en Game Dev.
+    static final Set<String> MOTS_AMBIGUS = Set.of(
+            "unity", "unreal", "unreal engine", "react", "express", "vue", "angular", "node", "ts", "spring",
+            "rust", "cargo", "gin", "azure", "responsive", "ui", "ux");
+
+    static final Pattern CONTEXTE_DEV = Pattern.compile("(?<![a-z0-9])(code|coder|coding|script|scripts|programm\\w*"
+            + "|develop\\w*|developp\\w*|function|fonction|api|bug|debug\\w*|error|erreur|framework|compil\\w*|library"
+            + "|librairie|biblioth\\w*|app|application|component|composant|server|serveur|backend|frontend|database"
+            + "|git|npm|deploy\\w*|logiciel|software|blueprint|class|classe|import|gamedev|game dev\\w*|jeu video"
+            + "|css|html|javascript|typescript|python|java|c\\+\\+|c#|sql|site web|website|web app|webapp)(?![a-z0-9])"
+            + "|[{}]|=>|\\(\\);");
+
+    // Motif de chaque mot-cle, compile une fois : l'analyse passe sur chaque prompt
+    private static final Map<String, Pattern> MOTIFS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static Pattern motif(String motCle) {
+        return MOTIFS.computeIfAbsent(motCle,
+                kw -> Pattern.compile("(?i)(?<![a-zA-Z0-9])" + Pattern.quote(kw) + "(?![a-zA-Z0-9])"));
+    }
+
     // Langues pour la traduction
     private static final Map<String, String> LANGUES_TRADUCTION = Map.ofEntries(
             Map.entry("anglais", "Anglais (EN)"),
@@ -55,12 +78,12 @@ public class TechStackDetector {
         String lower = " " + text.toLowerCase().replace("'", " ").replace("’", " ") + " ";
         Set<String> technologiesTrouvees = new LinkedHashSet<>();
 
+        boolean contexteDev = CONTEXTE_DEV.matcher(Sanitzer.supprimerAccents(lower)).find();
         for (Map.Entry<String, List<String>> entry : LANGAGES_DEV.entrySet()) {
             String techNom = entry.getKey();
             for (String keyword : entry.getValue()) {
-                String regex = "(?i)(?<![a-zA-Z0-9])" + Pattern.quote(keyword) + "(?![a-zA-Z0-9])";
-                Pattern p = Pattern.compile(regex);
-                if (p.matcher(lower).find()) {
+                if (MOTS_AMBIGUS.contains(keyword) && !contexteDev) continue;
+                if (motif(keyword).matcher(lower).find()) {
                     technologiesTrouvees.add(techNom);
                     break;
                 }

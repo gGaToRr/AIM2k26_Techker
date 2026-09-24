@@ -18,6 +18,7 @@ javac -sourcepath ".:src" -cp ".:src/lib/jmustache-1.16.jar" -d bin \
     src/util/*.java \
     src/gen/*.java \
     src/llm/*.java \
+    src/corpus/*.java \
     src/test/*.java \
     src/test/framework/*.java \
     src/test/nlp/*.java \
@@ -26,9 +27,10 @@ javac -sourcepath ".:src" -cp ".:src/lib/jmustache-1.16.jar" -d bin \
     src/test/cli/*.java \
     src/test/llm/*.java \
     src/test/util/*.java \
+    src/test/corpus/*.java \
     src/test/integration/*.java
 
 echo ""
 echo "🚀 Lancement de la suite globale AllTestSuite..."
-java -Daim.llama.desactive=true -cp "bin:src/lib/jmustache-1.16.jar" test.AllTestSuite
+java -Daim.llama.desactive=true -Daim.corpus.desactive=true -cp "bin:src/lib/jmustache-1.16.jar" test.AllTestSuite
 

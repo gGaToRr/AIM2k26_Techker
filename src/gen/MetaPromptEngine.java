@@ -160,7 +160,8 @@ public class MetaPromptEngine {
             ctx.put("hasTargetLanguage", true);
             ctx.put("targetLanguage", langLabel);
         } else {
-            ctx.put("language", profile.language().equals("FR") ? "Français" : "English");
+            // FR, EN, ES, DE : libelle lisible dans la langue concernee
+            ctx.put("language", libelleLangue(profile.language()));
             profile.targetTranslationLanguage().ifPresentOrElse(
                     target -> {
                         ctx.put("hasTargetLanguage", true);

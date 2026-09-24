@@ -175,6 +175,8 @@ public class Main {
                 if (cliArgs.hasAgent()) {
                     System.out.println("Agent Cible     : " + cliArgs.agent());
                 }
+                System.out.println("Thèmes          : " + String.join(", ",
+                        profil.themes().stream().map(nlp.ThemeClassifier::libelle).toList()));
                 System.out.println("Tokens estimés  : " + profil.tokenMetrics().estimatedTokens());
                 System.out.println("Score qualité   : " + profil.qualityDiagnostic().scoreGlobal() + "/100");
             }
@@ -193,7 +195,11 @@ public class Main {
             // Meme format que dans l'extension, quel que soit le modele (PromptStructure)
             String langue = cliArgs.hasLanguage() ? cliArgs.language() : profil.language();
             String promptBrut = userPrompt;
-            engine.execute(LlmEngine.construireDemandeAmelioration(profil, cliArgs.language()), profil,
+            // Prompt parfait : aiguillage par les themes (NLP), classement selon la richesse lexicale
+            java.util.Optional<corpus.PromptParfait.Reference> reference = corpus.PromptParfait.trouver(userPrompt);
+            afficherReference(reference);
+            engine.execute(LlmEngine.construireDemandeAmelioration(profil, cliArgs.language(),
+                            reference.map(corpus.PromptParfait.Reference::texte).orElse(null)), profil,
                     cliArgs.model(), isInteractive, reponse -> PromptStructure.structurer(reponse, langue, promptBrut)
                             .filter(structure -> PromptStructure.resteSurLeSujet(structure, profil.tokens()))
                             .orElse("[!] Reponse du modele inexploitable (non structuree ou hors sujet) : "
@@ -204,5 +210,28 @@ public class Main {
         if (menu != null) {
             menu.fermer();
         }
+    }
+
+    // Trace de la recherche du prompt parfait : themes, richesse lexicale, filtrage, reference
+    private static void afficherReference(java.util.Optional<corpus.PromptParfait.Reference> reference) {
+        System.out.println("\n--- [PROMPT DE RÉFÉRENCE (BASE DE PROMPTS)] ---");
+        if (!corpus.PromptParfait.disponible()) {
+            System.out.println("Base de prompts non installée : amélioration sans référence.");
+            System.out.println("Installez-la avec : --corpus-install");
+            return;
+        }
+        if (reference.isEmpty()) {
+            System.out.println("Aucun prompt assez proche dans la base : amélioration sans référence.");
+            return;
+        }
+        corpus.PromptParfait.Reference r = reference.get();
+        System.out.println("Thèmes          : " + String.join(", ", r.themes().stream().map(nlp.ThemeClassifier::libelle).toList()));
+        System.out.printf("Richesse        : %d mots précis (poids des mots dans le classement : %.0f %%)%n", r.richesse(),
+                100 * corpus.RechercheThematique.poidsDesMots(r.richesse()));
+        System.out.println("Filtrage        : " + String.join(" → ", r.etapes().stream()
+                .map(e -> e.racine() + (e.retenue() ? " (" + e.apres() + ")" : " (sauté)")).toList()));
+        System.out.printf("Couverture      : %.0f %% des mots de votre prompt (%d ms)%n", 100 * r.couverture(), r.millisecondes());
+        String texte = r.texte().replaceAll("\\s+", " ");
+        System.out.println("Référence       : " + (texte.length() <= 400 ? texte : texte.substring(0, 400) + "…"));
     }
 }

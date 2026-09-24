@@ -34,4 +34,13 @@ public class JsonTest {
         String texte = "Role : \"expert\"\n\tTache : a\\b";
         Assert.assertEquals(texte, Json.extraireChaine("{\"t\":" + Json.chaine(texte) + "}", "t"), "Aller-retour");
     }
+
+    // Un prompt peut contenir des caracteres de controle : le JSON produit doit rester valide
+    @Test
+    public void testCaracteresDeControleEchappes() {
+        String texte = "saut\fde page, echap\u001b, separateur\u2028fin";
+        String json = "{\"t\":" + Json.chaine(texte) + "}";
+        Assert.assertFalse(json.chars().anyMatch(c -> c < 0x20 || c == 0x2028), "Aucun caractere de controle brut");
+        Assert.assertEquals(texte, Json.extraireChaine(json, "t"), "Aller-retour exact");
+    }
 }

@@ -343,6 +343,27 @@ public class ModelManagerTest {
         Assert.assertContains(tampon.toString(), "Plateforme non prise en charge", "Cause transmise");
     }
 
+    // Clone neuf : la base de prompts s'installe avec le premier modele, comme le moteur
+    @Test
+    public void testInstallerUnModeleInstalleLaBaseAbsente() throws Exception {
+        installerFaux(ModelType.QWEN_CODER, 1000);
+        LlmConfig config = config();
+        config.setPermissionAccordee(true);
+        MoteurEspion base = new MoteurEspion(false);
+
+        int code = ModelsCommand.executer(CliArgs.builder().modelsInstall("qwen").build(),
+                config, sortie, reponse(""), new MoteurEspion(true), base);
+
+        Assert.assertEquals(ModelsCommand.SUCCES, code, "Succes");
+        Assert.assertEquals(1, base.installations, "Base installee avec le modele");
+    }
+
+    @Test
+    public void testParserReconnaitCorpusInstall() {
+        Assert.assertTrue(cli.CliParser.parse(new String[]{"-ci"}).isCorpusInstall(), "Drapeau -ci");
+        Assert.assertTrue(cli.CliParser.parse(new String[]{"--corpus-install"}).isCommandeModeles(), "Commande d'installation");
+    }
+
     @Test
     public void testParserReconnaitRuntimeInstall() {
         CliArgs args = cli.CliParser.parse(new String[]{"-ri"});

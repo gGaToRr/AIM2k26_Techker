@@ -5,15 +5,28 @@ public final class Json {
 
     private Json() {}
 
+    // Tous les caracteres de controle sont echappes (la norme JSON les interdit bruts), ainsi que
+    // les separateurs de ligne Unicode U+2028 / U+2029 : un texte de prompt peut tout contenir
     public static String echapper(String texte) {
         if (texte == null) return "";
-        return texte.replace("\\", "\\\\")
-                .replace("\"", "\\\"")
-                .replace("\b", "\\b")
-                .replace("\f", "\\f")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r")
-                .replace("\t", "\\t");
+        StringBuilder sb = new StringBuilder(texte.length() + 16);
+        for (int i = 0; i < texte.length(); i++) {
+            char c = texte.charAt(i);
+            switch (c) {
+                case '\\' -> sb.append("\\\\");
+                case '"' -> sb.append("\\\"");
+                case '\b' -> sb.append("\\b");
+                case '\f' -> sb.append("\\f");
+                case '\n' -> sb.append("\\n");
+                case '\r' -> sb.append("\\r");
+                case '\t' -> sb.append("\\t");
+                default -> {
+                    if (c < 0x20 || c == '\u2028' || c == '\u2029') sb.append(String.format("\\u%04x", (int) c));
+                    else sb.append(c);
+                }
+            }
+        }
+        return sb.toString();
     }
 
     public static String chaine(String texte) {

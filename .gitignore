@@ -49,3 +49,6 @@ src/models/
 *.part
 sessions/
 .sessions/
+
+# Base de prompts (telechargee a l'installation : java Main --corpus-install)
+/corpus/
