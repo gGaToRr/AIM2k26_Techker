@@ -56,6 +56,22 @@ public class ModelManagerTest {
         return fichier;
     }
 
+    // Moteur llama.cpp simule : jamais de telechargement reel pendant les tests
+    private static final class MoteurEspion implements ModelsCommand.Moteur {
+        boolean present;
+        boolean reussit = true;
+        int installations = 0;
+        MoteurEspion(boolean present) { this.present = present; }
+        @Override public boolean present() { return present; }
+        @Override public boolean installer(PrintStream out, llm.ModelInstaller.DownloadProgressListener listener) {
+            installations++;
+            if (listener != null) listener.onProgress(10, 20, 1.0);
+            if (!reussit) out.println("[!] Plateforme non prise en charge");
+            present = reussit;
+            return reussit;
+        }
+    }
+
     private static Scanner reponse(String saisie) {
         return new Scanner(new ByteArrayInputStream(saisie.getBytes()));
     }
@@ -285,11 +301,69 @@ public class ModelManagerTest {
         LlmConfig config = config();
         config.setPermissionAccordee(true); // evite la sauvegarde dans le .llm_config/ reel
 
+        MoteurEspion moteur = new MoteurEspion(true);
         int code = ModelsCommand.executer(CliArgs.builder().modelsInstall("qwen").build(),
-                config, sortie, reponse(""));
+                config, sortie, reponse(""), moteur);
 
         Assert.assertEquals(ModelsCommand.SUCCES, code, "Succes");
         Assert.assertContains(tampon.toString(), "deja installe", "Signale le modele deja present");
+        Assert.assertEquals(0, moteur.installations, "Moteur present : rien a installer");
+    }
+
+    // Clone neuf : modeles telecharges mais dossier llama/ absent. Installer un modele
+    // installe aussi le moteur, sinon aucun modele ne peut tourner.
+    @Test
+    public void testInstallerUnModeleInstalleLeMoteurAbsent() throws Exception {
+        installerFaux(ModelType.QWEN_CODER, 1000);
+        LlmConfig config = config();
+        config.setPermissionAccordee(true);
+        MoteurEspion moteur = new MoteurEspion(false);
+
+        int code = ModelsCommand.executer(CliArgs.builder().modelsInstall("qwen").build(),
+                config, sortie, reponse(""), moteur);
+
+        Assert.assertEquals(ModelsCommand.SUCCES, code, "Succes");
+        Assert.assertEquals(1, moteur.installations, "Moteur installe avec le modele");
+    }
+
+    // Echec du moteur : signale a l'extension, qui ne doit pas croire le modele utilisable
+    @Test
+    public void testEchecDuMoteurSignaleEnJson() throws Exception {
+        installerFaux(ModelType.QWEN_CODER, 1000);
+        LlmConfig config = config();
+        config.setPermissionAccordee(true);
+        MoteurEspion moteur = new MoteurEspion(false);
+        moteur.reussit = false;
+
+        int code = ModelsCommand.executer(CliArgs.builder().modelsInstall("qwen").output("json").build(),
+                config, sortie, reponse(""), moteur);
+
+        Assert.assertEquals(ModelsCommand.ECHEC, code, "Echec");
+        Assert.assertContains(tampon.toString(), "\"type\":\"fin\",\"ok\":false", "Fin en echec");
+        Assert.assertContains(tampon.toString(), "Plateforme non prise en charge", "Cause transmise");
+    }
+
+    @Test
+    public void testParserReconnaitRuntimeInstall() {
+        CliArgs args = cli.CliParser.parse(new String[]{"-ri"});
+        Assert.assertTrue(args.isRuntimeInstall(), "Drapeau -ri");
+        Assert.assertTrue(args.isCommandeModeles(), "Commande de gestion des modeles");
+        Assert.assertTrue(cli.CliParser.parse(new String[]{"--runtime-install"}).isRuntimeInstall(),
+                "Drapeau --runtime-install");
+    }
+
+    // --runtime-install -o json : progression puis fin, comme un modele (page Modeles)
+    @Test
+    public void testInstallerLeMoteurEnJson() {
+        MoteurEspion moteur = new MoteurEspion(false);
+
+        int code = ModelsCommand.executer(CliArgs.builder().runtimeInstall(true).output("json").build(),
+                config(), sortie, reponse(""), moteur);
+
+        Assert.assertEquals(ModelsCommand.SUCCES, code, "Succes");
+        Assert.assertEquals(1, moteur.installations, "Une installation");
+        Assert.assertContains(tampon.toString(), "\"type\":\"progression\",\"lus\":10", "Progression relayee");
+        Assert.assertContains(tampon.toString(), "\"type\":\"fin\",\"ok\":true", "Fin en succes");
     }
 
     // --- Verification (-mc / --models-check) ---
@@ -333,12 +407,13 @@ public class ModelManagerTest {
     @Test
     public void testInventaireJsonDecritChaqueModele() throws Exception {
         installerFaux(ModelType.QWEN_CODER, 1000);
-        String json = ModelManager.inventaireEnJson(repertoire.toString());
+        String json = ModelManager.inventaireEnJson(repertoire.toString(), false);
 
         Assert.assertContains(json, "\"id\":\"qwen-coder\"", "Identifiant present");
         Assert.assertContains(json, "\"installe\":true,\"tailleOctets\":1000", "Modele installe avec sa taille reelle");
         Assert.assertContains(json, "\"id\":\"gemma-general\"", "Les modeles absents sont listes aussi");
         Assert.assertContains(json, "\"installe\":false", "Absent signale");
+        Assert.assertContains(json, "\"moteur\":{\"installe\":false", "Etat du moteur llama.cpp");
     }
 
     // L'extension confirme dans sa propre fenetre : -y ne doit plus rien demander

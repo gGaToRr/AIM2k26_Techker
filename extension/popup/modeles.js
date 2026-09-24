@@ -19,6 +19,20 @@ function tailleAnnoncee(modele) {
     return modele.tailleDisque.replace(/\s*\(.*\)$/, "").replace(".", ",");
 }
 
+// Moteur llama.cpp : sans lui, aucun modele ne tourne. Affiche en tete de liste comme
+// un modele (meme telechargement, via --runtime-install), mais sans suppression.
+const ID_MOTEUR = "moteur";
+
+function ligneMoteur(moteur) {
+    return {
+        id: ID_MOTEUR,
+        nom: "Moteur llama.cpp",
+        installe: moteur.installe,
+        version: moteur.version,
+        estMoteur: true
+    };
+}
+
 function afficherMessage(lignesTexte) {
     liste.replaceChildren();
     const element = document.createElement("li");
@@ -49,6 +63,11 @@ function mettreAJourLigne(modele, telechargement) {
     } else if (erreurs.has(modele.id)) {
         details.classList.add("erreur");
         details.textContent = `Échec : ${erreurs.get(modele.id)}`;
+    } else if (modele.estMoteur) {
+        details.classList.add(modele.installe ? "installe" : "erreur");
+        details.textContent = modele.installe
+            ? `Installé · version ${modele.version}`
+            : "Requis pour exécuter les modèles · ~15 Mo";
     } else if (modele.installe) {
         details.classList.add("installe");
         details.textContent = `Installé · ${formaterGo(modele.tailleOctets)}`;
@@ -72,6 +91,9 @@ function construireLigne(modele) {
     ligne.boutonSupprimer.setAttribute("aria-label", `Supprimer ${modele.nom}`);
     ligne.boutonTelecharger.addEventListener("click", () => telecharger(modele.id));
     ligne.boutonSupprimer.addEventListener("click", () => supprimer(modele.id));
+    // Le moteur ne se supprime pas d'ici : sans lui, les modeles installes ne servent plus
+    // (masque sans liberer sa place : les lignes restent alignees)
+    if (modele.estMoteur) ligne.boutonSupprimer.style.visibility = "hidden";
     lignes.set(modele.id, ligne);
     return element;
 }
@@ -87,7 +109,8 @@ async function chargerListe() {
             return;
         }
         lignes.clear();
-        liste.replaceChildren(...resultat.donnees.modeles.map(construireLigne));
+        const { moteur, modeles } = resultat.donnees;
+        liste.replaceChildren(...[ligneMoteur(moteur), ...modeles].map(construireLigne));
         for (const { modele } of lignes.values()) {
             mettreAJourLigne(modele, telechargements[modele.id]);
         }

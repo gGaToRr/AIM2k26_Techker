@@ -51,9 +51,12 @@ public class LocalLlmBackend implements LlmBackend {
         if (versions != null) {
             java.util.Arrays.sort(versions);
             for (int i = versions.length - 1; i >= 0; i--) {
-                File f = new File(versions[i], "llama-completion");
-                if (f.exists() && f.canExecute()) {
-                    return f.getAbsolutePath();
+                // .exe : moteur installe sous Windows (RuntimeInstaller)
+                for (String nom : new String[] {"llama-completion", "llama-completion.exe"}) {
+                    File f = new File(versions[i], nom);
+                    if (f.exists() && f.canExecute()) {
+                        return f.getAbsolutePath();
+                    }
                 }
             }
         }

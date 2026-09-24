@@ -105,7 +105,9 @@ switch ($message.action) {
             Ecrire-Message @{ type = 'fin'; ok = $false; message = $erreur.sortie }
             break
         }
-        cmd /c "$Java --models-install $Modele -o json 2>nul" | ForEach-Object {
+        # "moteur" : le moteur llama.cpp qui execute les modeles, telecharge comme eux
+        $Commande = if ($Modele -eq 'moteur') { '--runtime-install' } else { "--models-install $Modele" }
+        cmd /c "$Java $Commande -o json 2>nul" | ForEach-Object {
             if ($_.StartsWith('{')) { Ecrire-Json $_ }
         }
     }

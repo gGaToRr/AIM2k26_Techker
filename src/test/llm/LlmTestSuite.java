@@ -15,6 +15,7 @@ public class LlmTestSuite {
         runner.registerTestClass(LlmEngineTest.class);
         runner.registerTestClass(LocalLlmBackendTest.class);
         runner.registerTestClass(ModelManagerTest.class);
+        runner.registerTestClass(RuntimeInstallerTest.class);
 
         boolean success = runner.runAll();
         if (!success) {

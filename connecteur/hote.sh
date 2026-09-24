@@ -138,7 +138,13 @@ case "$action" in
             ecrire_message "{\"type\":\"fin\",\"ok\":false,\"message\":\"$(echapper_json "$erreur")\"}"
             exit 0
         fi
-        java -Dstdout.encoding=UTF-8 -cp "bin:src/lib/*" Main --models-install "$modele" -o json 2>/dev/null | while IFS= read -r ligne_json; do
+        # "moteur" : le moteur llama.cpp qui execute les modeles, telecharge comme eux
+        if [ "$modele" = "moteur" ]; then
+            set -- --runtime-install
+        else
+            set -- --models-install "$modele"
+        fi
+        java -Dstdout.encoding=UTF-8 -cp "bin:src/lib/*" Main "$@" -o json 2>/dev/null | while IFS= read -r ligne_json; do
             case "$ligne_json" in "{"*) ecrire_message "$ligne_json" ;; esac
         done
         ;;

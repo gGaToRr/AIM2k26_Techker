@@ -16,16 +16,41 @@ public final class ModelsCommand {
     public static final int SUCCES = 0;
     public static final int ECHEC = 1;
 
+    // Moteur llama.cpp qui execute les modeles. Couture de test : aucun test ne doit
+    // atteindre le reseau (CONTRIBUTING.md).
+    public interface Moteur {
+        boolean present();
+        boolean installer(PrintStream out, ModelInstaller.DownloadProgressListener listener);
+    }
+
+    private static final Moteur MOTEUR_LLAMA = new Moteur() {
+        @Override public boolean present() { return LocalLlmBackend.detectRunnerBinary() != null; }
+        @Override public boolean installer(PrintStream out, ModelInstaller.DownloadProgressListener listener) {
+            return RuntimeInstaller.installer(java.nio.file.Path.of("llama"), out, listener);
+        }
+    };
+
     private ModelsCommand() {}
 
     // Renvoie le code de sortie du processus
     public static int executer(CliArgs options, LlmConfig config, PrintStream out, Scanner scanner) {
+        return executer(options, config, out, scanner, MOTEUR_LLAMA);
+    }
+
+    public static int executer(CliArgs options, LlmConfig config, PrintStream out, Scanner scanner, Moteur moteur) {
         String repertoire = config != null ? config.getRepertoireModeles() : "models";
         // -o json : sortie structuree pour l'extension, qui fait sa propre mise en forme
         boolean json = options.hasOutput() && options.output().equalsIgnoreCase("json");
 
+        if (options.isRuntimeInstall()) {
+            boolean reussi = json
+                    ? telechargerEnJson(out, (sortie, listener) -> moteur.installer(sortie, listener))
+                    : moteur.installer(out, null);
+            return reussi ? SUCCES : ECHEC;
+        }
+
         if (options.isModelsList() && json) {
-            out.println(ModelManager.inventaireEnJson(repertoire));
+            out.println(ModelManager.inventaireEnJson(repertoire, moteur.present()));
             return SUCCES;
         }
 
@@ -45,12 +70,12 @@ public final class ModelsCommand {
 
         if (options.isModelsCheck()) {
             LlmConfig effective = config != null ? config : new LlmConfig();
-            boolean moteur = LocalLlmBackend.detectRunnerBinary() != null;
+            boolean moteurDisponible = moteur.present();
             if (options.hasOutput() && options.output().equalsIgnoreCase("json")) {
-                out.println(ModelManager.verificationEnJson(
-                        ModelManager.verifier(repertoire, effective, new LocalLlmBackend(), moteur), moteur));
+                out.println(ModelManager.verificationEnJson(ModelManager.verifier(repertoire, effective,
+                        new LocalLlmBackend(), moteurDisponible), moteurDisponible));
             } else {
-                ModelManager.verifierModeles(repertoire, effective, new LocalLlmBackend(), moteur, out);
+                ModelManager.verifierModeles(repertoire, effective, new LocalLlmBackend(), moteurDisponible, out);
             }
             return SUCCES;
         }
@@ -60,9 +85,15 @@ public final class ModelsCommand {
             if (modele.isEmpty()) {
                 return modeleInconnu(options.modelsInstall(), out);
             }
+            // Un modele seul ne sert a rien : le moteur qui l'execute est installe avec lui
+            // (un clone neuf n'a pas le dossier llama/, non versionne)
+            ModelType choisi = modele.get();
             boolean reussi = json
-                    ? telechargerEnJson(modele.get(), repertoire, out)
-                    : ModelInstaller.telechargerModele(modele.get(), repertoire, out, null);
+                    ? telechargerEnJson(out, (sortie, listener) ->
+                            ModelInstaller.telechargerModele(choisi, repertoire, sortie, listener)
+                                    && installerMoteurSiAbsent(moteur, sortie, listener))
+                    : ModelInstaller.telechargerModele(choisi, repertoire, out, null)
+                            && installerMoteurSiAbsent(moteur, out, null);
             if (!reussi) {
                 return ECHEC;
             }
@@ -124,13 +155,23 @@ public final class ModelsCommand {
         return SUCCES;
     }
 
+    private static boolean installerMoteurSiAbsent(Moteur moteur, PrintStream out,
+                                                   ModelInstaller.DownloadProgressListener listener) {
+        return moteur.present() || moteur.installer(out, listener);
+    }
+
+    @FunctionalInterface
+    private interface Telechargement {
+        boolean executer(PrintStream sortie, ModelInstaller.DownloadProgressListener listener);
+    }
+
     // Une ligne JSON par evenement : l'extension affiche la progression en direct.
     // Le texte habituel du telechargement est capture, pour en extraire la cause d'un echec.
-    private static boolean telechargerEnJson(ModelType modele, String repertoire, PrintStream out) {
+    private static boolean telechargerEnJson(PrintStream out, Telechargement telechargement) {
         java.io.ByteArrayOutputStream journal = new java.io.ByteArrayOutputStream();
         PrintStream silencieux = new PrintStream(journal, true, java.nio.charset.StandardCharsets.UTF_8);
 
-        boolean reussi = ModelInstaller.telechargerModele(modele, repertoire, silencieux, (lus, total, vitesse) -> {
+        boolean reussi = telechargement.executer(silencieux, (lus, total, vitesse) -> {
             out.println("{\"type\":\"progression\",\"lus\":" + lus + ",\"total\":" + total
                     + ",\"vitesse\":" + String.format(java.util.Locale.ROOT, "%.2f", vitesse) + "}");
             out.flush();

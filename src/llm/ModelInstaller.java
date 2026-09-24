@@ -147,13 +147,23 @@ public class ModelInstaller {
             return true;
         }
 
+        out.println("[v] Telechargement de " + model.getNomAffiche() + " (" + model.getTailleDisque() + ")...");
+        return telechargerFichier(model.getUrlTelechargement(), targetFile, out, listener,
+                fichier -> verifierIntegrite(model, fichier, out));
+    }
+
+    // Telechargement generique (modeles, moteur llama.cpp) : fichier .part, verification,
+    // puis renommage. Rien n'est garde si la verification echoue.
+    public static boolean telechargerFichier(String url, Path targetFile, PrintStream out,
+                                             DownloadProgressListener listener,
+                                             java.util.function.Predicate<Path> verification) {
+        Path tempFile = Paths.get(targetFile.toString() + ".part");
         try {
             if (targetFile.getParent() != null) {
                 Files.createDirectories(targetFile.getParent());
             }
 
-            out.println("[v] Telechargement de " + model.getNomAffiche() + " (" + model.getTailleDisque() + ")...");
-            out.println("    Source      : " + model.getUrlTelechargement());
+            out.println("    Source      : " + url);
             out.println("    Destination : " + targetFile.toAbsolutePath());
 
             HttpClient client = HttpClient.newBuilder()
@@ -162,7 +172,7 @@ public class ModelInstaller {
                     .build();
 
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(model.getUrlTelechargement()))
+                    .uri(URI.create(url))
                     .GET()
                     .build();
 
@@ -174,7 +184,6 @@ public class ModelInstaller {
             }
 
             long contentLength = response.headers().firstValueAsLong("Content-Length").orElse(-1L);
-            Path tempFile = Paths.get(targetFile.toString() + ".part");
 
             try (InputStream in = new BufferedInputStream(response.body());
                  OutputStream fos = new BufferedOutputStream(Files.newOutputStream(tempFile))) {
@@ -206,7 +215,7 @@ public class ModelInstaller {
 
             // Verification d'integrite avant de considerer le fichier comme installe :
             // un binaire corrompu ou substitue ne doit jamais atteindre llama-cli.
-            if (!verifierIntegrite(model, tempFile, out)) {
+            if (!verification.test(tempFile)) {
                 supprimerSilencieusement(tempFile);
                 return false;
             }
@@ -218,7 +227,7 @@ public class ModelInstaller {
 
         } catch (Exception e) {
             out.println("\n[!] Echec du telechargement : " + e.getMessage());
-            supprimerSilencieusement(Paths.get(targetFile.toString() + ".part"));
+            supprimerSilencieusement(tempFile);
             return false;
         }
     }

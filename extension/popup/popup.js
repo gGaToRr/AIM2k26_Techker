@@ -139,7 +139,8 @@ async function testerModeles() {
             return;
         }
         if (!moteurDisponible) {
-            lignes.push("⚠ Moteur llama.cpp introuvable :", "  la génération n'est pas testée.", "");
+            lignes.push("⚠ Moteur llama.cpp introuvable :", "  la génération n'est pas testée.",
+                "  Installez-le depuis « Télécharger", "  les modèles ».", "");
         }
 
         installes.forEach((modele) => lignes.push(...decrireModeleInstalle(modele), ""));

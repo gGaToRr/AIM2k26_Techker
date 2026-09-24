@@ -123,8 +123,11 @@ public final class ModelManager {
     }
 
     // Inventaire pour la page de telechargement de l'extension
-    public static String inventaireEnJson(String modelsDir) {
-        StringBuilder sb = new StringBuilder("{\"modeles\":[");
+    // moteurPresent : le moteur llama.cpp qui execute les modeles est-il installe ?
+    public static String inventaireEnJson(String modelsDir, boolean moteurPresent) {
+        StringBuilder sb = new StringBuilder("{\"moteur\":{\"installe\":").append(moteurPresent)
+                .append(",\"version\":").append(util.Json.chaine(RuntimeInstaller.VERSION))
+                .append("},\"modeles\":[");
         List<ModelStatus> etats = inventaire(modelsDir);
         for (int i = 0; i < etats.size(); i++) {
             ModelStatus etat = etats.get(i);

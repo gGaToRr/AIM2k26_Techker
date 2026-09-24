@@ -172,7 +172,7 @@ Puis rechargez l'extension avec la flèche ↻ dans `chrome://extensions`.
 1. Cliquez sur l'icône de l'extension : le panneau s'ouvre (sur les pages `chrome://`, c'est une popup classique).
 2. **Tester si Java est installé** : confirme que le connecteur et Java répondent.
 3. **Télécharger les modèles** : choisissez un modèle (plus d'1 Go chacun). En ligne de commande : `java -cp "bin:src/lib/*" Main --models-install qwen-coder`.
-4. Le modèle tourne avec [llama.cpp](https://github.com/ggml-org/llama.cpp/releases) : décompressez une version précompilée dans `llama/<version>/` à la racine du projet (le dossier doit contenir `llama-completion`), ou installez `llama-cli` dans votre `PATH` (ex : `brew install llama.cpp`).
+4. Le moteur [llama.cpp](https://github.com/ggml-org/llama.cpp) qui exécute les modèles (~15 Mo, version figée et empreinte SHA-256 vérifiée) est installé automatiquement avec le premier modèle, dans `llama/`. S'il manque (modèles copiés à la main, par exemple), la ligne **Moteur llama.cpp** de la page des modèles l'installe, ou en ligne de commande : `java -cp "bin:src/lib/*" Main --runtime-install`.
 5. **Tester mes modèles installés** : vérifie l'intégrité des fichiers et fait une génération d'essai.
 
 Sans modèle ou sans llama.cpp, l'extension se rabat sur le moteur NLP seul et vous le signale : le résultat est utile, mais moins fiable.
