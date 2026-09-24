@@ -1,0 +1,83 @@
+# 📄 Documentation : `src/gen/MetaPromptEngine.java`
+
+## 📌 Rôle du Fichier
+`src/gen/MetaPromptEngine.java` est le **moteur d'orchestration Meta-Prompting**. Il construit le dictionnaire de contexte, applique les 5 règles d'optimisation de prompt, compile le template Mustache et applique les adaptations ciblées pour les différents modèles d'IA.
+
+---
+
+## 🌟 Les 5 Règles d'Optimisation Appliquées
+
+1. **Extraction de la Mission Pure (`extraireMissionPure`)** : Élimine le bruit conversationnel de début et fin (*"Bonjour, est-ce que tu peux..."*, *"merci beaucoup et c'est tout"*).
+2. **Injection du Persona d'Expertise & Technologies** : Injecte le rôle spécialisé (`domainPersona`) et la stack technique pour contraindre le style du LLM.
+3. **Structuration Séquentielle** : Injecte les sous-objectifs ordonnés (`objectives`) dans des balises XML claires.
+4. **Auto-Correction des Faiblesses** : Si le prompt utilisateur est trop court ou manque de contraintes, injecte automatiquement des exigences de structure (ex: *structure aérée avec titres Markdown*, *couvrir les aspects théoriques et pratiques*).
+5. **Adaptation par Modèle d'IA (`adapterPourAgent`)** :
+   - `claude` : Ajoute l'encadrement `<claude_system_prompt>` et les directives de réflexion `<thinking>`.
+   - `deepseek` : Ajoute les consignes de raisonnement pas à pas dans des balises `<think>`.
+   - `gpt` : Ajoute les directives de style direct et rigoureux OpenAI GPT-4o.
+   - `gemini` : Ajoute les directives de structure Google Gemini.
+   - `llama` : Ajoute les balises de conversation officielles LLaMA-3 (`<|start_header_id|>`).
+   - `feynman` : Impose la méthode pédagogique Feynman (explication comme à un débutant de 12 ans).
+
+---
+
+## 🛠️ Méthodes Principales
+
+* `genererPromptOptimise(PromptProfile profile)` : Génère le prompt optimisé standard.
+* `genererPromptOptimise(PromptProfile profile, CliArgs options)` : Génère le prompt en appliquant les surcharges d'arguments CLI (`-t`, `-d`, `-l`, `-a`).
+* `genererExportJson(PromptProfile profile, String promptOptimise, CliArgs options)` : Produit l'objet JSON complet avec profil NLP et prompt généré.
+* `adapterPourAgent(String prompt, String agent)` : Enveloppe le prompt avec les conventions du modèle cible.
+
+---
+
+## 👨‍💻 Exemple d'Utilisation
+
+```java
+PromptProfile profile = Lemmatizer.analyser("Explique la théorie des graphes");
+CliArgs options = CliParser.parse(new String[]{"-a", "claude"});
+
+String superPrompt = MetaPromptEngine.genererPromptOptimise(profile, options);
+System.out.println(superPrompt);
+```
+
+---
+
+## 🗄️ Règles de sous-type externalisées
+
+`determinerSousType` reposait sur ~60 lignes de `contains(...)` en dur. Ajuster un synonyme imposait une recompilation, et la couverture réelle de chaque sous-type était invisible.
+
+Les règles vivent désormais dans **`src/genPrompt/regles_sous_types.properties`** et sont chargées par `SubTypeRules`.
+
+```properties
+DEPANNAGE_DIAGNOSTIC.ordre  = audit_review, refactor_clean
+DEPANNAGE_DIAGNOSTIC.defaut = root_cause_debug
+DEPANNAGE_DIAGNOSTIC.audit_review.motsCles   = review, audit, securite, conformite
+DEPANNAGE_DIAGNOSTIC.refactor_clean.motsCles = refactor, clean, amelior, optimis
+```
+
+| Clé | Rôle |
+|:---|:---|
+| `.ordre` | Sous-types évalués dans l'ordre — **la première règle satisfaite l'emporte** |
+| `.defaut` | Retenu si aucune règle ne correspond |
+| `.motsCles` | Déclencheurs. Ce sont des **fragments** : `amelior` capture `amelioration` |
+| `.contexteRequis` | Exigence **supplémentaire**, pas une alternative |
+| `.condition` | Prédicat intégré, pour ce qui n'est pas exprimable en mots-clés |
+
+### `contexteRequis` : une conjonction
+
+Le cas `frontend_ui` illustre pourquoi une simple liste de mots-clés ne suffisait pas. Il faut **un déclencheur** (`design`, `bouton`, `layout`…) **et** un indice que l'on parle de web (`site`, `css`, `tailwind`…).
+
+> « Dessine le design du bouton de la machine à café » contient un déclencheur, mais n'est pas du frontend.
+
+### `condition` : les deux cas non lexicaux
+
+| Condition | Signification |
+|:---|:---|
+| `traductionDetectee` | Le profil NLP a identifié une langue cible de traduction |
+| `expressionCourteSansQuestion` | 3 mots ou moins, sans `?` — une entrée encyclopédique |
+
+Une condition inconnue est signalée dans le journal et traitée comme non satisfaite, plutôt que de faire échouer la génération.
+
+### Repli intégré
+
+Si le fichier est absent ou illisible, `SubTypeRules` retombe sur une copie intégrée et le signale. Un test vérifie que **cette copie produit exactement les mêmes règles que le fichier livré** — sans quoi la disparition du fichier changerait silencieusement le comportement du produit.

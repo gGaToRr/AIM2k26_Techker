@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Modèles - AIM2K26_Prompting</title>
+    <link rel="stylesheet" href="popup.css">
+    <script src="panneau.js"></script>
+</head>
+<body>
+    <main class="fenetre">
+        <header class="entete">
+            <a class="retour" href="popup.html" aria-label="Retour">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+            </a>
+            <img class="logo" src="logo.svg" alt="">
+            <h1 class="titre">Modèles open source</h1>
+        </header>
+
+        <!-- Remplie par modeles.js a partir du registre de l'outil Java -->
+        <ul class="liste-modeles" id="liste-modeles" aria-live="polite">
+            <li class="message-liste">Chargement des modèles…</li>
+        </ul>
+
+        <!-- Gabarit d'une ligne, clone pour chaque modele -->
+        <template id="gabarit-modele">
+            <li class="modele">
+                <button type="button" class="bouton-icone telecharger">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11"/><path d="M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>
+                </button>
+                <button type="button" class="bouton-icone supprimer">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/></svg>
+                </button>
+                <div class="infos-modele">
+                    <span class="nom-modele"></span>
+                    <span class="details-modele"></span>
+                    <div class="barre-progression" hidden><div class="remplissage"></div></div>
+                </div>
+            </li>
+        </template>
+    </main>
+    <script src="connecteur.js"></script>
+    <script src="modeles.js"></script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Prompt - AIM2K26_Prompting</title>
+    <link rel="stylesheet" href="popup.css">
+    <script src="panneau.js"></script>
+</head>
+<body>
+    <main class="fenetre">
+        <header class="entete">
+            <a class="retour" href="popup.html" aria-label="Retour">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+            </a>
+            <img class="logo" src="logo.svg" alt="">
+            <h1 class="titre" id="titre-prompt">Prompt</h1>
+        </header>
+
+        <!-- Remplie par prompt.js a partir de l'entree d'historique choisie (?id=...) -->
+        <section class="detail-prompt" id="detail-prompt">
+            <dl class="infos-prompt">
+                <div><dt>Type</dt><dd id="info-type"></dd></div>
+                <div><dt>Amélioré par</dt><dd id="info-source"></dd></div>
+                <div><dt>Site</dt><dd id="info-site"></dd></div>
+                <div><dt>Qualité initiale</dt><dd id="info-score"></dd></div>
+            </dl>
+
+            <div class="bloc-prompt">
+                <h2 class="titre-section">Prompt original</h2>
+                <p class="contenu-prompt" id="prompt-original"></p>
+            </div>
+
+            <div class="bloc-prompt bloc-principal">
+                <h2 class="titre-section">Prompt amélioré</h2>
+                <pre class="contenu-prompt" id="prompt-ameliore"></pre>
+            </div>
+        </section>
+    </main>
+    <script src="historique.js"></script>
+    <script src="prompt.js"></script>
+</body>
+</html>

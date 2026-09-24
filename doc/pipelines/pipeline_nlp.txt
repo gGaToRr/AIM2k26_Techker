@@ -1,0 +1,103 @@
+================================================================================
+                    PIPELINE DU MOTEUR D'ANALYSE DE PROMPT (NLP)
+================================================================================
+
+                                ┌──────────────────────────┐
+                                │   PROMPT UTILISATEUR     │
+                                │   (Texte brut depuis CLI │
+                                │    ou Menu interactif)   │
+                                └─────────────┬────────────┘
+                                              │
+                                              ▼
+                                ┌──────────────────────────┐
+                                │ 0. ANALYSE DE SÉCURITÉ   │
+                                │    (SafetyAdvisor.java)  │
+                                │                          │
+                                │ • Mots-clés sensibles    │
+                                │ • Patterns de jailbreak  │
+                                │ • Avertissement préventif│
+                                └─────────────┬────────────┘
+                                              │
+                                              ▼
+                                ┌──────────────────────────┐
+                                │     1. SANITIZATION      │
+                                │     (Sanitzer.java)      │
+                                │                          │
+                                │ • Restauration élisions  │
+                                │   (lavion -> l'avion...) │
+                                │ • Normalisation espaces  │
+                                │ • Préservation C++, C#, @│
+                                │ • Suppression accents    │
+                                └─────────────┬────────────┘
+                                              │
+                                              ▼
+                                ┌──────────────────────────┐
+                                │ 2. TOKENISATION & LEMMES │
+                                │    (Lemmatizer.java)     │
+                                │                          │
+                                │ • Expressions multi-mots │
+                                │   (pas a pas, root cause)│
+                                │ • Découpage CamelCase    │
+                                │ • Filtrage Stopwords     │
+                                │ • Dictionnaire de lemmes │
+                                │ • Racinisation suffixes  │
+                                └─────────────┬────────────┘
+                                              │
+                                              ▼
+                                ┌──────────────────────────┐
+                                │ 3. ANALYSES SÉMANTIQUES  │
+                                ├──────────────────────────┤
+                                │ A. Densité de Code       │
+                                │    (Mots-clés & syntaxe) │
+                                │                          │
+                                │ B. Mode Grammatical      │
+                                │    (Commande vs Question)│
+                                │                          │
+                                │ C. Détection de Langue   │
+                                │    (FR vs EN)            │
+                                │                          │
+                                │ D. Stack & Contexte Spé. │
+                                │    (TechStackDetector)   │
+                                │                          │
+                                │ E. Extraction Domaine    │
+                                │    & Persona Expert      │
+                                │    (DomainExtractor)     │
+                                │                          │
+                                │ F. Décomposition Pensees │
+                                │    & Sous-Objectifs      │
+                                │    (QuestionDecomposer)  │
+                                │                          │
+                                │ G. Tokens BPE & Coûts    │
+                                │    (TokenCounter)        │
+                                │                          │
+                                │ H. Score de Qualité /100 │
+                                │    (PromptQualityScorer) │
+                                └─────────────┬────────────┘
+                                              │
+                                              ▼
+                                ┌──────────────────────────┐
+                                │ 4. CLASSIFICATION 7 ARCH.│
+                                │  (PromptClassifier.java) │
+                                │                          │
+                                │ • Scoring sémantique     │
+                                │ • Distribution Softmax   │
+                                │ • Confiance (LOW/MED/HI) │
+                                │ • 7 Archétypes :         │
+                                │   - APPRENTISSAGE_TUTO   │
+                                │   - CONCEPTION_ARCHI     │
+                                │   - DEPANNAGE_DIAGNOSTIC │
+                                │   - CREATION_REDACTION   │
+                                │   - PROTOCOLE_RECETTE    │
+                                │   - COMPARAISON_DECISION │
+                                │   - CONCEPT_VULGARISAT.  │
+                                └─────────────┬────────────┘
+                                              │
+                                              ▼
+                                ┌──────────────────────────┐
+                                │   PROMPT PROFILE FINAL   │
+                                │   (PromptProfile.java)   │
+                                │                          │
+                                │ ➔ Record immuable prêt   │
+                                │   pour le Meta-Prompting │
+                                │   et le ModelRouter LLM  │
+                                └──────────────────────────┘

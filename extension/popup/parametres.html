@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Paramètres - AIM2K26_Prompting</title>
+    <link rel="stylesheet" href="popup.css">
+    <script src="panneau.js"></script>
+</head>
+<body>
+    <main class="fenetre">
+        <header class="entete">
+            <a class="retour" href="popup.html" aria-label="Retour">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+            </a>
+            <img class="logo" src="logo.svg" alt="">
+            <h1 class="titre">Paramètres</h1>
+        </header>
+
+        <!-- A construire : les reglages de l'extension, repartis sur deux colonnes -->
+        <section class="corps-parametres">
+            <div class="colonne-parametres">
+                <div class="ligne-parametre">
+                    <div class="texte-parametre">
+                        <span class="nom-parametre" id="nom-auto-correction">Auto-correction des prompts</span>
+                        <p class="description">
+                            Améliore et envoie vos prompts tout seul sur ChatGPT, Claude, etc.
+                        </p>
+                    </div>
+                    <label class="interrupteur">
+                        <input type="checkbox" role="switch" id="auto-correction" aria-labelledby="nom-auto-correction">
+                        <span class="curseur" aria-hidden="true"></span>
+                    </label>
+                </div>
+
+                <div class="ligne-parametre">
+                    <div class="texte-parametre">
+                        <span class="nom-parametre" id="nom-format-sortie">Format de sortie</span>
+                        <p class="description">
+                            Choisissez la mise en forme du prompt amélioré.
+                        </p>
+                    </div>
+                    <select class="liste-choix" id="format-sortie" aria-labelledby="nom-format-sortie">
+                        <option value="txt">Texte</option>
+                        <option value="md" selected>Markdown</option>
+                        <option value="json">JSON</option>
+                    </select>
+                </div>
+
+                <!-- Fonction annoncee, pas encore disponible : ligne grisee et interrupteur desactive -->
+                <div class="ligne-parametre indisponible">
+                    <div class="texte-parametre">
+                        <span class="nom-parametre" id="nom-barre-prompt">
+                            Barre de prompt sur les sites
+                            <span class="badge">Bientôt</span>
+                        </span>
+                        <p class="description">
+                            Ajoute AIM2K26 dans la zone de saisie de ChatGPT, Claude, etc.
+                        </p>
+                    </div>
+                    <label class="interrupteur">
+                        <input type="checkbox" role="switch" id="barre-prompt" disabled aria-labelledby="nom-barre-prompt">
+                        <span class="curseur" aria-hidden="true"></span>
+                    </label>
+                </div>
+
+                <div class="ligne-parametre">
+                    <div class="texte-parametre">
+                        <span class="nom-parametre" id="nom-llm-cible">LLM cible</span>
+                        <p class="description">
+                            Adapte le prompt à l'IA à laquelle vous l'envoyez.
+                        </p>
+                    </div>
+                    <select class="liste-choix" id="llm-cible" aria-labelledby="nom-llm-cible">
+                        <option value="auto" selected>Automatique</option>
+                        <option value="gpt">ChatGPT</option>
+                        <option value="claude">Claude</option>
+                        <option value="gemini">Gemini</option>
+                        <option value="deepseek">DeepSeek</option>
+                        <option value="llama">LLaMA</option>
+                    </select>
+                </div>
+
+                <div class="ligne-parametre">
+                    <div class="texte-parametre">
+                        <span class="nom-parametre" id="nom-langue">Langue du prompt</span>
+                        <p class="description">
+                            Langue dans laquelle le prompt amélioré est rédigé.
+                        </p>
+                    </div>
+                    <select class="liste-choix" id="langue" aria-labelledby="nom-langue">
+                        <option value="auto" selected>Automatique</option>
+                        <option value="fr">Français</option>
+                        <option value="en">Anglais</option>
+                        <option value="es">Espagnol</option>
+                        <option value="de">Allemand</option>
+                    </select>
+                </div>
+            </div>
+            <div class="separateur-vertical" role="separator" aria-orientation="vertical"></div>
+            <div class="colonne-parametres">
+                <!-- Alternative locale / serveur : la partie serveur n'est pas commencee,
+                     l'amelioration reste locale. Ligne grisee et interrupteur desactive -->
+                <div class="ligne-parametre indisponible">
+                    <div class="texte-parametre">
+                        <span class="nom-parametre" id="nom-modele-local">
+                            Amélioration locale
+                            <span class="badge">Bientôt</span>
+                        </span>
+                        <p class="description">
+                            Fait réécrire vos prompts par un modèle installé sur votre machine.
+                        </p>
+                    </div>
+                    <label class="interrupteur">
+                        <input type="checkbox" role="switch" id="modele-local" checked disabled aria-labelledby="nom-modele-local">
+                        <span class="curseur" aria-hidden="true"></span>
+                    </label>
+                </div>
+
+                <div class="ligne-parametre">
+                    <div class="texte-parametre">
+                        <span class="nom-parametre" id="nom-modele-utilise">Modèle utilisé</span>
+                        <p class="description">
+                            Automatique choisit le meilleur modèle.
+                        </p>
+                    </div>
+                    <select class="liste-choix" id="modele-utilise" aria-labelledby="nom-modele-utilise">
+                        <option value="auto" selected>Automatique</option>
+                        <option value="qwen">Qwen Coder</option>
+                        <option value="gemma">Gemma 2</option>
+                        <option value="deepseek">DeepSeek R1</option>
+                        <option value="smollm">SmolLM2</option>
+                    </select>
+                </div>
+
+                <div class="ligne-parametre">
+                    <div class="texte-parametre">
+                        <span class="nom-parametre" id="nom-creativite">Créativité</span>
+                        <p class="description">
+                            Plus elle est haute, plus la réécriture est libre.
+                        </p>
+                    </div>
+                    <input type="range" class="curseur-reglage" id="creativite" min="0" max="1" step="0.1" value="0.7"
+                           aria-labelledby="nom-creativite">
+                </div>
+
+                <div class="ligne-parametre">
+                    <div class="texte-parametre">
+                        <span class="nom-parametre" id="nom-longueur">Longueur maximale</span>
+                        <p class="description">
+                            Limite la taille du prompt produit par le modèle local.
+                        </p>
+                    </div>
+                    <select class="liste-choix" id="longueur" aria-labelledby="nom-longueur">
+                        <option value="512">Courte</option>
+                        <option value="1024">Moyenne</option>
+                        <option value="2048" selected>Longue</option>
+                    </select>
+                </div>
+
+                <div class="ligne-parametre">
+                    <div class="texte-parametre">
+                        <span class="nom-parametre" id="nom-copie-auto">Copie automatique</span>
+                        <p class="description">
+                            Copie le prompt amélioré dès qu'il est&nbsp;prêt.
+                        </p>
+                    </div>
+                    <label class="interrupteur">
+                        <input type="checkbox" role="switch" id="copie-auto" aria-labelledby="nom-copie-auto">
+                        <span class="curseur" aria-hidden="true"></span>
+                    </label>
+                </div>
+
+                <div class="ligne-parametre">
+                    <div class="texte-parametre">
+                        <span class="nom-parametre danger" id="nom-supprimer-tout">Supprimer l'extension et les données</span>
+                        <p class="description">
+                            Action irréversible.
+                        </p>
+                    </div>
+                    <button type="button" class="bouton bouton-danger" id="supprimer-tout" aria-describedby="nom-supprimer-tout">
+                        Supprimer
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script src="parametres.js"></script>
+</body>
+</html>

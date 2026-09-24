@@ -4,6 +4,7 @@
 
 # Build directories
 target/
+.mvn/repository/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
@@ -34,7 +35,17 @@ out/
 ### VS Code ###
 .vscode/
 
-### Output files & logs ###
+# Output files & logs
 *.log
 output_prompt.md
 .promptctx-cache/
+.llm_config/
+bin/
+src/bin/
+models/
+llama/
+src/models/
+*.gguf
+*.part
+sessions/
+.sessions/

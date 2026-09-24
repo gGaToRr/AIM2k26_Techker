@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>io.github.ggatorr</groupId>
+    <artifactId>aim2k26-techker</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+
+    <name>Prompting tool 4 a better work from AI</name>
+    <description>Moteur NLP et Meta-Prompting pour LLM, 100% hors-ligne</description>
+
+    <properties>
+        <maven.compiler.release>21</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <jmustache.version>1.16</jmustache.version>
+        <!-- Classe de la suite de tests maison : le framework est interne, pas JUnit,
+             donc Surefire ne peut pas la decouvrir seul. -->
+        <suite.tests>test.AllTestSuite</suite.tests>
+        <skipTests>false</skipTests>
+    </properties>
+
+    <dependencies>
+        <!-- Moteur de templates Mustache. Sa version n'etait declaree nulle part :
+             elle ne vivait que dans le nom du JAR commite dans src/lib/. -->
+        <dependency>
+            <groupId>com.samskivert</groupId>
+            <artifactId>jmustache</artifactId>
+            <version>${jmustache.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <!-- L'arborescence n'est pas celle, standard, de Maven : les sources vivent
+             dans src/<module>/ et Main.java a la racine. Plutot que de deplacer
+             55 fichiers et de casser toutes les commandes documentees, on decrit
+             la disposition reelle. -->
+        <sourceDirectory>${project.basedir}</sourceDirectory>
+        <testSourceDirectory>${project.basedir}/src</testSourceDirectory>
+        <directory>${project.basedir}/target</directory>
+
+        <resources>
+            <resource>
+                <directory>${project.basedir}/src/genPrompt</directory>
+                <targetPath>genPrompt</targetPath>
+            </resource>
+        </resources>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <includes>
+                        <include>Main.java</include>
+                        <include>src/cli/**/*.java</include>
+                        <include>src/gen/**/*.java</include>
+                        <include>src/llm/**/*.java</include>
+                        <include>src/menu/**/*.java</include>
+                        <include>src/nlp/**/*.java</include>
+                        <include>src/util/**/*.java</include>
+                    </includes>
+                    <testIncludes>
+                        <testInclude>test/**/*.java</testInclude>
+                    </testIncludes>
+                </configuration>
+            </plugin>
+
+            <!-- Surefire ne sait pas executer un framework maison : on le neutralise
+                 et la suite est lancee par exec-maven-plugin, sur le meme cycle. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>suite-tdd</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>${suite.tests}</mainClass>
+                            <classpathScope>test</classpathScope>
+                            <!-- Respecte -DskipTests, que exec-maven-plugin ignore par defaut -->
+                            <skip>${skipTests}</skip>
+                            <!-- TestRunner rend un code de sortie non nul en cas d'echec :
+                                 le build doit echouer avec lui. -->
+                            <stopUnresponsiveDaemonThreads>true</stopUnresponsiveDaemonThreads>
+                        </configuration>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>Main</mainClass>
+                </configuration>
+            </plugin>
+
+            <!-- Les dependances sont copiees a cote du JAR, que son manifeste
+                 reference via classpathPrefix : le JAR reste executable tel quel. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.6.1</version>
+                <executions>
+                    <execution>
+                        <id>copier-dependances</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.1</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>Main</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
