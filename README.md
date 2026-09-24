@@ -3,7 +3,7 @@ Vous en avez marre des réponses vagues ou incomplètes des LLMs ? Le moteur **[
 
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:09090b,50:7c3aed,100:c084fc&height=200&section=header&text=AIM2k26_Techker&fontSize=65&fontColor=ffffff&animation=fadeIn&desc=Moteur%20NLP%20et%20Meta-Prompting%20pour%20LLM&descSize=18&descAlignY=70&descAlign=50" />
+<img src="doc/images/banniere.svg" alt="AIM2K26_Prompting" width="100%" />
 <br />
 
 ![Status](https://img.shields.io/badge/status-Working-green?style=flat-square)
